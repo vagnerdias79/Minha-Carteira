@@ -56,6 +56,7 @@ tr:hover td{background:rgba(79,142,247,.04)}
 .aloc-item{display:flex;align-items:center;justify-content:space-between;font-size:12px;margin-bottom:7px}
 .aloc-dot{width:8px;height:8px;border-radius:50%;margin-right:7px;flex-shrink:0}
 .aloc-left{display:flex;align-items:center;color:var(--text2)}
+.info-banner{background:#1a2a1a;border:1px solid #36d39940;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--green);display:none}
 .error-banner{background:#2a1a1a;border:1px solid #f8727240;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--red);display:none}
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:50;align-items:center;justify-content:center}
 .modal-bg.open{display:flex}
@@ -69,9 +70,6 @@ input:focus,select:focus{border-color:var(--accent)}
 .form-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
 .btn-primary{background:var(--accent);color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500}
 .btn-secondary{background:transparent;color:var(--text2);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
-.cotacao-status{font-size:11px;margin-top:3px}
-.shimmer{background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:4px;height:14px;width:80px;display:inline-block}
-@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 @media(max-width:768px){.metrics{grid-template-columns:1fr 1fr}.charts-row{grid-template-columns:1fr}}
 </style>
 </head>
@@ -87,6 +85,7 @@ input:focus,select:focus{border-color:var(--accent)}
 </div>
 
 <div class="main">
+  <div class="info-banner" id="info-banner"></div>
   <div class="error-banner" id="error-banner"></div>
 
   <div class="metrics">
@@ -130,15 +129,8 @@ input:focus,select:focus{border-color:var(--accent)}
       <table>
         <thead>
           <tr>
-            <th>Ativo</th>
-            <th>Tipo</th>
-            <th>Qtd</th>
-            <th>Preço médio</th>
-            <th>Cotação atual</th>
-            <th>Var. hoje</th>
-            <th>Resultado</th>
-            <th>Peso</th>
-            <th></th>
+            <th>Ativo</th><th>Tipo</th><th>Qtd</th><th>Preço médio</th>
+            <th>Cotação atual</th><th>Var. hoje</th><th>Resultado</th><th>Peso</th><th></th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -154,7 +146,7 @@ input:focus,select:focus{border-color:var(--accent)}
     <div class="form-row">
       <label class="form-label">Ticker</label>
       <input type="text" id="f-ticker" placeholder="Ex: PETR4, AAPL, VOO">
-      <div class="form-hint">Para ativos BR use o ticker normal (PETR4). Para EUA use o ticker americano (AAPL, VOO).</div>
+      <div class="form-hint">BR: use o ticker da B3 (PETR4). EUA: use o ticker americano (AAPL, VOO).</div>
     </div>
     <div class="form-row">
       <label class="form-label">Nome</label>
@@ -183,7 +175,7 @@ input:focus,select:focus{border-color:var(--accent)}
     <div class="form-row">
       <label class="form-label">Preço médio</label>
       <input type="number" id="f-pm" placeholder="0.00" step="0.01" min="0">
-      <div class="form-hint" id="pm-hint">Para ativos BR informe em R$. Para EUA informe em US$.</div>
+      <div class="form-hint">BR: informe em R$. EUA: informe em US$.</div>
     </div>
     <div class="form-row">
       <label class="form-label">Dividendos recebidos no ano (opcional)</label>
@@ -198,11 +190,10 @@ input:focus,select:focus{border-color:var(--accent)}
 
 <script>
 // ══════════════════════════════════════════════
-// CONFIGURAÇÃO — edite seus ativos aqui
+// CONFIGURAÇÃO
 // ══════════════════════════════════════════════
 const BRAPI_TOKEN = 'd5EMVrjrWTQMD6crf7PH4N';
 
-// mercado: 'BR' = B3 (cotação em R$) | 'US' = NYSE/NASDAQ (cotação em US$)
 let carteira = [
   {ticker:'PETR4',  nome:'Petrobras PN',        tipo:'acao', mercado:'BR', qtd:200, pmedio:36.50, div:320},
   {ticker:'VALE3',  nome:'Vale ON',              tipo:'acao', mercado:'BR', qtd:100, pmedio:68.20, div:180},
@@ -214,11 +205,8 @@ let carteira = [
   {ticker:'VOO',    nome:'Vanguard S&P 500 ETF', tipo:'etf',  mercado:'US', qtd:5,   pmedio:420.00,div:0},
 ];
 
-// ══════════════════════════════════════════════
-// ESTADO
-// ══════════════════════════════════════════════
 let precos = {};
-let usdBrl = 5.75; // taxa de câmbio fallback
+let usdBrl = 5.75;
 let evolChart, alocChart;
 const evolData   = [68200,71400,73100,70800,75500,78200,76900,80100,83400,85600,88200,91750];
 const evolLabels = ['Jul/24','Ago','Set','Out','Nov','Dez','Jan/25','Fev','Mar','Abr','Mai','Jun'];
@@ -233,94 +221,115 @@ const cls = v => v>=0?'pos':'neg';
 
 function setStatus(state, msg) {
   const dot = document.getElementById('status-dot');
-  dot.className = 'dot' + (state==='loading'?' loading':state==='error'?' error':'');
+  dot.className = 'dot'+(state==='loading'?' loading':state==='error'?' error':'');
   document.getElementById('update-label').textContent = msg;
 }
-
-function showError(msg) {
-  const b = document.getElementById('error-banner');
-  b.textContent = msg;
-  b.style.display = msg ? 'block' : 'none';
+function showBanner(type, msg) {
+  const b = document.getElementById(type+'-banner');
+  if(b){ b.textContent = msg; b.style.display = msg ? 'block' : 'none'; }
 }
 
 // ══════════════════════════════════════════════
-// BUSCA DE CÂMBIO USD/BRL
+// FETCH COM MODO NO-CORS FALLBACK
+// ══════════════════════════════════════════════
+async function brapiGet(path) {
+  const url = `https://brapi.dev/api/${path}&token=${BRAPI_TOKEN}`;
+  // Tenta com cors primeiro, depois no-cors como fallback
+  try {
+    const r = await fetch(url, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      mode: 'cors'
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return await r.json();
+  } catch(e) {
+    // Fallback: tenta via proxy CORS público
+    const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    const r2 = await fetch(proxy);
+    const d2 = await r2.json();
+    return JSON.parse(d2.contents);
+  }
+}
+
+// ══════════════════════════════════════════════
+// CÂMBIO USD/BRL
 // ══════════════════════════════════════════════
 async function fetchCambio() {
   try {
-    const r = await fetch(`https://brapi.dev/api/v2/currency?currency=USD-BRL&token=${BRAPI_TOKEN}`);
-    const d = await r.json();
-    if (d.currency && d.currency[0]) {
-      usdBrl = d.currency[0].bidPrice || usdBrl;
+    const d = await brapiGet('v2/currency?currency=USD-BRL');
+    if (d.currency && d.currency[0]) usdBrl = d.currency[0].bidPrice || usdBrl;
+  } catch(e) {
+    console.warn('Câmbio fallback:', usdBrl);
+  }
+}
+
+// ══════════════════════════════════════════════
+// COTAÇÕES — todos os ativos via brapi
+// (brapi suporta tickers BR e US no mesmo endpoint)
+// ══════════════════════════════════════════════
+async function fetchCotacoes() {
+  const erros = [];
+
+  // Separa BR e US
+  const brTickers = carteira.filter(a=>a.mercado==='BR').map(a=>a.ticker);
+  const usTickers = carteira.filter(a=>a.mercado==='US').map(a=>a.ticker);
+
+  // Busca BR
+  if (brTickers.length) {
+    try {
+      const d = await brapiGet(`quote/${brTickers.join(',')}?`);
+      if (d.results) {
+        d.results.forEach(item => {
+          precos[item.symbol] = {
+            preco: item.regularMarketPrice,
+            var:   item.regularMarketChangePercent || 0,
+            moeda: 'BRL'
+          };
+        });
+      }
+    } catch(e) {
+      erros.push('BR');
+      brTickers.forEach(t => {
+        const a = carteira.find(x=>x.ticker===t);
+        if (!precos[t] && a) precos[t] = {preco:a.pmedio, var:0, moeda:'BRL'};
+      });
     }
-  } catch(e) {
-    console.warn('Câmbio não obtido, usando fallback:', usdBrl);
   }
+
+  // Busca US
+  if (usTickers.length) {
+    try {
+      const d = await brapiGet(`quote/${usTickers.join(',')}?`);
+      if (d.results) {
+        d.results.forEach(item => {
+          precos[item.symbol] = {
+            preco: item.regularMarketPrice,
+            var:   item.regularMarketChangePercent || 0,
+            moeda: 'USD'
+          };
+        });
+      }
+    } catch(e) {
+      erros.push('US');
+      usTickers.forEach(t => {
+        const a = carteira.find(x=>x.ticker===t);
+        if (!precos[t] && a) precos[t] = {preco:a.pmedio, var:0, moeda:'USD'};
+      });
+    }
+  }
+
+  return erros;
 }
 
 // ══════════════════════════════════════════════
-// BUSCA COTAÇÕES — BRASIL (brapi.dev)
-// ══════════════════════════════════════════════
-async function fetchBR() {
-  const brAtivos = carteira.filter(a => a.mercado === 'BR');
-  if (!brAtivos.length) return;
-  const tickers = brAtivos.map(a => a.ticker).join(',');
-  try {
-    const r = await fetch(`https://brapi.dev/api/quote/${tickers}?token=${BRAPI_TOKEN}`);
-    const d = await r.json();
-    if (!d.results) throw new Error(d.message || 'Erro brapi');
-    d.results.forEach(item => {
-      precos[item.symbol] = {
-        preco: item.regularMarketPrice,
-        var:   item.regularMarketChangePercent || 0,
-        moeda: 'BRL'
-      };
-    });
-  } catch(e) {
-    console.error('Erro BR:', e);
-    // fallback: mantém último preço ou usa pmedio
-    brAtivos.forEach(a => {
-      if (!precos[a.ticker]) precos[a.ticker] = {preco:a.pmedio, var:0, moeda:'BRL'};
-    });
-    showError('⚠ Cotações BR não atualizadas (usando último valor). Verifique o token brapi.dev.');
-  }
-}
-
-// ══════════════════════════════════════════════
-// BUSCA COTAÇÕES — EUA (Yahoo Finance via brapi)
-// ══════════════════════════════════════════════
-async function fetchUS() {
-  const usAtivos = carteira.filter(a => a.mercado === 'US');
-  if (!usAtivos.length) return;
-  const tickers = usAtivos.map(a => a.ticker).join(',');
-  try {
-    const r = await fetch(`https://brapi.dev/api/quote/${tickers}?token=${BRAPI_TOKEN}`);
-    const d = await r.json();
-    if (!d.results) throw new Error(d.message || 'Erro brapi US');
-    d.results.forEach(item => {
-      precos[item.symbol] = {
-        preco: item.regularMarketPrice,
-        var:   item.regularMarketChangePercent || 0,
-        moeda: 'USD'
-      };
-    });
-  } catch(e) {
-    console.error('Erro US:', e);
-    usAtivos.forEach(a => {
-      if (!precos[a.ticker]) precos[a.ticker] = {preco:a.pmedio, var:0, moeda:'USD'};
-    });
-  }
-}
-
-// ══════════════════════════════════════════════
-// CONVERTE PREÇO PARA BRL
+// CONVERSÃO PARA BRL
 // ══════════════════════════════════════════════
 function toBRL(ativo) {
   const p = precos[ativo.ticker];
   if (!p) return ativo.pmedio;
   return p.moeda === 'USD' ? p.preco * usdBrl : p.preco;
 }
-
 function pmedioEmBRL(ativo) {
   return ativo.mercado === 'US' ? ativo.pmedio * usdBrl : ativo.pmedio;
 }
@@ -332,7 +341,7 @@ function calcMetrics() {
   let pat=0, custo=0, divs=0, varDia=0;
   const tipos = new Set();
   carteira.forEach(a => {
-    const p = precos[a.ticker] || {preco:a.pmedio, var:0, moeda: a.mercado==='US'?'USD':'BRL'};
+    const p = precos[a.ticker] || {preco:a.pmedio, var:0, moeda:a.mercado==='US'?'USD':'BRL'};
     const valBRL   = a.qtd * toBRL(a);
     const custoBRL = a.qtd * pmedioEmBRL(a);
     pat    += valBRL;
@@ -341,19 +350,19 @@ function calcMetrics() {
     varDia += valBRL * (p.var/100);
     tipos.add(a.tipo);
   });
-  const res     = pat - custo;
-  const resPct  = (res/custo)*100;
-  const varPct  = (varDia/pat)*100;
+  const res    = pat - custo;
+  const resPct = (res/custo)*100;
+  const varPct = (varDia/pat)*100;
 
-  document.getElementById('m-pat').textContent   = R(pat);
-  document.getElementById('m-vardia').innerHTML  = `<span class="${cls(varDia)}">${R(varDia)} hoje (${P(varPct)})</span>`;
-  document.getElementById('m-res').textContent   = R(res);
-  document.getElementById('m-res').className     = 'metric-value '+cls(res);
-  document.getElementById('m-respct').innerHTML  = `<span class="${cls(res)}">${P(resPct)} desde a compra</span>`;
-  document.getElementById('m-div').textContent   = R(divs);
-  document.getElementById('m-count').textContent = carteira.length;
+  document.getElementById('m-pat').textContent  = R(pat);
+  document.getElementById('m-vardia').innerHTML = `<span class="${cls(varDia)}">${R(varDia)} hoje (${P(varPct)})</span>`;
+  document.getElementById('m-res').textContent  = R(res);
+  document.getElementById('m-res').className    = 'metric-value '+cls(res);
+  document.getElementById('m-respct').innerHTML = `<span class="${cls(res)}">${P(resPct)} desde a compra</span>`;
+  document.getElementById('m-div').textContent  = R(divs);
+  document.getElementById('m-count').textContent= carteira.length;
   const tagNomes = {acao:'Ações',fii:'FIIs',etf:'ETFs',renda:'Renda Fixa'};
-  document.getElementById('m-tipos').textContent = [...tipos].map(t=>tagNomes[t]).join(', ');
+  document.getElementById('m-tipos').textContent= [...tipos].map(t=>tagNomes[t]).join(', ');
   return pat;
 }
 
@@ -364,19 +373,19 @@ function buildTable(pat) {
   const tagLabel = {acao:'Ação',fii:'FII',etf:'ETF',renda:'Renda Fixa'};
   let html = '';
   carteira.forEach((a,i) => {
-    const p       = precos[a.ticker] || {preco:a.pmedio, var:0, moeda:a.mercado==='US'?'USD':'BRL'};
-    const valBRL  = a.qtd * toBRL(a);
-    const cstBRL  = a.qtd * pmedioEmBRL(a);
-    const res     = valBRL - cstBRL;
-    const resPct  = (res/cstBRL)*100;
-    const peso    = (valBRL/pat)*100;
+    const p      = precos[a.ticker] || {preco:a.pmedio, var:0, moeda:a.mercado==='US'?'USD':'BRL'};
+    const valBRL = a.qtd * toBRL(a);
+    const cstBRL = a.qtd * pmedioEmBRL(a);
+    const res    = valBRL - cstBRL;
+    const resPct = (res/cstBRL)*100;
+    const peso   = (valBRL/pat)*100;
     const precoFmt = p.moeda==='USD'
       ? `${USD(p.preco)} <span style="font-size:10px;color:var(--text3)">(${R(p.preco*usdBrl)})</span>`
       : R(p.preco);
     const pmFmt = a.mercado==='US' ? USD(a.pmedio) : R(a.pmedio);
-    const mercadoBadge = a.mercado==='US' ? ' <span class="tag tag-us" style="margin-left:4px">US</span>' : '';
+    const usBadge = a.mercado==='US' ? ' <span class="tag tag-us" style="margin-left:4px">US</span>' : '';
     html += `<tr>
-      <td><span class="ticker">${a.ticker}</span>${mercadoBadge}<div class="nome">${a.nome}</div></td>
+      <td><span class="ticker">${a.ticker}</span>${usBadge}<div class="nome">${a.nome}</div></td>
       <td><span class="tag tag-${a.tipo}">${tagLabel[a.tipo]}</span></td>
       <td>${a.qtd.toLocaleString('pt-BR')}</td>
       <td style="color:var(--text2)">${pmFmt}</td>
@@ -416,11 +425,11 @@ function buildCharts(pat) {
     }
   });
 
-  const tipos  = {acao:0,fii:0,etf:0,renda:0};
+  const tipos = {acao:0,fii:0,etf:0,renda:0};
   carteira.forEach(a => { tipos[a.tipo] += a.qtd * toBRL(a); });
-  const cores  = ['#4f8ef7','#36d399','#fbbf24','#c084fc'];
-  const nomes  = ['Ações','FIIs','ETFs','Renda Fixa'];
-  const vals   = Object.values(tipos);
+  const cores = ['#4f8ef7','#36d399','#fbbf24','#c084fc'];
+  const nomes = ['Ações','FIIs','ETFs','Renda Fixa'];
+  const vals  = Object.values(tipos);
 
   const ctx2 = document.getElementById('chartAloc').getContext('2d');
   if(alocChart) alocChart.destroy();
@@ -470,23 +479,29 @@ function removeAtivo(i) {
 // ══════════════════════════════════════════════
 async function refresh() {
   setStatus('loading','Buscando cotações...');
-  showError('');
+  showBanner('info','');
+  showBanner('error','');
   document.getElementById('btn-refresh').disabled = true;
+
   try {
-    await Promise.all([fetchCambio(), fetchBR(), fetchUS()]);
+    await fetchCambio();
+    const erros = await fetchCotacoes();
     const pat = calcMetrics();
     buildTable(pat);
     buildCharts(pat);
     const t = new Date();
     setStatus('ok', `Atualizado às ${t.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})} · USD/BRL ${usdBrl.toFixed(2)}`);
+    if (erros.length) {
+      showBanner('error', `⚠ Cotações ${erros.join(' e ')} usando último valor salvo. Tente atualizar novamente.`);
+    }
   } catch(e) {
     setStatus('error','Erro ao buscar cotações');
+    showBanner('error','Não foi possível buscar as cotações. Verifique sua conexão e tente novamente.');
     console.error(e);
   }
   document.getElementById('btn-refresh').disabled = false;
 }
 
-// Inicia e auto-atualiza a cada 5 minutos
 refresh();
 setInterval(refresh, 5 * 60 * 1000);
 </script>
