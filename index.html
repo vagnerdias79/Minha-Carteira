@@ -87,26 +87,10 @@ input:focus,select:focus{border-color:var(--accent)}
   <div class="error-banner" id="error-banner"></div>
 
   <div class="metrics">
-    <div class="metric">
-      <div class="metric-label">Patrimônio total</div>
-      <div class="metric-value" id="m-pat">—</div>
-      <div class="metric-sub" id="m-vardia">—</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Resultado total</div>
-      <div class="metric-value" id="m-res">—</div>
-      <div class="metric-sub" id="m-respct">—</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Dividendos no ano</div>
-      <div class="metric-value pos" id="m-div">—</div>
-      <div class="metric-sub">proventos recebidos</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Ativos na carteira</div>
-      <div class="metric-value" id="m-count">—</div>
-      <div class="metric-sub" id="m-tipos">—</div>
-    </div>
+    <div class="metric"><div class="metric-label">Patrimônio total</div><div class="metric-value" id="m-pat">—</div><div class="metric-sub" id="m-vardia">—</div></div>
+    <div class="metric"><div class="metric-label">Resultado total</div><div class="metric-value" id="m-res">—</div><div class="metric-sub" id="m-respct">—</div></div>
+    <div class="metric"><div class="metric-label">Dividendos no ano</div><div class="metric-value pos" id="m-div">—</div><div class="metric-sub">proventos recebidos</div></div>
+    <div class="metric"><div class="metric-label">Ativos na carteira</div><div class="metric-value" id="m-count">—</div><div class="metric-sub" id="m-tipos">—</div></div>
   </div>
 
   <div class="charts-row">
@@ -126,10 +110,7 @@ input:focus,select:focus{border-color:var(--accent)}
     <div class="table-wrap">
       <table>
         <thead>
-          <tr>
-            <th>Ativo</th><th>Tipo</th><th>Qtd</th><th>Preço médio</th>
-            <th>Cotação atual</th><th>Var. hoje</th><th>Resultado</th><th>Peso</th><th></th>
-          </tr>
+          <tr><th>Ativo</th><th>Tipo</th><th>Qtd</th><th>Preço médio</th><th>Cotação atual</th><th>Var. hoje</th><th>Resultado</th><th>Peso</th><th></th></tr>
         </thead>
         <tbody id="tbody"></tbody>
       </table>
@@ -140,55 +121,20 @@ input:focus,select:focus{border-color:var(--accent)}
 <div class="modal-bg" id="modal">
   <div class="modal">
     <div class="modal-title">Adicionar ativo</div>
-    <div class="form-row">
-      <label class="form-label">Ticker</label>
-      <input type="text" id="f-ticker" placeholder="Ex: PETR4, AAPL, VOO">
-      <div class="form-hint">BR: ticker da B3 (PETR4). EUA: ticker americano (AAPL, VOO).</div>
-    </div>
-    <div class="form-row">
-      <label class="form-label">Nome</label>
-      <input type="text" id="f-nome" placeholder="Nome do ativo">
-    </div>
-    <div class="form-row">
-      <label class="form-label">Mercado</label>
-      <select id="f-mercado">
-        <option value="BR">Brasil (B3)</option>
-        <option value="US">Estados Unidos (NYSE/NASDAQ)</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <label class="form-label">Tipo</label>
-      <select id="f-tipo">
-        <option value="acao">Ação</option>
-        <option value="fii">FII</option>
-        <option value="etf">ETF</option>
-        <option value="renda">Renda Fixa</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <label class="form-label">Quantidade</label>
-      <input type="number" id="f-qtd" placeholder="100" min="1">
-    </div>
-    <div class="form-row">
-      <label class="form-label">Preço médio</label>
-      <input type="number" id="f-pm" placeholder="0.00" step="0.01" min="0">
-      <div class="form-hint">BR: em R$. EUA: em US$.</div>
-    </div>
-    <div class="form-row">
-      <label class="form-label">Dividendos recebidos no ano (opcional)</label>
-      <input type="number" id="f-div" placeholder="0.00" step="0.01" min="0">
-    </div>
-    <div class="form-actions">
-      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
-      <button class="btn-primary" onclick="addAtivo()">Adicionar</button>
-    </div>
+    <div class="form-row"><label class="form-label">Ticker</label><input type="text" id="f-ticker" placeholder="Ex: PETR4, AAPL, VOO"><div class="form-hint">BR: ticker da B3 (PETR4). EUA: ticker americano (AAPL, VOO).</div></div>
+    <div class="form-row"><label class="form-label">Nome</label><input type="text" id="f-nome" placeholder="Nome do ativo"></div>
+    <div class="form-row"><label class="form-label">Mercado</label><select id="f-mercado"><option value="BR">Brasil (B3)</option><option value="US">Estados Unidos (NYSE/NASDAQ)</option></select></div>
+    <div class="form-row"><label class="form-label">Tipo</label><select id="f-tipo"><option value="acao">Ação</option><option value="fii">FII</option><option value="etf">ETF</option><option value="renda">Renda Fixa</option></select></div>
+    <div class="form-row"><label class="form-label">Quantidade</label><input type="number" id="f-qtd" placeholder="100" min="1"></div>
+    <div class="form-row"><label class="form-label">Preço médio</label><input type="number" id="f-pm" placeholder="0.00" step="0.01" min="0"><div class="form-hint">BR: em R$. EUA: em US$.</div></div>
+    <div class="form-row"><label class="form-label">Dividendos recebidos no ano (opcional)</label><input type="number" id="f-div" placeholder="0.00" step="0.01" min="0"></div>
+    <div class="form-actions"><button class="btn-secondary" onclick="closeModal()">Cancelar</button><button class="btn-primary" onclick="addAtivo()">Adicionar</button></div>
   </div>
 </div>
 
 <script>
 const BRAPI_TOKEN = 'd5EMVrjrWTQMD6crf7PH4N';
-// Proxy CORS gratuito para Yahoo Finance
-const CORS_PROXY = 'https://api.allorigins.win/get?url=';
+const CORS_PROXY  = 'https://api.allorigins.win/get?url=';
 
 let carteira = [
   {ticker:'PETR4',  nome:'Petrobras PN',        tipo:'acao', mercado:'BR', qtd:200, pmedio:36.50, div:320},
@@ -202,7 +148,7 @@ let carteira = [
 ];
 
 let precos = {};
-let usdBrl = 5.75;
+let usdBrl  = 5.75;
 let evolChart, alocChart;
 const evolData   = [68200,71400,73100,70800,75500,78200,76900,80100,83400,85600,88200,91750];
 const evolLabels = ['Jul/24','Ago','Set','Out','Nov','Dez','Jan/25','Fev','Mar','Abr','Mai','Jun'];
@@ -212,113 +158,103 @@ const USD = v => v.toLocaleString('en-US',{style:'currency',currency:'USD'});
 const P   = v => (v>=0?'+':'')+v.toFixed(2)+'%';
 const cls = v => v>=0?'pos':'neg';
 
-function setStatus(state, msg) {
-  const dot = document.getElementById('status-dot');
-  dot.className = 'dot'+(state==='loading'?' loading':state==='error'?' error':'');
-  document.getElementById('update-label').textContent = msg;
+function setStatus(state,msg){
+  document.getElementById('status-dot').className='dot'+(state==='loading'?' loading':state==='error'?' error':'');
+  document.getElementById('update-label').textContent=msg;
 }
-function showError(msg) {
-  const b = document.getElementById('error-banner');
-  b.textContent = msg; b.style.display = msg ? 'block' : 'none';
-}
-
-// ── CÂMBIO via brapi ──────────────────────────
-async function fetchCambio() {
-  try {
-    const r = await fetch(`https://brapi.dev/api/v2/currency?currency=USD-BRL&token=${BRAPI_TOKEN}`);
-    const d = await r.json();
-    if (d.currency?.[0]) usdBrl = d.currency[0].bidPrice || usdBrl;
-  } catch(e) { console.warn('Câmbio fallback'); }
+function showError(msg){
+  const b=document.getElementById('error-banner');
+  b.textContent=msg; b.style.display=msg?'block':'none';
 }
 
-// ── BRASIL via brapi ──────────────────────────
-async function fetchBR() {
-  const ativos = carteira.filter(a => a.mercado === 'BR');
-  if (!ativos.length) return;
-  const tickers = ativos.map(a => a.ticker).join(',');
-  try {
-    const r = await fetch(`https://brapi.dev/api/quote/${tickers}?token=${BRAPI_TOKEN}`);
-    if (!r.ok) throw new Error('HTTP '+r.status);
-    const d = await r.json();
-    if (!d.results) throw new Error('sem results');
-    d.results.forEach(item => {
-      precos[item.symbol] = {preco: item.regularMarketPrice, var: item.regularMarketChangePercent||0, moeda:'BRL'};
-    });
-  } catch(e) {
-    console.error('fetchBR:', e);
-    ativos.forEach(a => { if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:'BRL'}; });
-    throw e;
+// ── CÂMBIO ───────────────────────────────────
+async function fetchCambio(){
+  try{
+    const r=await fetch(`https://brapi.dev/api/v2/currency?currency=USD-BRL&token=${BRAPI_TOKEN}`);
+    const d=await r.json();
+    if(d.currency?.[0]) usdBrl=d.currency[0].bidPrice||usdBrl;
+  }catch(e){console.warn('câmbio fallback');}
+}
+
+// ── BRASIL — 1 ativo por vez (limite plano grátis) ──
+async function fetchBR(){
+  const ativos=carteira.filter(a=>a.mercado==='BR');
+  let erros=0;
+  for(const a of ativos){
+    try{
+      const r=await fetch(`https://brapi.dev/api/quote/${a.ticker}?token=${BRAPI_TOKEN}`);
+      const d=await r.json();
+      if(d.results?.[0]){
+        const item=d.results[0];
+        precos[a.ticker]={preco:item.regularMarketPrice, var:item.regularMarketChangePercent||0, moeda:'BRL'};
+      }
+    }catch(e){
+      erros++;
+      if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:'BRL'};
+    }
+    // Pequena pausa para não sobrecarregar a API
+    await new Promise(res=>setTimeout(res,300));
   }
+  if(erros===ativos.length) throw new Error('todos BR falharam');
 }
 
-// ── EUA via Yahoo Finance (com proxy CORS) ────
-async function fetchUS() {
-  const ativos = carteira.filter(a => a.mercado === 'US');
-  if (!ativos.length) return;
-
-  for (const a of ativos) {
-    try {
-      const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${a.ticker}?interval=1d&range=1d`;
-      const proxyUrl = CORS_PROXY + encodeURIComponent(yahooUrl);
-      const r = await fetch(proxyUrl);
-      const wrapper = await r.json();
-      const d = JSON.parse(wrapper.contents);
-      const meta = d.chart.result[0].meta;
-      const preco = meta.regularMarketPrice;
-      const prev  = meta.previousClose || meta.chartPreviousClose;
-      const varPct = prev ? ((preco - prev) / prev) * 100 : 0;
-      precos[a.ticker] = {preco, var: varPct, moeda:'USD'};
-    } catch(e) {
-      console.error('fetchUS '+a.ticker+':', e);
-      if (!precos[a.ticker]) precos[a.ticker] = {preco:a.pmedio, var:0, moeda:'USD'};
+// ── EUA — Yahoo Finance via proxy ─────────────
+async function fetchUS(){
+  const ativos=carteira.filter(a=>a.mercado==='US');
+  for(const a of ativos){
+    try{
+      const yahooUrl=`https://query1.finance.yahoo.com/v8/finance/chart/${a.ticker}?interval=1d&range=1d`;
+      const r=await fetch(CORS_PROXY+encodeURIComponent(yahooUrl));
+      const w=await r.json();
+      const d=JSON.parse(w.contents);
+      const meta=d.chart.result[0].meta;
+      const preco=meta.regularMarketPrice;
+      const prev=meta.previousClose||meta.chartPreviousClose;
+      precos[a.ticker]={preco, var:prev?((preco-prev)/prev)*100:0, moeda:'USD'};
+    }catch(e){
+      if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:'USD'};
     }
   }
 }
 
-// ── CONVERSÃO ────────────────────────────────
-function toBRL(ativo) {
-  const p = precos[ativo.ticker];
-  if (!p) return ativo.pmedio;
-  return p.moeda === 'USD' ? p.preco * usdBrl : p.preco;
+// ── CONVERSÃO ─────────────────────────────────
+function toBRL(a){
+  const p=precos[a.ticker];
+  if(!p) return a.pmedio;
+  return p.moeda==='USD'?p.preco*usdBrl:p.preco;
 }
-function pmedioEmBRL(ativo) {
-  return ativo.mercado === 'US' ? ativo.pmedio * usdBrl : ativo.pmedio;
-}
+function pmedioEmBRL(a){ return a.mercado==='US'?a.pmedio*usdBrl:a.pmedio; }
 
-// ── MÉTRICAS ─────────────────────────────────
-function calcMetrics() {
+// ── MÉTRICAS ──────────────────────────────────
+function calcMetrics(){
   let pat=0,custo=0,divs=0,varDia=0;
-  const tipos = new Set();
-  carteira.forEach(a => {
-    const p = precos[a.ticker]||{preco:a.pmedio,var:0,moeda:a.mercado==='US'?'USD':'BRL'};
-    const valBRL  = a.qtd * toBRL(a);
-    const cstBRL  = a.qtd * pmedioEmBRL(a);
-    pat    += valBRL; custo += cstBRL;
-    divs   += a.div||0;
-    varDia += valBRL*(p.var/100);
-    tipos.add(a.tipo);
+  const tipos=new Set();
+  carteira.forEach(a=>{
+    const p=precos[a.ticker]||{preco:a.pmedio,var:0,moeda:a.mercado==='US'?'USD':'BRL'};
+    const val=a.qtd*toBRL(a), cst=a.qtd*pmedioEmBRL(a);
+    pat+=val; custo+=cst; divs+=a.div||0; varDia+=val*(p.var/100); tipos.add(a.tipo);
   });
   const res=pat-custo, resPct=(res/custo)*100, varPct=(varDia/pat)*100;
-  document.getElementById('m-pat').textContent  = R(pat);
-  document.getElementById('m-vardia').innerHTML = `<span class="${cls(varDia)}">${R(varDia)} hoje (${P(varPct)})</span>`;
-  document.getElementById('m-res').textContent  = R(res);
-  document.getElementById('m-res').className    = 'metric-value '+cls(res);
-  document.getElementById('m-respct').innerHTML = `<span class="${cls(res)}">${P(resPct)} desde a compra</span>`;
-  document.getElementById('m-div').textContent  = R(divs);
-  document.getElementById('m-count').textContent= carteira.length;
+  document.getElementById('m-pat').textContent=R(pat);
+  document.getElementById('m-vardia').innerHTML=`<span class="${cls(varDia)}">${R(varDia)} hoje (${P(varPct)})</span>`;
+  document.getElementById('m-res').textContent=R(res);
+  document.getElementById('m-res').className='metric-value '+cls(res);
+  document.getElementById('m-respct').innerHTML=`<span class="${cls(res)}">${P(resPct)} desde a compra</span>`;
+  document.getElementById('m-div').textContent=R(divs);
+  document.getElementById('m-count').textContent=carteira.length;
   const tn={acao:'Ações',fii:'FIIs',etf:'ETFs',renda:'Renda Fixa'};
   document.getElementById('m-tipos').textContent=[...tipos].map(t=>tn[t]).join(', ');
   return pat;
 }
 
-// ── TABELA ───────────────────────────────────
-function buildTable(pat) {
+// ── TABELA ────────────────────────────────────
+function buildTable(pat){
   const tl={acao:'Ação',fii:'FII',etf:'ETF',renda:'Renda Fixa'};
   let html='';
   carteira.forEach((a,i)=>{
     const p=precos[a.ticker]||{preco:a.pmedio,var:0,moeda:a.mercado==='US'?'USD':'BRL'};
-    const val=a.qtd*toBRL(a), cst=a.qtd*pmedioEmBRL(a);
-    const res=val-cst, resPct=(res/cst)*100, peso=(val/pat)*100;
+    const val=a.qtd*toBRL(a),cst=a.qtd*pmedioEmBRL(a);
+    const res=val-cst,resPct=(res/cst)*100,peso=(val/pat)*100;
     const precoFmt=p.moeda==='USD'
       ?`${USD(p.preco)} <span style="font-size:10px;color:var(--text3)">(${R(p.preco*usdBrl)})</span>`
       :R(p.preco);
@@ -340,8 +276,8 @@ function buildTable(pat) {
   document.getElementById('tbody').innerHTML=html;
 }
 
-// ── GRÁFICOS ─────────────────────────────────
-function buildCharts(pat) {
+// ── GRÁFICOS ──────────────────────────────────
+function buildCharts(pat){
   const ctx1=document.getElementById('chartEvol').getContext('2d');
   if(evolChart) evolChart.destroy();
   evolChart=new Chart(ctx1,{type:'line',data:{labels:evolLabels,datasets:[{
@@ -367,7 +303,7 @@ function buildCharts(pat) {
   document.getElementById('aloc-leg').innerHTML=leg;
 }
 
-// ── MODAL ────────────────────────────────────
+// ── MODAL ─────────────────────────────────────
 function openModal(){document.getElementById('modal').classList.add('open')}
 function closeModal(){document.getElementById('modal').classList.remove('open')}
 function addAtivo(){
@@ -386,22 +322,22 @@ function removeAtivo(i){
   if(confirm(`Remover ${carteira[i].ticker} da carteira?`)){carteira.splice(i,1);refresh();}
 }
 
-// ── REFRESH ──────────────────────────────────
-async function refresh() {
+// ── REFRESH ───────────────────────────────────
+async function refresh(){
   setStatus('loading','Buscando cotações...');
   showError('');
   document.getElementById('btn-refresh').disabled=true;
-  const erros=[];
-  try { await fetchCambio(); } catch(e){}
-  try { await fetchBR(); } catch(e){ erros.push('BR'); }
-  try { await fetchUS(); } catch(e){ erros.push('US'); }
+  let erroBR=false;
+  try{ await fetchCambio(); }catch(e){}
+  try{ await fetchBR(); }catch(e){ erroBR=true; }
+  try{ await fetchUS(); }catch(e){}
   const pat=calcMetrics();
   buildTable(pat);
   buildCharts(pat);
   const t=new Date();
-  if(erros.length){
-    setStatus('error',`Cotações ${erros.join('/')} indisponíveis`);
-    showError(`⚠ Não foi possível buscar cotações de: ${erros.join(', ')}. Usando último valor salvo.`);
+  if(erroBR){
+    setStatus('error','Erro ao buscar cotações BR');
+    showError('⚠ Não foi possível buscar cotações BR. Usando último valor salvo.');
   } else {
     setStatus('ok',`Atualizado às ${t.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})} · USD/BRL ${usdBrl.toFixed(2)}`);
   }
@@ -409,7 +345,7 @@ async function refresh() {
 }
 
 refresh();
-setInterval(refresh, 5*60*1000);
+setInterval(refresh,5*60*1000);
 </script>
 </body>
 </html>
