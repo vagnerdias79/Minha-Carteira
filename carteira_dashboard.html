@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minha Carteira</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;background:#0f1117;color:#e8eaf0;min-height:100vh}
+:root{
+  --bg0:#0f1117;--bg1:#161b27;--bg2:#1e2535;--bg3:#262e42;
+  --accent:#4f8ef7;--accent2:#7bb3ff;
+  --green:#36d399;--red:#f87272;--yellow:#fbbf24;--purple:#c084fc;
+  --text:#e8eaf0;--text2:#8b95b0;--text3:#4a5270;
+  --border:#2a3350;
+}
+
+/* HEADER */
+.header{background:var(--bg1);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.logo{font-size:16px;font-weight:600;letter-spacing:-0.3px}
+.logo span{color:var(--accent)}
+.header-right{display:flex;align-items:center;gap:16px}
+.live-badge{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:12px;padding:6px 14px;border-radius:7px;cursor:pointer;transition:all .2s;font-family:inherit}
+.btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* LAYOUT */
+.main{padding:20px 24px;display:flex;flex-direction:column;gap:18px;max-width:1200px;margin:0 auto}
+
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.metric{background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.metric-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.metric-value{font-size:24px;font-weight:600;letter-spacing:-0.5px}
+.metric-sub{font-size:12px;margin-top:5px;color:var(--text2)}
+.pos{color:var(--green)}.neg{color:var(--red)}
+
+/* CHARTS */
+.charts-row{display:grid;grid-template-columns:1fr 300px;gap:14px}
+.panel{background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:18px}
+.panel-title{font-size:11px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px}
+.chart-wrap{height:190px;position:relative}
+
+/* TABLE */
+.table-wrap{background:var(--bg1);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--bg2);color:var(--text2);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:11px 16px;text-align:left;white-space:nowrap}
+td{padding:13px 16px;border-top:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:rgba(79,142,247,.04)}
+.ticker{background:var(--bg3);color:var(--accent2);font-size:11px;font-weight:700;padding:3px 9px;border-radius:5px;letter-spacing:.03em}
+.nome{font-size:11px;color:var(--text2);margin-top:3px}
+.tag{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;letter-spacing:.02em}
+.tag-acao{background:#1a2a4a;color:#7bb3ff}
+.tag-fii{background:#1a3a2a;color:#36d399}
+.tag-etf{background:#2a2a1a;color:#fbbf24}
+.tag-renda{background:#2a1a3a;color:#c084fc}
+.bar-track{background:var(--bg3);border-radius:4px;height:4px;width:72px;margin-top:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;background:var(--accent)}
+.aloc-item{display:flex;align-items:center;justify-content:space-between;font-size:12px;margin-bottom:7px}
+.aloc-dot{width:8px;height:8px;border-radius:50%;margin-right:7px;flex-shrink:0}
+.aloc-left{display:flex;align-items:center;color:var(--text2)}
+
+/* MODAL ATIVO */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:50;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg1);border:1px solid var(--border);border-radius:16px;padding:24px;width:380px;max-width:90vw}
+.modal-title{font-size:15px;font-weight:600;margin-bottom:16px}
+.form-row{margin-bottom:12px}
+.form-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;display:block}
+input[type=text],input[type=number],select{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-size:13px;font-family:inherit;outline:none}
+input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--accent)}
+.form-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+.btn-primary{background:var(--accent);color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500}
+.btn-secondary{background:transparent;color:var(--text2);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
+
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">minha <span>carteira</span></div>
+  <div class="header-right">
+    <div class="live-badge"><div class="dot"></div><span id="update-label">Simulando cotações em tempo real</span></div>
+    <button class="btn" onclick="openModal()">+ Adicionar ativo</button>
+    <button class="btn" onclick="refresh()">↻ Atualizar</button>
+  </div>
+</div>
+
+<div class="main">
+  <!-- MÉTRICAS -->
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label">Patrimônio total</div>
+      <div class="metric-value" id="m-pat">—</div>
+      <div class="metric-sub" id="m-vardia">—</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Resultado total</div>
+      <div class="metric-value" id="m-res">—</div>
+      <div class="metric-sub" id="m-respct">—</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Dividendos no ano</div>
+      <div class="metric-value pos" id="m-div">—</div>
+      <div class="metric-sub">proventos recebidos</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Ativos na carteira</div>
+      <div class="metric-value" id="m-count">—</div>
+      <div class="metric-sub" id="m-tipos">—</div>
+    </div>
+  </div>
+
+  <!-- GRÁFICOS -->
+  <div class="charts-row">
+    <div class="panel">
+      <div class="panel-title">Evolução do patrimônio — últimos 12 meses</div>
+      <div class="chart-wrap"><canvas id="chartEvol"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Alocação por tipo</div>
+      <div class="chart-wrap" style="height:160px"><canvas id="chartAloc"></canvas></div>
+      <div id="aloc-leg" style="margin-top:14px"></div>
+    </div>
+  </div>
+
+  <!-- TABELA -->
+  <div>
+    <div class="section-header" style="margin-bottom:12px">
+      <span style="font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;font-weight:500">Ativos</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ativo</th>
+            <th>Tipo</th>
+            <th>Quantidade</th>
+            <th>Preço médio</th>
+            <th>Cotação atual</th>
+            <th>Var. hoje</th>
+            <th>Resultado</th>
+            <th>Peso</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ADICIONAR ATIVO -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-title">Adicionar ativo</div>
+    <div class="form-row">
+      <label class="form-label">Ticker</label>
+      <input type="text" id="f-ticker" placeholder="Ex: PETR4, KNRI11, BOVA11" style="text-transform:uppercase">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Nome</label>
+      <input type="text" id="f-nome" placeholder="Nome do ativo">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Tipo</label>
+      <select id="f-tipo">
+        <option value="acao">Ação</option>
+        <option value="fii">FII</option>
+        <option value="etf">ETF</option>
+        <option value="renda">Renda Fixa</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Quantidade</label>
+      <input type="number" id="f-qtd" placeholder="100" min="1">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Preço médio (R$)</label>
+      <input type="number" id="f-pm" placeholder="0,00" step="0.01" min="0">
+    </div>
+    <div class="form-actions">
+      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn-primary" onclick="addAtivo()">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ──────────────────────────────────────────────
+// CARTEIRA — edite aqui seus ativos reais
+// ──────────────────────────────────────────────
+let carteira = [
+  {ticker:'PETR4',  nome:'Petrobras PN',         tipo:'acao', qtd:200, pmedio:36.50, div:320},
+  {ticker:'VALE3',  nome:'Vale ON',               tipo:'acao', qtd:100, pmedio:68.20, div:180},
+  {ticker:'ITUB4',  nome:'Itaú Unibanco PN',      tipo:'acao', qtd:150, pmedio:32.80, div:90},
+  {ticker:'MXRF11', nome:'Maxi Renda FII',        tipo:'fii',  qtd:300, pmedio:9.85,  div:540},
+  {ticker:'KNRI11', nome:'Kinea Renda Imob.',     tipo:'fii',  qtd:80,  pmedio:143.00,div:220},
+  {ticker:'BOVA11', nome:'iShares Ibovespa ETF',  tipo:'etf',  qtd:50,  pmedio:121.00,div:60},
+  {ticker:'TESO29', nome:'Tesouro Selic 2029',    tipo:'renda',qtd:1,   pmedio:14820, div:0},
+];
+
+// ──────────────────────────────────────────────
+// COTAÇÕES SIMULADAS (substitua por API real)
+// Para usar cotações reais, veja os comentários
+// no final deste arquivo.
+// ──────────────────────────────────────────────
+const BASE = {
+  PETR4:38.72, VALE3:61.40, ITUB4:35.15,
+  MXRF11:10.22, KNRI11:149.80, BOVA11:128.50, TESO29:15204
+};
+let precos = {};
+
+function simularCotacoes() {
+  carteira.forEach(a => {
+    const base = BASE[a.ticker] || a.pmedio * 1.05;
+    const var_ = (Math.random() - 0.48) * 1.2;
+    const ant  = precos[a.ticker]?.preco || base;
+    const novo = +(ant * (1 + var_/100)).toFixed(2);
+    precos[a.ticker] = { preco: novo, var: +var_.toFixed(2) };
+  });
+}
+
+// ──────────────────────────────────────────────
+// UTILITÁRIOS
+// ──────────────────────────────────────────────
+const R = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const P = v => (v>=0?'+':'')+v.toFixed(2)+'%';
+const cls = v => v>=0?'pos':'neg';
+
+// ──────────────────────────────────────────────
+// MÉTRICAS
+// ──────────────────────────────────────────────
+function calcMetrics() {
+  let pat=0,custo=0,divs=0,varDia=0;
+  const tipos = new Set();
+  carteira.forEach(a => {
+    const p = precos[a.ticker] || {preco:a.pmedio,var:0};
+    pat   += a.qtd * p.preco;
+    custo += a.qtd * a.pmedio;
+    divs  += a.div || 0;
+    varDia += (a.qtd * p.preco * p.var / 100);
+    tipos.add(a.tipo);
+  });
+  const res = pat - custo;
+  const resPct = (res/custo)*100;
+  const varPct = (varDia/pat)*100;
+
+  document.getElementById('m-pat').textContent   = R(pat);
+  document.getElementById('m-vardia').innerHTML  = `<span class="${cls(varDia)}">${R(varDia)} hoje (${P(varPct)})</span>`;
+  document.getElementById('m-res').textContent   = R(res);
+  document.getElementById('m-res').className     = 'metric-value '+cls(res);
+  document.getElementById('m-respct').innerHTML  = `<span class="${cls(res)}">${P(resPct)} desde a compra</span>`;
+  document.getElementById('m-div').textContent   = R(divs);
+  document.getElementById('m-count').textContent = carteira.length;
+  document.getElementById('m-tipos').textContent = [...tipos].map(t=>({acao:'Ações',fii:'FIIs',etf:'ETFs',renda:'Renda Fixa'}[t])).join(', ');
+
+  return pat;
+}
+
+// ──────────────────────────────────────────────
+// TABELA
+// ──────────────────────────────────────────────
+function buildTable(pat) {
+  const tagLabel = {acao:'Ação',fii:'FII',etf:'ETF',renda:'Renda Fixa'};
+  let html = '';
+  carteira.forEach((a,i) => {
+    const p   = precos[a.ticker] || {preco:a.pmedio,var:0};
+    const val = a.qtd * p.preco;
+    const res = val - a.qtd * a.pmedio;
+    const resPct = (res/(a.qtd*a.pmedio))*100;
+    const peso = (val/pat)*100;
+    html += `
+    <tr>
+      <td><span class="ticker">${a.ticker}</span><div class="nome">${a.nome}</div></td>
+      <td><span class="tag tag-${a.tipo}">${tagLabel[a.tipo]}</span></td>
+      <td>${a.qtd.toLocaleString('pt-BR')}</td>
+      <td style="color:var(--text2)">${R(a.pmedio)}</td>
+      <td style="font-weight:600">${R(p.preco)}</td>
+      <td class="${cls(p.var)}" style="font-weight:600">${P(p.var)}</td>
+      <td class="${cls(res)}">${R(res)}<div style="font-size:11px">${P(resPct)}</div></td>
+      <td>
+        <span style="font-size:12px;color:var(--text2)">${peso.toFixed(1)}%</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.min(peso,100)}%"></div></div>
+      </td>
+      <td><button class="btn" onclick="removeAtivo(${i})" style="padding:4px 8px;font-size:11px;color:var(--red);border-color:var(--red)20">✕</button></td>
+    </tr>`;
+  });
+  document.getElementById('tbody').innerHTML = html;
+}
+
+// ──────────────────────────────────────────────
+// GRÁFICOS
+// ──────────────────────────────────────────────
+let evolChart, alocChart;
+const evolData = [68200,71400,73100,70800,75500,78200,76900,80100,83400,85600,88200,91750];
+const evolLabels = ['Jul/24','Ago','Set','Out','Nov','Dez','Jan/25','Fev','Mar','Abr','Mai','Jun'];
+
+function buildCharts(pat) {
+  // Evolução
+  const ctx1 = document.getElementById('chartEvol').getContext('2d');
+  if(evolChart) evolChart.destroy();
+  evolChart = new Chart(ctx1, {
+    type:'line',
+    data:{
+      labels:evolLabels,
+      datasets:[{
+        label:'Patrimônio',data:evolData,
+        borderColor:'#4f8ef7',backgroundColor:'rgba(79,142,247,.07)',
+        fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#4f8ef7',borderWidth:2
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>R(c.parsed.y)}}},
+      scales:{
+        x:{grid:{color:'#1e2535'},ticks:{color:'#8b95b0',font:{size:10}}},
+        y:{grid:{color:'#1e2535'},ticks:{color:'#8b95b0',font:{size:10},callback:v=>'R$'+Math.round(v/1000)+'k'}}
+      }
+    }
+  });
+
+  // Alocação
+  const tipos = {acao:0,fii:0,etf:0,renda:0};
+  carteira.forEach(a => { tipos[a.tipo] += a.qtd*(precos[a.ticker]?.preco||a.pmedio); });
+  const cores = ['#4f8ef7','#36d399','#fbbf24','#c084fc'];
+  const nomes = ['Ações','FIIs','ETFs','Renda Fixa'];
+  const vals  = Object.values(tipos);
+
+  const ctx2 = document.getElementById('chartAloc').getContext('2d');
+  if(alocChart) alocChart.destroy();
+  alocChart = new Chart(ctx2, {
+    type:'doughnut',
+    data:{labels:nomes,datasets:[{data:vals,backgroundColor:cores,borderWidth:0,hoverOffset:4}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'68%',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${((c.parsed/pat)*100).toFixed(1)}%`}}}
+    }
+  });
+
+  let leg='';
+  nomes.forEach((n,i)=>{
+    leg+=`<div class="aloc-item">
+      <div class="aloc-left"><div class="aloc-dot" style="background:${cores[i]}"></div>${n}</div>
+      <span style="font-weight:600">${((vals[i]/pat)*100).toFixed(1)}%</span>
+    </div>`;
+  });
+  document.getElementById('aloc-leg').innerHTML=leg;
+}
+
+// ──────────────────────────────────────────────
+// MODAL ADICIONAR ATIVO
+// ──────────────────────────────────────────────
+function openModal()  { document.getElementById('modal').classList.add('open'); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function addAtivo() {
+  const ticker = document.getElementById('f-ticker').value.trim().toUpperCase();
+  const nome   = document.getElementById('f-nome').value.trim();
+  const tipo   = document.getElementById('f-tipo').value;
+  const qtd    = parseFloat(document.getElementById('f-qtd').value);
+  const pmedio = parseFloat(document.getElementById('f-pm').value);
+  if(!ticker||!nome||!qtd||!pmedio){ alert('Preencha todos os campos.'); return; }
+  carteira.push({ticker,nome,tipo,qtd,pmedio,div:0});
+  BASE[ticker] = pmedio;
+  closeModal();
+  refresh();
+}
+function removeAtivo(i) {
+  if(confirm(`Remover ${carteira[i].ticker} da carteira?`)){
+    carteira.splice(i,1);
+    refresh();
+  }
+}
+
+// ──────────────────────────────────────────────
+// ATUALIZAÇÃO
+// ──────────────────────────────────────────────
+function refresh() {
+  simularCotacoes();
+  const pat = calcMetrics();
+  buildTable(pat);
+  buildCharts(pat);
+  const t = new Date();
+  document.getElementById('update-label').textContent =
+    `Atualizado às ${t.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
+}
+
+refresh();
+// Auto-atualiza a cada 30 segundos (simulando feed de preços)
+setInterval(refresh, 30000);
+
+/*
+════════════════════════════════════════════════════════════
+  COMO CONECTAR COTAÇÕES REAIS (substitua simularCotacoes)
+════════════════════════════════════════════════════════════
+
+  OPÇÃO 1 — brapi.dev (Brasil, gratuito, precisa de cadastro)
+  ──────────────────────────────────────────────────────────
+  const TOKEN = 'SEU_TOKEN_BRAPI';
+  async function buscarCotacoes() {
+    const tickers = carteira.map(a => a.ticker).join(',');
+    const url = `https://brapi.dev/api/quote/${tickers}?token=${TOKEN}`;
+    const res = await fetch(url);
+    const { results } = await res.json();
+    results.forEach(r => {
+      precos[r.symbol] = {
+        preco: r.regularMarketPrice,
+        var:   r.regularMarketChangePercent
+      };
+    });
+  }
+
+  OPÇÃO 2 — Yahoo Finance via proxy (EUA e BR)
+  ─────────────────────────────────────────────
+  async function buscarCotacoes() {
+    for (const a of carteira) {
+      const symbol = a.tipo === 'acao' || a.tipo === 'fii' ? a.ticker+'.SA' : a.ticker;
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`;
+      const r = await fetch(url);
+      const d = await r.json();
+      const meta = d.chart.result[0].meta;
+      precos[a.ticker] = {
+        preco: meta.regularMarketPrice,
+        var:   ((meta.regularMarketPrice - meta.previousClose) / meta.previousClose) * 100
+      };
+    }
+  }
+
+  OPÇÃO 3 — Twelve Data (internacional, freemium)
+  ─────────────────────────────────────────────────
+  https://twelvedata.com — suporte a B3 no plano pago.
+
+  Para usar, substitua simularCotacoes() por buscarCotacoes()
+  e torne refresh() assíncrona: async function refresh() { ... }
+════════════════════════════════════════════════════════════
+*/
+</script>
+</body>
+</html>
