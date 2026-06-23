@@ -252,7 +252,7 @@ input:focus,select:focus{border-color:var(--accent)}
 
 <script>
 const BRAPI_TOKEN = 'd5EMVrjrWTQMD6crf7PH4N';
-const PROXY = 'https://api.allorigins.win/get?url='; // fallback
+
 const STORAGE_KEY = 'carteira-v2';
 
 // ── METAS ────────────────────────────────────
@@ -349,459 +349,51 @@ function getPreco(a){ return precos[a.ticker]||{preco:a.pmedio,var:0,moeda:a.mer
 
 // ── FETCH ─────────────────────────────────────
 async function fetchCambio(){
-  try{ const r=await fetch(`https://brapi.dev/api/v2/currency?currency=USD-BRL&token=${BRAPI_TOKEN}`); const d=await r.json(); if(d.currency?.[0])usdBrl=d.currency[0].bidPrice||usdBrl; }catch(e){}
-}
-async function fetchUS(){
-  const ativos=carteira.filter(x=>x.mercado==='US');
-  const tickers=ativos.map(a=>a.ticker).join(',');
-  
-  // Tenta brapi primeiro (mais estável), depois Yahoo via proxy como fallback
-  try {
-    // brapi suporta múltiplos tickers EUA separados por vírgula em um único request
-    const r=await fetch(`https://brapi.dev/api/quote/${tickers}?token=${BRAPI_TOKEN}`,{signal:AbortSignal.timeout(10000)});
+  try{
+    const r=await fetch(`https://brapi.dev/api/v2/currency?currency=USD-BRL&token=${BRAPI_TOKEN}`,{signal:AbortSignal.timeout(6000)});
     const d=await r.json();
-    if(d.results&&d.results.length>0){
-      d.results.forEach(item=>{
-        precos[item.symbol]={preco:item.regularMarketPrice,var:item.regularMarketChangePercent||0,moeda:'USD'};
-      });
-      // Verificar se todos foram encontrados
-      const encontrados=d.results.map(x=>x.symbol);
-      const faltando=ativos.filter(a=>!encontrados.includes(a.ticker));
-      if(faltando.length>0) await fetchUSYahoo(faltando);
-      return;
-    }
-  } catch(e){ console.warn('brapi US falhou, tentando Yahoo...'); }
-  
-  // Fallback: Yahoo Finance via proxy para todos
-  await fetchUSYahoo(ativos);
+    if(d.currency?.[0]) usdBrl=d.currency[0].bidPrice||usdBrl;
+  }catch(e){ console.warn('câmbio fallback'); }
 }
 
-async function fetchUSYahoo(ativos){
-  const PROXIES=[
-    url=>`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-    url=>`https://corsproxy.io/?${encodeURIComponent(url)}`,
-  ];
+// Busca 1 ticker por vez na brapi (limite do plano gratuito)
+async function brapiQuote(ticker){
+  const r=await fetch(`https://brapi.dev/api/quote/${ticker}?token=${BRAPI_TOKEN}`,{signal:AbortSignal.timeout(8000)});
+  const d=await r.json();
+  if(d.error) throw new Error(d.message);
+  return d.results?.[0]||null;
+}
+
+// EUA — todos em paralelo (cada um = 1 request)
+async function fetchUS(){
+  const ativos=carteira.filter(x=>x.mercado==='US');
   await Promise.allSettled(ativos.map(async a=>{
-    const yahooUrl=`https://query1.finance.yahoo.com/v8/finance/chart/${a.ticker}?interval=1d&range=1d`;
-    for(const proxyFn of PROXIES){
-      try{
-        const r=await fetch(proxyFn(yahooUrl),{signal:AbortSignal.timeout(8000)});
-        const w=await r.json();
-        const raw=w.contents||w;
-        const d=typeof raw==='string'?JSON.parse(raw):raw;
-        const meta=d.chart.result[0].meta;
-        const preco=meta.regularMarketPrice,prev=meta.previousClose||meta.chartPreviousClose;
-        precos[a.ticker]={preco,var:prev?((preco-prev)/prev)*100:0,moeda:'USD'};
-        return; // sucesso, sai do loop de proxies
-      }catch(e){ continue; }
+    try{
+      const item=await brapiQuote(a.ticker);
+      if(item) precos[a.ticker]={preco:item.regularMarketPrice,var:item.regularMarketChangePercent||0,moeda:'USD'};
+      else if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:'USD'};
+    }catch(e){
+      if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:'USD'};
     }
-    if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:'USD'};
   }));
 }
+
+// BR — em paralelo também, exceto Tesouro (sem API)
 async function fetchBR(){
   const ativos=carteira.filter(x=>x.mercado==='BR'&&!x.ticker.startsWith('TESE-'));
-  // Busca em lotes de 3 para respeitar o rate limit da brapi (plano gratuito)
-  for(let i=0;i<ativos.length;i+=3){
-    const lote=ativos.slice(i,i+3);
-    await Promise.allSettled(lote.map(async a=>{
-      try{
-        const r=await fetch(`https://brapi.dev/api/quote/${a.ticker}?token=${BRAPI_TOKEN}`,{signal:AbortSignal.timeout(6000)});
-        const d=await r.json();
-        if(d.results?.[0]){const item=d.results[0];precos[a.ticker]={preco:item.regularMarketPrice,var:item.regularMarketChangePercent||0,moeda:'BRL'};}
-      }catch(e){if(!precos[a.ticker])precos[a.ticker]={preco:a.pmedio,var:0,moeda:'BRL'};}
-    }));
-    if(i+3<ativos.length) await new Promise(r=>setTimeout(r,400));
-  }
-  // Títulos do Tesouro: usa valor cadastrado (sem API)
+  await Promise.allSettled(ativos.map(async a=>{
+    try{
+      const item=await brapiQuote(a.ticker);
+      if(item) precos[a.ticker]={preco:item.regularMarketPrice,var:item.regularMarketChangePercent||0,moeda:'BRL'};
+      else if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:'BRL'};
+    }catch(e){
+      if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:'BRL'};
+    }
+  }));
+  // Tesouro: usa valor cadastrado
   carteira.filter(x=>x.ticker.startsWith('TESE-')).forEach(a=>{
     if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:'BRL'};
   });
 }
 
-// ── CALCULAR TOTAIS ───────────────────────────
-function calcTotais(){
-  let pat=0,custo=0,varDia=0;
-  carteira.forEach(a=>{
-    const p=getPreco(a);
-    const val=a.qtd*toBRL(a), cst=a.qtd*pmedioEmBRL(a);
-    pat+=val; custo+=cst; varDia+=val*(p.var/100);
-  });
-  return {pat,custo,res:pat-custo,resPct:(pat-custo)/custo*100,varDia,varDiaPct:varDia/pat*100};
-}
 
-// ── VISÃO GERAL ───────────────────────────────
-function buildVisaoGeral(){
-  const t=calcTotais();
-  document.getElementById('m-pat').textContent=R(t.pat);
-  document.getElementById('m-vardia').innerHTML=`<span class="${cls(t.varDia)}">${R(t.varDia)} hoje (${P(t.varDiaPct)})</span>`;
-  document.getElementById('m-custo').textContent=R(t.custo);
-  document.getElementById('m-res-pct').innerHTML=`<span class="${cls(t.res)}">${P(t.resPct)} de retorno</span>`;
-  document.getElementById('m-res').textContent=R(t.res);
-  document.getElementById('m-res').className='metric-value '+cls(t.res);
-  document.getElementById('m-vardia2').innerHTML=`<span class="${cls(t.varDia)}">${P(t.varDiaPct)} hoje</span>`;
-  document.getElementById('m-cambio').textContent=`R$ ${usdBrl.toFixed(2)}`;
-
-  // Totais por mercado
-  let patUS=0, patBR=0;
-  carteira.forEach(a=>{ const v=a.qtd*toBRL(a); if(a.mercado==='US')patUS+=v; else patBR+=v; });
-  const pctUS=(patUS/t.pat)*100, pctBR=(patBR/t.pat)*100;
-
-  // Chart mercados
-  const ctx1=document.getElementById('chartMercados').getContext('2d');
-  if(chartMercados)chartMercados.destroy();
-  chartMercados=new Chart(ctx1,{
-    type:'doughnut',
-    data:{labels:['EUA','Brasil'],datasets:[{data:[patUS,patBR],backgroundColor:['#4f8ef7','#36d399'],borderWidth:0,hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
-      plugins:{legend:{position:'bottom',labels:{color:'#8b95b0',font:{size:11},padding:12}},
-        tooltip:{callbacks:{label:c=>`${c.label}: ${R(c.parsed)} (${((c.parsed/t.pat)*100).toFixed(1)}%)`}}}}
-  });
-
-  // Chart tipos EUA
-  let etfUS=0, acaoUS=0;
-  carteira.filter(a=>a.mercado==='US').forEach(a=>{ const v=a.qtd*toBRL(a); if(a.tipo==='etf')etfUS+=v; else acaoUS+=v; });
-  const ctx2=document.getElementById('chartTipos').getContext('2d');
-  if(chartTipos)chartTipos.destroy();
-  chartTipos=new Chart(ctx2,{
-    type:'doughnut',
-    data:{labels:['ETFs','Ações'],datasets:[{data:[etfUS,acaoUS],backgroundColor:['#fbbf24','#4f8ef7'],borderWidth:0,hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
-      plugins:{legend:{position:'bottom',labels:{color:'#8b95b0',font:{size:11},padding:12}},
-        tooltip:{callbacks:{label:c=>`${c.label}: ${R(c.parsed)} (${((c.parsed/(etfUS+acaoUS))*100).toFixed(1)}%)`}}}}
-  });
-
-  // Resumo alocação
-  const deltaUS=pctUS-META_US_PCT, deltaBR=pctBR-META_BR_PCT;
-  const pctETF=(etfUS/(etfUS+acaoUS))*100, pctAcaoUS=(acaoUS/(etfUS+acaoUS))*100;
-  const deltaETF=pctETF-META_ETF_PCT, deltaAcaoUS=pctAcaoUS-META_ACAO_PCT;
-
-  function alocBar(label,atual,meta,cor){
-    const d=atual-meta;
-    const badge=Math.abs(d)<0.5?`<span class="delta-badge delta-ok">≈ meta</span>`:
-      d>0?`<span class="delta-badge delta-pos">+${d.toFixed(1)}% acima</span>`:
-          `<span class="delta-badge delta-neg">${d.toFixed(1)}% abaixo</span>`;
-    return `<div class="aloc-row">
-      <div class="aloc-left"><div class="aloc-dot" style="background:${cor}"></div><span>${label}</span></div>
-      <div class="aloc-right">
-        <span style="color:var(--text2)">meta ${meta}%</span>
-        <span style="font-weight:600">${atual.toFixed(1)}%</span>
-        ${badge}
-      </div>
-    </div>`;
-  }
-
-  // Breakdown Brasil para resumo
-  let rfBR2=0,acaoBR2=0,caixaBR2=0;
-  carteira.filter(a=>a.mercado==='BR').forEach(a=>{
-    const v=a.qtd*toBRL(a);
-    if(a.tipo==='caixa')caixaBR2+=v;
-    else if(a.tipo==='acao'||a.tipo==='etf'||a.tipo==='fii')acaoBR2+=v;
-    else rfBR2+=v;
-  });
-  const pctRF2=patBR?(rfBR2/patBR)*100:0;
-  const pctAcaoBR2=patBR?(acaoBR2/patBR)*100:0;
-  const pctCaixa2=patBR?(caixaBR2/patBR)*100:0;
-
-  document.getElementById('resumo-aloc').innerHTML=
-    '<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;padding:8px 0 4px">Alocação geográfica</div>'+
-    alocBar('EUA',pctUS,META_US_PCT,'#4f8ef7')+
-    alocBar('Brasil',pctBR,META_BR_PCT,'#36d399')+
-    '<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;padding:12px 0 4px">Dentro do EUA</div>'+
-    alocBar('ETFs',pctETF,META_ETF_PCT,'#fbbf24')+
-    alocBar('Ações EUA',pctAcaoUS,META_ACAO_PCT,'#f87272')+
-    '<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;padding:12px 0 4px">Dentro do Brasil</div>'+
-    alocBar('Renda Fixa',pctRF2,META_BR_RF_PCT,'#c084fc')+
-    alocBar('Ações/FIIs BR',pctAcaoBR2,META_BR_ACAO_PCT,'#36d399')+
-    alocBar('Caixa (liquidez diária)',pctCaixa2,META_BR_CAIXA_PCT,'#fbbf24');
-}
-
-// ── TABELA DE ATIVOS ──────────────────────────
-function buildAtivos(){
-  const {pat}=calcTotais();
-  const tl={acao:'Ação',etf:'ETF',fii:'FII',renda:'Renda Fixa',caixa:'Caixa'};
-  let html='';
-  carteira.forEach((a,i)=>{
-    const p=getPreco(a);
-    const val=a.qtd*toBRL(a), cst=a.qtd*pmedioEmBRL(a);
-    const res=val-cst, resPct=(res/cst)*100, peso=(val/pat)*100;
-    const delta=peso-(a.pesoAlvo||0);
-    const deltaStr=a.pesoAlvo?`<span class="${Math.abs(delta)<0.5?'':''}${delta>0.5?'pos':delta<-0.5?'neg':''}" style="font-size:11px">${delta>0?'+':''}${delta.toFixed(1)}%</span>`:'—';
-    const precoFmt=p.moeda==='USD'?`${USD(p.preco)}<br><span style="font-size:10px;color:var(--text3)">${R(p.preco*usdBrl)}</span>`:R(p.preco);
-    html+=`<tr>
-      <td><span class="ticker-badge">${a.ticker}</span><div style="font-size:10px;color:var(--text2);margin-top:2px">${a.nome}</div></td>
-      <td style="font-size:11px;color:var(--text2)">${a.setor||'—'}</td>
-      <td><span class="tag tag-${a.tipo}">${tl[a.tipo]}</span></td>
-      <td style="font-size:11px">${Number(a.qtd).toFixed(4)}</td>
-      <td style="color:var(--text2);font-size:11px">${a.mercado==='US'?USD(a.pmedio):R(a.pmedio)}</td>
-      <td style="font-weight:600;font-size:11px">${precoFmt}</td>
-      <td class="${cls(p.var)}" style="font-weight:600;font-size:11px">${P(p.var)}</td>
-      <td style="font-weight:600">${R(val)}</td>
-      <td class="${cls(res)}">${R(res)}<div style="font-size:10px">${P(resPct)}</div></td>
-      <td>
-        <span style="font-size:12px">${peso.toFixed(1)}%</span>
-        <div class="prog-wrap" style="width:60px"><div class="prog-fill" style="width:${Math.min(peso/((a.pesoAlvo||peso)||1)*100,150)}%;background:#4f8ef7;opacity:.8"></div></div>
-      </td>
-      <td style="font-size:11px;color:var(--text2)">${a.pesoAlvo?a.pesoAlvo+'%':'—'}</td>
-      <td>${deltaStr}</td>
-      <td style="white-space:nowrap">
-        <button class="btn" onclick="editarAtivo(${i})" style="padding:3px 8px;font-size:10px;color:var(--accent2);border-color:#4f8ef730;margin-right:3px">✎</button>
-        <button class="btn" onclick="removerAtivo(${i})" style="padding:3px 8px;font-size:10px;color:var(--red);border-color:#f8727230">✕</button>
-      </td>
-    </tr>`;
-  });
-  document.getElementById('tbody-ativos').innerHTML=html;
-}
-
-// ── ALOCAÇÃO & META ───────────────────────────
-function buildAlocacao(){
-  const {pat}=calcTotais();
-  let patUS=0,patBR=0,etfUS=0,acaoUS=0;
-  carteira.forEach(a=>{
-    const v=a.qtd*toBRL(a);
-    if(a.mercado==='US'){patUS+=v;if(a.tipo==='etf')etfUS+=v;else acaoUS+=v;}
-    else patBR+=v;
-  });
-  const pctUS=(patUS/pat)*100,pctBR=(patBR/pat)*100;
-  const pctETF=patUS?(etfUS/patUS)*100:0,pctAcao=patUS?(acaoUS/patUS)*100:0;
-
-  function barItem(label,atual,meta,cor){
-    const d=atual-meta, w=Math.min(atual,100);
-    const badge=Math.abs(d)<0.5?`<span class="delta-badge delta-ok">≈ meta</span>`:
-      d>0?`<span class="delta-badge delta-pos">+${d.toFixed(1)}%</span>`:
-          `<span class="delta-badge delta-neg">${d.toFixed(1)}%</span>`;
-    return `<div style="margin-bottom:16px">
-      <div class="prog-label"><span style="font-size:13px">${label}</span><div style="display:flex;gap:8px;align-items:center"><span style="color:var(--text2)">meta ${meta}%</span><span style="font-weight:600">${atual.toFixed(1)}%</span>${badge}</div></div>
-      <div class="prog-wrap"><div class="prog-fill" style="width:${w}%;background:${cor}"></div></div>
-      <div style="font-size:11px;color:var(--text2);margin-top:4px">${R(label.includes('EUA')||label.includes('ETF')||label.includes('Ação')?patUS*(atual/100):patBR*(atual/100))}</div>
-    </div>`;
-  }
-
-  document.getElementById('aloc-geo').innerHTML=
-    barItem('EUA',pctUS,META_US_PCT,'#4f8ef7')+
-    barItem('Brasil',pctBR,META_BR_PCT,'#36d399');
-
-  document.getElementById('aloc-us-tipo').innerHTML=patUS?
-    barItem('ETFs (dentro do EUA)',pctETF,META_ETF_PCT,'#fbbf24')+
-    barItem('Ações (dentro do EUA)',pctAcao,META_ACAO_PCT,'#f87272'):
-    '<p style="color:var(--text2);font-size:13px">Nenhum ativo EUA cadastrado.</p>';
-
-  // Breakdown Brasil
-  let rfBR=0, acaoBR=0, caixaBR=0;
-  carteira.filter(a=>a.mercado==='BR').forEach(a=>{
-    const v=a.qtd*toBRL(a);
-    if(a.tipo==='caixa') caixaBR+=v;
-    else if(a.tipo==='acao'||a.tipo==='etf'||a.tipo==='fii') acaoBR+=v;
-    else rfBR+=v; // renda
-  });
-  const pctRF=patBR?(rfBR/patBR)*100:0;
-  const pctAcaoBR=patBR?(acaoBR/patBR)*100:0;
-  const pctCaixa=patBR?(caixaBR/patBR)*100:0;
-
-  const alocBREl = document.getElementById('aloc-br-tipo');
-  if(alocBREl){
-    alocBREl.innerHTML = patBR ?
-      barItem('Renda Fixa (dentro do BR)',pctRF,META_BR_RF_PCT,'#c084fc')+
-      barItem('Ações/FIIs (dentro do BR)',pctAcaoBR,META_BR_ACAO_PCT,'#36d399')+
-      barItem('Caixa — liquidez diária (dentro do BR)',pctCaixa,META_BR_CAIXA_PCT,'#fbbf24'):
-      '<p style="color:var(--text2);font-size:13px">Nenhum ativo BR cadastrado.</p>';
-  }
-
-  // Por ativo
-  const usAtivos=carteira.filter(a=>a.mercado==='US');
-  let html='';
-  usAtivos.sort((a,b)=>(b.pesoAlvo||0)-(a.pesoAlvo||0)).forEach(a=>{
-    const val=a.qtd*toBRL(a);
-    const pesoAtual=patUS?(val/patUS)*100:0;
-    const meta=a.pesoAlvo||0;
-    const delta=pesoAtual-meta;
-    const cor=a.tipo==='etf'?'#fbbf24':'#4f8ef7';
-    html+=`<div style="margin-bottom:12px">
-      <div class="prog-label">
-        <span><span class="ticker-badge">${a.ticker}</span> <span style="font-size:11px;color:var(--text2)">${a.nome}</span></span>
-        <div style="display:flex;gap:8px;align-items:center">
-          <span style="font-size:11px;color:var(--text2)">meta ${meta}%</span>
-          <span style="font-size:12px;font-weight:600">${pesoAtual.toFixed(1)}%</span>
-          <span class="delta-badge ${Math.abs(delta)<0.5?'delta-ok':delta>0?'delta-pos':'delta-neg'}">${delta>0?'+':''}${delta.toFixed(1)}%</span>
-        </div>
-      </div>
-      <div class="prog-wrap"><div class="prog-fill" style="width:${Math.min(pesoAtual,100)}%;background:${cor};opacity:.85"></div></div>
-    </div>`;
-  });
-  document.getElementById('aloc-ativos').innerHTML=html||'<p style="color:var(--text2)">Nenhum ativo.</p>';
-}
-
-// ── REBALANCEAMENTO ───────────────────────────
-function calcRebal(){
-  const aporte=parseFloat(document.getElementById('sim-valor').value)||0;
-  const destino=document.getElementById('sim-destino').value;
-  const {pat}=calcTotais();
-  const patTotal=pat+aporte;
-
-  let patUS=0,patBR=0;
-  carteira.forEach(a=>{ const v=a.qtd*toBRL(a); if(a.mercado==='US')patUS+=v; else patBR+=v; });
-
-  // Quanto deve ir para cada mercado
-  let aporteUS=0, aporteBR=0;
-  if(destino==='US'){ aporteUS=aporte; }
-  else if(destino==='BR'){ aporteBR=aporte; }
-  else {
-    // Automático: calcular quanto falta para atingir a meta
-    const metaUS=patTotal*META_US_PCT/100;
-    const metaBR=patTotal*META_BR_PCT/100;
-    const faltaUS=Math.max(0,metaUS-patUS);
-    const faltaBR=Math.max(0,metaBR-patBR);
-    if(faltaUS+faltaBR===0){ aporteUS=aporte*META_US_PCT/100; aporteBR=aporte*META_BR_PCT/100; }
-    else {
-      const total=faltaUS+faltaBR;
-      aporteUS=aporte*(faltaUS/total);
-      aporteBR=aporte*(faltaBR/total);
-    }
-  }
-
-  let html=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
-    <div class="rebal-card"><div class="rebal-left"><div style="font-size:11px;color:var(--text2)">Aportar em EUA</div><div class="rebal-amount">${R(aporteUS)}</div><div class="rebal-detail">${USD(aporteUS/usdBrl)} · ${((aporteUS/aporte)*100).toFixed(1)}% do aporte</div></div></div>
-    <div class="rebal-card"><div class="rebal-left"><div style="font-size:11px;color:var(--text2)">Aportar no Brasil</div><div class="rebal-amount">${R(aporteBR)}</div><div class="rebal-detail">${((aporteBR/aporte)*100).toFixed(1)}% do aporte</div></div></div>
-  </div>`;
-
-  if(aporteUS>0){
-    // Distribuir entre ativos EUA conforme peso alvo
-    const usAtivos=carteira.filter(a=>a.mercado==='US'&&(a.pesoAlvo||0)>0);
-    const totalPeso=usAtivos.reduce((s,a)=>s+(a.pesoAlvo||0),0);
-
-    // Primeiro: dentro do bucket EUA, separar ETF vs Ação
-    const aporteETF=aporteUS*META_ETF_PCT/100;
-    const aporteAcao=aporteUS*META_ACAO_PCT/100;
-    const totalPesoETF=usAtivos.filter(a=>a.tipo==='etf').reduce((s,a)=>s+(a.pesoAlvo||0),0);
-    const totalPesoAcao=usAtivos.filter(a=>a.tipo!=='etf').reduce((s,a)=>s+(a.pesoAlvo||0),0);
-
-    html+=`<div style="font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Distribuição por ativo (EUA)</div>`;
-    html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">`;
-
-    usAtivos.sort((a,b)=>(b.pesoAlvo||0)-(a.pesoAlvo||0)).forEach(a=>{
-      const isETF=a.tipo==='etf';
-      const totalBucket=isETF?totalPesoETF:totalPesoAcao;
-      const bucketVal=isETF?aporteETF:aporteAcao;
-      const valorAtivo=totalBucket?bucketVal*((a.pesoAlvo||0)/totalBucket):0;
-      const preco=precos[a.ticker]?.preco||a.pmedio;
-      const qtdComprar=valorAtivo/(preco*usdBrl);
-      html+=`<div class="rebal-card"><div class="rebal-left">
-        <div style="display:flex;gap:6px;align-items:center"><span class="ticker-badge">${a.ticker}</span><span class="tag tag-${a.tipo}" style="font-size:9px">${isETF?'ETF':'Ação'}</span></div>
-        <div class="rebal-amount" style="font-size:14px">${R(valorAtivo)}</div>
-        <div class="rebal-detail">${USD(valorAtivo/usdBrl)} · ~${qtdComprar.toFixed(4)} cotas · peso alvo ${a.pesoAlvo}%</div>
-      </div></div>`;
-    });
-    html+='</div>';
-  }
-
-  if(aporteBR>0){
-    html+=`<div style="font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 10px">Brasil — R$ ${aporteBR.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div>`;
-
-    // Calcular quanto vai para cada bucket BR
-    const aporteRF     = aporteBR * META_BR_RF_PCT / 100;
-    const aporteAcaoBR = aporteBR * META_BR_ACAO_PCT / 100;
-    const aporteCaixa  = aporteBR * META_BR_CAIXA_PCT / 100;
-
-    html+=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
-      <div class="rebal-card"><div class="rebal-left">
-        <div style="font-size:11px;color:var(--text2)">Renda Fixa (60%)</div>
-        <div class="rebal-amount">${R(aporteRF)}</div>
-      </div></div>
-      <div class="rebal-card"><div class="rebal-left">
-        <div style="font-size:11px;color:var(--text2)">Ações/FIIs BR (30%)</div>
-        <div class="rebal-amount">${R(aporteAcaoBR)}</div>
-        <div class="rebal-detail" style="color:var(--yellow)">⚠ Nenhum ativo cadastrado</div>
-      </div></div>
-      <div class="rebal-card"><div class="rebal-left">
-        <div style="font-size:11px;color:var(--text2)">Caixa — liquidez (10%)</div>
-        <div class="rebal-amount">${R(aporteCaixa)}</div>
-        <div class="rebal-detail" style="color:var(--yellow)">⚠ Título não definido</div>
-      </div></div>
-    </div>`;
-
-    // Distribuir Renda Fixa entre títulos existentes
-    const rfAtivos=carteira.filter(a=>a.mercado==='BR'&&a.tipo==='renda');
-    if(rfAtivos.length>0){
-      html+=`<div style="font-size:11px;color:var(--text2);margin-bottom:8px">Distribuição Renda Fixa por ativo:</div>`;
-      html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">`;
-      const totalPesoRF=rfAtivos.reduce((s,a)=>s+(a.pesoAlvo||1),0);
-      rfAtivos.forEach(a=>{
-        const v=aporteRF*((a.pesoAlvo||1)/totalPesoRF);
-        html+=`<div class="rebal-card"><div class="rebal-left">
-          <span class="ticker-badge">${a.ticker}</span>
-          <div style="font-size:11px;color:var(--text2);margin-top:3px">${a.nome}</div>
-          <div class="rebal-amount" style="font-size:14px">${R(v)}</div>
-        </div></div>`;
-      });
-      html+='</div>';
-    }
-  }
-
-  document.getElementById('rebal-resultado').innerHTML=html;
-}
-
-// ── MODAL ─────────────────────────────────────
-function openModal(tipo,idx){
-  closeModals();
-  if(tipo==='import'){ document.getElementById('modal-import').classList.add('open'); return; }
-  editIdx=idx!==undefined?idx:-1;
-  const isEdit=editIdx>=0;
-  document.getElementById('modal-title').textContent=isEdit?'Editar ativo':'Adicionar ativo';
-  document.getElementById('btn-salvar').textContent=isEdit?'Salvar':'Adicionar';
-  if(isEdit){
-    const a=carteira[editIdx];
-    document.getElementById('f-ticker').value=a.ticker;
-    document.getElementById('f-nome').value=a.nome;
-    document.getElementById('f-setor').value=a.setor||'';
-    document.getElementById('f-mercado').value=a.mercado;
-    document.getElementById('f-tipo').value=a.tipo;
-    document.getElementById('f-qtd').value=a.qtd;
-    document.getElementById('f-pm').value=a.pmedio;
-    document.getElementById('f-peso').value=a.pesoAlvo||'';
-    document.getElementById('f-div').value=a.div||'';
-  } else {
-    ['f-ticker','f-nome','f-setor','f-qtd','f-pm','f-peso','f-div'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('f-mercado').value='US';
-    document.getElementById('f-tipo').value='acao';
-  }
-  document.getElementById('modal-add').classList.add('open');
-}
-function closeModals(){ document.querySelectorAll('.modal-bg').forEach(m=>m.classList.remove('open')); }
-function salvarAtivo(){
-  const ticker=document.getElementById('f-ticker').value.trim().toUpperCase();
-  const nome=document.getElementById('f-nome').value.trim();
-  const setor=document.getElementById('f-setor').value.trim();
-  const mercado=document.getElementById('f-mercado').value;
-  const tipo=document.getElementById('f-tipo').value;
-  const qtd=parseFloat(document.getElementById('f-qtd').value);
-  const pmedio=parseFloat(document.getElementById('f-pm').value);
-  const pesoAlvo=parseFloat(document.getElementById('f-peso').value)||0;
-  const div=parseFloat(document.getElementById('f-div').value)||0;
-  if(!ticker||!nome||!qtd||!pmedio){ alert('Preencha ticker, nome, quantidade e preço médio.'); return; }
-  const ativo={ticker,nome,setor,tipo,mercado,qtd,pmedio,pesoAlvo,div};
-  if(editIdx>=0) carteira[editIdx]=ativo; else carteira.push(ativo);
-  salvarStorage(); closeModals(); refresh();
-}
-function editarAtivo(i){ openModal('add',i); }
-function removerAtivo(i){ if(confirm(`Remover ${carteira[i].ticker}?`)){ carteira.splice(i,1); salvarStorage(); refresh(); } }
-
-// ── REFRESH ───────────────────────────────────
-async function refresh(){
-  setStatus('loading','Buscando cotações...');
-  document.getElementById('btn-refresh').disabled=true;
-  // Câmbio + EUA em paralelo, depois BR
-  await Promise.allSettled([fetchCambio(), fetchUS()]);
-  try{ await fetchBR(); }catch(e){}
-  buildVisaoGeral();
-  buildAtivos();
-  buildAlocacao();
-  calcRebal();
-  const t=new Date();
-  setStatus('ok',`Atualizado às ${t.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})} · USD/BRL ${usdBrl.toFixed(2)}`);
-  document.getElementById('btn-refresh').disabled=false;
-}
-
-refresh();
-setInterval(refresh,5*60*1000);
-</script>
-</body>
-</html>
