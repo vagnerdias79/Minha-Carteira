@@ -352,26 +352,37 @@ async function fetchCambio(){
   try{ const r=await fetch(`https://brapi.dev/api/v2/currency?currency=USD-BRL&token=${BRAPI_TOKEN}`); const d=await r.json(); if(d.currency?.[0])usdBrl=d.currency[0].bidPrice||usdBrl; }catch(e){}
 }
 async function fetchUS(){
-  for(const a of carteira.filter(x=>x.mercado==='US')){
+  const ativos=carteira.filter(x=>x.mercado==='US');
+  // Busca todos em paralelo — muito mais rápido
+  await Promise.allSettled(ativos.map(async a=>{
     try{
       const url=`https://query1.finance.yahoo.com/v8/finance/chart/${a.ticker}?interval=1d&range=1d`;
-      const r=await fetch(PROXY+encodeURIComponent(url));
+      const r=await fetch(PROXY+encodeURIComponent(url),{signal:AbortSignal.timeout(8000)});
       const w=await r.json(); const d=JSON.parse(w.contents);
       const meta=d.chart.result[0].meta;
       const preco=meta.regularMarketPrice, prev=meta.previousClose||meta.chartPreviousClose;
       precos[a.ticker]={preco,var:prev?((preco-prev)/prev)*100:0,moeda:'USD'};
     }catch(e){ if(!precos[a.ticker])precos[a.ticker]={preco:a.pmedio,var:0,moeda:'USD'}; }
-  }
+  }));
 }
 async function fetchBR(){
-  for(const a of carteira.filter(x=>x.mercado==='BR')){
-    try{
-      const r=await fetch(`https://brapi.dev/api/quote/${a.ticker}?token=${BRAPI_TOKEN}`);
-      const d=await r.json();
-      if(d.results?.[0]){ const item=d.results[0]; precos[a.ticker]={preco:item.regularMarketPrice,var:item.regularMarketChangePercent||0,moeda:'BRL'}; }
-    }catch(e){ if(!precos[a.ticker])precos[a.ticker]={preco:a.pmedio,var:0,moeda:'BRL'}; }
-    await new Promise(r=>setTimeout(r,300));
+  const ativos=carteira.filter(x=>x.mercado==='BR'&&!x.ticker.startsWith('TESE-'));
+  // Busca em lotes de 3 para respeitar o rate limit da brapi (plano gratuito)
+  for(let i=0;i<ativos.length;i+=3){
+    const lote=ativos.slice(i,i+3);
+    await Promise.allSettled(lote.map(async a=>{
+      try{
+        const r=await fetch(`https://brapi.dev/api/quote/${a.ticker}?token=${BRAPI_TOKEN}`,{signal:AbortSignal.timeout(6000)});
+        const d=await r.json();
+        if(d.results?.[0]){const item=d.results[0];precos[a.ticker]={preco:item.regularMarketPrice,var:item.regularMarketChangePercent||0,moeda:'BRL'};}
+      }catch(e){if(!precos[a.ticker])precos[a.ticker]={preco:a.pmedio,var:0,moeda:'BRL'};}
+    }));
+    if(i+3<ativos.length) await new Promise(r=>setTimeout(r,400));
   }
+  // Títulos do Tesouro: usa valor cadastrado (sem API)
+  carteira.filter(x=>x.ticker.startsWith('TESE-')).forEach(a=>{
+    if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:'BRL'};
+  });
 }
 
 // ── CALCULAR TOTAIS ───────────────────────────
@@ -744,8 +755,8 @@ function removerAtivo(i){ if(confirm(`Remover ${carteira[i].ticker}?`)){ carteir
 async function refresh(){
   setStatus('loading','Buscando cotações...');
   document.getElementById('btn-refresh').disabled=true;
-  try{ await fetchCambio(); }catch(e){}
-  try{ await fetchUS(); }catch(e){}
+  // Câmbio + EUA em paralelo, depois BR
+  await Promise.allSettled([fetchCambio(), fetchUS()]);
   try{ await fetchBR(); }catch(e){}
   buildVisaoGeral();
   buildAtivos();
