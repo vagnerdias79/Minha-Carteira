@@ -9,56 +9,84 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:system-ui,-apple-system,sans-serif;background:#0f1117;color:#e8eaf0;min-height:100vh}
 :root{
-  --bg0:#0f1117;--bg1:#161b27;--bg2:#1e2535;--bg3:#262e42;
+  --bg1:#161b27;--bg2:#1e2535;--bg3:#262e42;
   --accent:#4f8ef7;--accent2:#7bb3ff;
   --green:#36d399;--red:#f87272;--yellow:#fbbf24;--purple:#c084fc;
   --text:#e8eaf0;--text2:#8b95b0;--text3:#4a5270;
   --border:#2a3350;
 }
-.header{background:var(--bg1);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
-.logo{font-size:16px;font-weight:600;letter-spacing:-0.3px}
-.logo span{color:var(--accent)}
-.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.live-badge{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)}
+.header{background:var(--bg1);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.logo{font-size:16px;font-weight:600}.logo span{color:var(--accent)}
+.header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.live-badge{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);margin-right:4px}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
-.dot.loading{background:var(--yellow)}
-.dot.error{background:var(--red);animation:none}
+.dot.loading{background:var(--yellow)}.dot.error{background:var(--red);animation:none}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:12px;padding:6px 14px;border-radius:7px;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap}
+.btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:12px;padding:6px 12px;border-radius:7px;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap}
 .btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
-.btn-green{border-color:#36d39940;color:var(--green)}
-.btn-green:hover{background:var(--green);color:#0f1117;border-color:var(--green)}
-.main{padding:20px 24px;display:flex;flex-direction:column;gap:18px;max-width:1200px;margin:0 auto}
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.metric{background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
-.metric-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
-.metric-value{font-size:24px;font-weight:600;letter-spacing:-0.5px}
-.metric-sub{font-size:12px;margin-top:5px;color:var(--text2)}
+.btn-green{border-color:#36d39950;color:var(--green)}.btn-green:hover{background:var(--green);color:#0f1117;border-color:var(--green)}
+
+/* NAV TABS */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 24px;background:var(--bg1)}
+.tab{padding:10px 18px;font-size:13px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab:hover:not(.active){color:var(--text)}
+.page{display:none;padding:20px 24px;max-width:1300px;margin:0 auto}
+.page.active{display:block}
+
+/* MÉTRICAS */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.metric{background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.metric-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.metric-value{font-size:22px;font-weight:600;letter-spacing:-0.5px}
+.metric-sub{font-size:11px;margin-top:4px;color:var(--text2)}
 .pos{color:var(--green)}.neg{color:var(--red)}
-.charts-row{display:grid;grid-template-columns:1fr 300px;gap:14px}
-.panel{background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:18px}
-.panel-title{font-size:11px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px}
-.chart-wrap{height:190px;position:relative}
-.table-wrap{background:var(--bg1);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{background:var(--bg2);color:var(--text2);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:11px 16px;text-align:left;white-space:nowrap}
-td{padding:13px 16px;border-top:1px solid var(--border);vertical-align:middle}
+
+/* CARDS */
+.card{background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:16px}
+.card-title{font-size:11px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px}
+
+/* GRID */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+/* TABELA */
+.table-wrap{background:var(--bg1);border:1px solid var(--border);border-radius:12px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--bg2);color:var(--text2);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:.05em;padding:10px 14px;text-align:left;white-space:nowrap;position:sticky;top:0}
+td{padding:11px 14px;border-top:1px solid var(--border);vertical-align:middle}
 tr:hover td{background:rgba(79,142,247,.04)}
-.ticker{background:var(--bg3);color:var(--accent2);font-size:11px;font-weight:700;padding:3px 9px;border-radius:5px;letter-spacing:.03em}
-.nome{font-size:11px;color:var(--text2);margin-top:3px}
-.tag{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600}
-.tag-acao{background:#1a2a4a;color:#7bb3ff}
-.tag-fii{background:#1a3a2a;color:#36d399}
-.tag-etf{background:#2a2a1a;color:#fbbf24}
-.tag-renda{background:#2a1a3a;color:#c084fc}
-.tag-us{background:#2a1a1a;color:#f87272}
-.bar-track{background:var(--bg3);border-radius:4px;height:4px;width:72px;margin-top:4px;overflow:hidden}
-.bar-fill{height:100%;border-radius:4px;background:var(--accent)}
-.aloc-item{display:flex;align-items:center;justify-content:space-between;font-size:12px;margin-bottom:7px}
-.aloc-dot{width:8px;height:8px;border-radius:50%;margin-right:7px;flex-shrink:0}
-.aloc-left{display:flex;align-items:center;color:var(--text2)}
-.error-banner{background:#2a1a1a;border:1px solid #f8727240;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--red);display:none}
+.ticker-badge{background:var(--bg3);color:var(--accent2);font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px}
+.tag{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:600}
+.tag-acao{background:#1a2a4a;color:#7bb3ff}.tag-etf{background:#2a2a1a;color:#fbbf24}
+.tag-fii{background:#1a3a2a;color:#36d399}.tag-renda{background:#2a1a3a;color:#c084fc}
+
+/* BARRA DE PROGRESSO */
+.prog-wrap{background:var(--bg3);border-radius:4px;height:6px;overflow:hidden;margin-top:3px}
+.prog-fill{height:100%;border-radius:4px;transition:width .5s}
+.prog-label{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
+
+/* ALOCAÇÃO */
+.aloc-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.aloc-row:last-child{border-bottom:none}
+.aloc-left{display:flex;align-items:center;gap:8px;font-size:13px}
+.aloc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.aloc-right{display:flex;align-items:center;gap:12px;font-size:12px}
+.delta-badge{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600}
+.delta-pos{background:#1a3a2a;color:var(--green)}.delta-neg{background:#2a1a1a;color:var(--red)}.delta-ok{background:#1a2a3a;color:#7bb3ff}
+
+/* REBALANCEAMENTO */
+.sim-input-row{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.sim-input-row label{font-size:13px;color:var(--text2);white-space:nowrap}
+input[type=number],input[type=text],select{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:13px;font-family:inherit;outline:none}
+input:focus,select:focus{border-color:var(--accent)}
+.rebal-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.rebal-left{display:flex;flex-direction:column;gap:3px}
+.rebal-amount{font-size:16px;font-weight:600;color:var(--green)}
+.rebal-detail{font-size:11px;color:var(--text2)}
+
+/* TOAST */
 .save-toast{position:fixed;bottom:24px;right:24px;background:#1e2535;border:1px solid #36d39940;color:var(--green);font-size:13px;padding:10px 18px;border-radius:10px;z-index:100;opacity:0;transition:opacity .3s;pointer-events:none}
 .save-toast.show{opacity:1}
 
@@ -66,28 +94,21 @@ tr:hover td{background:rgba(79,142,247,.04)}
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;align-items:center;justify-content:center}
 .modal-bg.open{display:flex}
 .modal{background:var(--bg1);border:1px solid var(--border);border-radius:16px;padding:24px;width:440px;max-width:92vw;max-height:90vh;overflow-y:auto}
-.modal-title{font-size:15px;font-weight:600;margin-bottom:4px}
-.modal-sub{font-size:12px;color:var(--text2);margin-bottom:18px}
+.modal-title{font-size:15px;font-weight:600;margin-bottom:14px}
 .form-row{margin-bottom:12px}
 .form-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;display:block}
-.form-hint{font-size:11px;color:var(--text3);margin-top:4px}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-input[type=text],input[type=number],select{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-size:13px;font-family:inherit;outline:none}
-input:focus,select:focus{border-color:var(--accent)}
-.form-actions{display:flex;gap:8px;margin-top:18px;justify-content:flex-end}
+.form-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
 .btn-primary{background:var(--accent);color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500}
-.btn-primary:hover{background:#3a7ce8}
 .btn-secondary{background:transparent;color:var(--text2);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
-
-/* EDITAR LINHA */
-.btn-edit{padding:4px 8px;font-size:11px;color:var(--accent2);border-color:#4f8ef730;margin-right:4px}
-.btn-del{padding:4px 8px;font-size:11px;color:var(--red);border-color:#f8727230}
-
-.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
-.import-area{background:var(--bg2);border:1px dashed var(--border);border-radius:8px;padding:16px;text-align:center;font-size:12px;color:var(--text2);cursor:pointer;transition:border-color .2s}
+.import-area{background:var(--bg2);border:1px dashed var(--border);border-radius:8px;padding:20px;text-align:center;font-size:12px;color:var(--text2);cursor:pointer}
 .import-area:hover{border-color:var(--accent)}
+.section-gap{margin-bottom:16px}
 
-@media(max-width:768px){.metrics{grid-template-columns:1fr 1fr}.charts-row{grid-template-columns:1fr}.header-right{gap:6px}}
+.chart-wrap{height:200px;position:relative}
+.chart-wrap-sm{height:160px;position:relative}
+
+@media(max-width:900px){.metrics{grid-template-columns:1fr 1fr}.grid2,.grid3{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -95,432 +116,566 @@ input:focus,select:focus{border-color:var(--accent)}
 <div class="header">
   <div class="logo">minha <span>carteira</span></div>
   <div class="header-right">
-    <div class="live-badge"><div class="dot" id="status-dot"></div><span id="update-label">Buscando cotações...</span></div>
-    <button class="btn btn-green" onclick="openModal('add')">+ Adicionar ativo</button>
+    <div class="live-badge"><div class="dot" id="status-dot"></div><span id="update-label">Carregando...</span></div>
+    <button class="btn btn-green" onclick="openModal('add')">+ Ativo</button>
     <button class="btn" onclick="exportar()">↓ Exportar</button>
     <button class="btn" onclick="openModal('import')">↑ Importar</button>
     <button class="btn" id="btn-refresh" onclick="refresh()">↻ Atualizar</button>
   </div>
 </div>
 
-<div class="main">
-  <div class="error-banner" id="error-banner"></div>
+<div class="tabs">
+  <div class="tab active" onclick="showPage('visao-geral')">Visão Geral</div>
+  <div class="tab" onclick="showPage('ativos')">Ativos</div>
+  <div class="tab" onclick="showPage('alocacao')">Alocação & Meta</div>
+  <div class="tab" onclick="showPage('rebalanceamento')">Rebalanceamento</div>
+</div>
 
+<!-- ════ VISÃO GERAL ════ -->
+<div class="page active" id="page-visao-geral">
   <div class="metrics">
     <div class="metric"><div class="metric-label">Patrimônio total</div><div class="metric-value" id="m-pat">—</div><div class="metric-sub" id="m-vardia">—</div></div>
-    <div class="metric"><div class="metric-label">Resultado total</div><div class="metric-value" id="m-res">—</div><div class="metric-sub" id="m-respct">—</div></div>
-    <div class="metric"><div class="metric-label">Dividendos no ano</div><div class="metric-value pos" id="m-div">—</div><div class="metric-sub">proventos recebidos</div></div>
-    <div class="metric"><div class="metric-label">Ativos na carteira</div><div class="metric-value" id="m-count">—</div><div class="metric-sub" id="m-tipos">—</div></div>
+    <div class="metric"><div class="metric-label">Investido</div><div class="metric-value" id="m-custo">—</div><div class="metric-sub" id="m-res-pct">—</div></div>
+    <div class="metric"><div class="metric-label">Resultado</div><div class="metric-value" id="m-res">—</div><div class="metric-sub" id="m-vardia2">—</div></div>
+    <div class="metric"><div class="metric-label">Câmbio USD/BRL</div><div class="metric-value" id="m-cambio">—</div><div class="metric-sub" id="m-cambio-sub">taxa atual</div></div>
   </div>
 
-  <div class="charts-row">
-    <div class="panel">
-      <div class="panel-title">Evolução do patrimônio — últimos 12 meses</div>
-      <div class="chart-wrap"><canvas id="chartEvol"></canvas></div>
+  <div class="grid2 section-gap">
+    <div class="card">
+      <div class="card-title">Patrimônio EUA vs Brasil</div>
+      <div class="chart-wrap"><canvas id="chartMercados"></canvas></div>
     </div>
-    <div class="panel">
-      <div class="panel-title">Alocação por tipo</div>
-      <div class="chart-wrap" style="height:160px"><canvas id="chartAloc"></canvas></div>
-      <div id="aloc-leg" style="margin-top:14px"></div>
+    <div class="card">
+      <div class="card-title">Distribuição por tipo (EUA)</div>
+      <div class="chart-wrap"><canvas id="chartTipos"></canvas></div>
     </div>
   </div>
 
-  <div>
-    <div style="margin-bottom:12px;font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;font-weight:500">Ativos</div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>Ativo</th><th>Tipo</th><th>Qtd</th><th>Preço médio</th><th>Cotação atual</th><th>Var. hoje</th><th>Resultado</th><th>Peso</th><th>Ações</th></tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </div>
+  <div class="card">
+    <div class="card-title">Resumo de alocação vs meta</div>
+    <div id="resumo-aloc"></div>
   </div>
 </div>
 
-<!-- TOAST -->
-<div class="save-toast" id="toast"></div>
+<!-- ════ ATIVOS ════ -->
+<div class="page" id="page-ativos">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Ativo</th><th>Setor</th><th>Tipo</th><th>Qtd</th><th>PM (USD)</th><th>Cotação</th><th>Var. hoje</th><th>Val. BRL</th><th>Resultado</th><th>Peso atual</th><th>Peso alvo</th><th>Δ</th><th></th></tr>
+      </thead>
+      <tbody id="tbody-ativos"></tbody>
+    </table>
+  </div>
+</div>
 
-<!-- MODAL ADICIONAR / EDITAR -->
+<!-- ════ ALOCAÇÃO & META ════ -->
+<div class="page" id="page-alocacao">
+  <div class="grid2 section-gap">
+    <div class="card">
+      <div class="card-title">Alocação Geográfica — Meta: 30% EUA / 70% BR</div>
+      <div id="aloc-geo"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Dentro do EUA — Meta: 55% ETF / 45% Ação</div>
+      <div id="aloc-us-tipo"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Peso por ativo no EUA — atual vs meta</div>
+    <div id="aloc-ativos"></div>
+  </div>
+</div>
+
+<!-- ════ REBALANCEAMENTO ════ -->
+<div class="page" id="page-rebalanceamento">
+  <div class="card section-gap">
+    <div class="card-title">Simulador de aporte</div>
+    <div class="sim-input-row">
+      <label>Valor do aporte (R$):</label>
+      <input type="number" id="sim-valor" value="1000" min="0" step="100" style="width:160px" oninput="calcRebal()">
+      <label>Destino:</label>
+      <select id="sim-destino" onchange="calcRebal()" style="width:160px">
+        <option value="auto">Automático (seguir metas)</option>
+        <option value="US">Somente EUA</option>
+        <option value="BR">Somente Brasil</option>
+      </select>
+    </div>
+    <div id="rebal-resultado"></div>
+  </div>
+</div>
+
+<!-- MODAIS -->
 <div class="modal-bg" id="modal-add">
   <div class="modal">
-    <div class="modal-title" id="modal-add-title">Adicionar ativo</div>
-    <div class="modal-sub" id="modal-add-sub">Os dados são salvos automaticamente no seu navegador.</div>
-    <div class="form-row">
-      <label class="form-label">Ticker</label>
-      <input type="text" id="f-ticker" placeholder="Ex: PETR4, AAPL, VOO">
-      <div class="form-hint">BR: ticker da B3 (PETR4). EUA: ticker americano (AAPL, VOO).</div>
-    </div>
-    <div class="form-row">
-      <label class="form-label">Nome</label>
-      <input type="text" id="f-nome" placeholder="Nome do ativo">
+    <div class="modal-title" id="modal-title">Adicionar ativo</div>
+    <div class="form-row"><label class="form-label">Ticker</label><input type="text" id="f-ticker" placeholder="Ex: AAPL, PETR4"></div>
+    <div class="form-row"><label class="form-label">Nome</label><input type="text" id="f-nome" placeholder="Nome completo"></div>
+    <div class="form-row"><label class="form-label">Setor</label><input type="text" id="f-setor" placeholder="Ex: Tecnologia, Energia"></div>
+    <div class="form-grid">
+      <div class="form-row"><label class="form-label">Mercado</label><select id="f-mercado"><option value="US">EUA</option><option value="BR">Brasil</option></select></div>
+      <div class="form-row"><label class="form-label">Tipo</label><select id="f-tipo"><option value="acao">Ação</option><option value="etf">ETF</option><option value="fii">FII</option><option value="renda">Renda Fixa</option></select></div>
     </div>
     <div class="form-grid">
-      <div class="form-row">
-        <label class="form-label">Mercado</label>
-        <select id="f-mercado"><option value="BR">Brasil (B3)</option><option value="US">EUA (NYSE/NASDAQ)</option></select>
-      </div>
-      <div class="form-row">
-        <label class="form-label">Tipo</label>
-        <select id="f-tipo"><option value="acao">Ação</option><option value="fii">FII</option><option value="etf">ETF</option><option value="renda">Renda Fixa</option></select>
-      </div>
+      <div class="form-row"><label class="form-label">Quantidade</label><input type="number" id="f-qtd" placeholder="0" step="any" min="0"></div>
+      <div class="form-row"><label class="form-label">Preço médio</label><input type="number" id="f-pm" placeholder="0.00" step="0.01" min="0"></div>
     </div>
     <div class="form-grid">
-      <div class="form-row">
-        <label class="form-label">Quantidade</label>
-        <input type="number" id="f-qtd" placeholder="100" min="0.001" step="any">
-      </div>
-      <div class="form-row">
-        <label class="form-label">Preço médio</label>
-        <input type="number" id="f-pm" placeholder="0.00" step="0.01" min="0">
-        <div class="form-hint" id="pm-hint">BR: R$ · EUA: US$</div>
-      </div>
-    </div>
-    <div class="form-row">
-      <label class="form-label">Dividendos recebidos no ano (R$, opcional)</label>
-      <input type="number" id="f-div" placeholder="0.00" step="0.01" min="0">
+      <div class="form-row"><label class="form-label">Peso alvo (%)</label><input type="number" id="f-peso" placeholder="0" step="0.1" min="0" max="100"></div>
+      <div class="form-row"><label class="form-label">Dividendos (R$)</label><input type="number" id="f-div" placeholder="0.00" step="0.01" min="0"></div>
     </div>
     <div class="form-actions">
       <button class="btn-secondary" onclick="closeModals()">Cancelar</button>
-      <button class="btn-primary" id="btn-salvar-ativo" onclick="salvarAtivo()">Adicionar</button>
+      <button class="btn-primary" id="btn-salvar" onclick="salvarAtivo()">Adicionar</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL IMPORTAR -->
 <div class="modal-bg" id="modal-import">
   <div class="modal">
     <div class="modal-title">Importar carteira</div>
-    <div class="modal-sub">Selecione um arquivo JSON exportado anteriormente.</div>
     <div class="import-area" onclick="document.getElementById('file-input').click()">
-      <div style="font-size:24px;margin-bottom:8px">📂</div>
+      <div style="font-size:28px;margin-bottom:8px">📂</div>
       Clique para selecionar o arquivo <strong>carteira.json</strong>
       <input type="file" id="file-input" accept=".json" style="display:none" onchange="importar(event)">
     </div>
-    <hr class="divider">
-    <div style="font-size:12px;color:var(--text2)">
-      ⚠ Isso <strong style="color:var(--text)">substituirá</strong> todos os ativos atuais pelo conteúdo do arquivo importado.
-    </div>
-    <div class="form-actions">
-      <button class="btn-secondary" onclick="closeModals()">Cancelar</button>
-    </div>
+    <p style="font-size:11px;color:var(--text2);margin-top:12px">⚠ Substituirá todos os ativos atuais.</p>
+    <div class="form-actions"><button class="btn-secondary" onclick="closeModals()">Cancelar</button></div>
   </div>
 </div>
 
+<div class="save-toast" id="toast"></div>
+
 <script>
 const BRAPI_TOKEN = 'd5EMVrjrWTQMD6crf7PH4N';
-const CORS_PROXY  = 'https://api.allorigins.win/get?url=';
-const STORAGE_KEY = 'minha-carteira-v1';
+const PROXY = 'https://api.allorigins.win/get?url=';
+const STORAGE_KEY = 'carteira-v2';
 
-// Carteira padrão (usada apenas na primeira vez)
+// ── METAS ────────────────────────────────────
+const META_US_PCT   = 30;   // % da carteira total em EUA
+const META_BR_PCT   = 70;   // % da carteira total em Brasil
+const META_ETF_PCT  = 55;   // % do bucket EUA em ETFs
+const META_ACAO_PCT = 45;   // % do bucket EUA em Ações
+
 const CARTEIRA_PADRAO = [
-  {ticker:'PETR4',  nome:'Petrobras PN',        tipo:'acao', mercado:'BR', qtd:200, pmedio:36.50, div:320},
-  {ticker:'VALE3',  nome:'Vale ON',              tipo:'acao', mercado:'BR', qtd:100, pmedio:68.20, div:180},
-  {ticker:'ITUB4',  nome:'Itaú Unibanco PN',     tipo:'acao', mercado:'BR', qtd:150, pmedio:32.80, div:90},
-  {ticker:'MXRF11', nome:'Maxi Renda FII',       tipo:'fii',  mercado:'BR', qtd:300, pmedio:9.85,  div:540},
-  {ticker:'KNRI11', nome:'Kinea Renda Imob.',    tipo:'fii',  mercado:'BR', qtd:80,  pmedio:143.00,div:220},
-  {ticker:'BOVA11', nome:'iShares Ibovespa ETF', tipo:'etf',  mercado:'BR', qtd:50,  pmedio:121.00,div:60},
-  {ticker:'AAPL',   nome:'Apple Inc.',           tipo:'acao', mercado:'US', qtd:10,  pmedio:175.00,div:0},
-  {ticker:'VOO',    nome:'Vanguard S&P 500 ETF', tipo:'etf',  mercado:'US', qtd:5,   pmedio:420.00,div:0},
+  {ticker:"BRK.B", nome:"Berkshire Hathaway",           tipo:"acao", mercado:"US", qtd:0.073544, pmedio:490.7227, div:0, pesoAlvo:5,  setor:"Holding/Qualidade"},
+  {ticker:"COST",  nome:"Costco",                        tipo:"acao", mercado:"US", qtd:0.031081, pmedio:950.4435, div:0, pesoAlvo:4,  setor:"Consumo Defensivo"},
+  {ticker:"DE",    nome:"Deere & Company",               tipo:"acao", mercado:"US", qtd:0.069737, pmedio:600.9700, div:0, pesoAlvo:3,  setor:"Agro/Máquinas"},
+  {ticker:"FCX",   nome:"Freeport-McMoRan",              tipo:"acao", mercado:"US", qtd:0.406341, pmedio:68.7600,  div:0, pesoAlvo:2,  setor:"Cobre/Mineração"},
+  {ticker:"INDA",  nome:"iShares MSCI India ETF",        tipo:"etf",  mercado:"US", qtd:0.647394, pmedio:49.9078,  div:0, pesoAlvo:5,  setor:"Índia"},
+  {ticker:"MELI",  nome:"Mercado Libre",                 tipo:"acao", mercado:"US", qtd:0.014046, pmedio:1607.5876,div:0, pesoAlvo:3,  setor:"E-commerce/Fintech"},
+  {ticker:"MSFT",  nome:"Microsoft",                     tipo:"acao", mercado:"US", qtd:0.073037, pmedio:373.3743, div:0, pesoAlvo:4,  setor:"Tecnologia"},
+  {ticker:"NTR",   nome:"Nutrien",                       tipo:"acao", mercado:"US", qtd:0.184776, pmedio:62.4000,  div:0, pesoAlvo:3,  setor:"Fertilizantes/Agro"},
+  {ticker:"NVDA",  nome:"Nvidia",                        tipo:"acao", mercado:"US", qtd:0.131692, pmedio:210.6425, div:0, pesoAlvo:4,  setor:"Semicondutores"},
+  {ticker:"PWR",   nome:"Quanta Services",               tipo:"acao", mercado:"US", qtd:0.016147, pmedio:714.0500, div:0, pesoAlvo:3,  setor:"Infraestrutura Energia"},
+  {ticker:"QQQM",  nome:"Invesco NASDAQ 100 ETF",        tipo:"etf",  mercado:"US", qtd:0.104892, pmedio:732.5600, div:0, pesoAlvo:10, setor:"Tecnologia"},
+  {ticker:"RACE",  nome:"Ferrari",                       tipo:"acao", mercado:"US", qtd:0.100845, pmedio:350.0404, div:0, pesoAlvo:5,  setor:"Luxo/Consumo Premium"},
+  {ticker:"SCHD",  nome:"Schwab Dividend Equity ETF",    tipo:"etf",  mercado:"US", qtd:2.370142, pmedio:32.4200,  div:0, pesoAlvo:10, setor:"Dividendos/Qualidade"},
+  {ticker:"SHLD",  nome:"Global X Defense Tech ETF",     tipo:"etf",  mercado:"US", qtd:0.542984, pmedio:60.7016,  div:0, pesoAlvo:5,  setor:"Defesa"},
+  {ticker:"URA",   nome:"Global X Uranium ETF",          tipo:"etf",  mercado:"US", qtd:0.794623, pmedio:48.3500,  div:0, pesoAlvo:5,  setor:"Energia Nuclear"},
+  {ticker:"V",     nome:"Visa",                          tipo:"acao", mercado:"US", qtd:0.034841, pmedio:330.9300, div:0, pesoAlvo:3,  setor:"Pagamentos"},
+  {ticker:"VIST",  nome:"Vista Energy",                  tipo:"acao", mercado:"US", qtd:0.298568, pmedio:67.6229,  div:0, pesoAlvo:3,  setor:"Petróleo e Gás"},
+  {ticker:"VOO",   nome:"Vanguard S&P 500 ETF",          tipo:"etf",  mercado:"US", qtd:0.156065, pmedio:689.3300, div:0, pesoAlvo:15, setor:"Índice EUA"},
+  {ticker:"VXUS",  nome:"Vanguard Total International",  tipo:"etf",  mercado:"US", qtd:0.965943, pmedio:87.5000,  div:0, pesoAlvo:5,  setor:"Internacional ex-EUA"},
+  {ticker:"XOM",   nome:"Exxon Mobil",                   tipo:"acao", mercado:"US", qtd:0.083757, pmedio:137.6600, div:0, pesoAlvo:3,  setor:"Energia"},
 ];
 
 let carteira = carregarCarteira();
 let precos   = {};
 let usdBrl   = 5.75;
-let evolChart, alocChart;
-let editIndex = -1;
-const evolData   = [68200,71400,73100,70800,75500,78200,76900,80100,83400,85600,88200,91750];
-const evolLabels = ['Jul/24','Ago','Set','Out','Nov','Dez','Jan/25','Fev','Mar','Abr','Mai','Jun'];
+let editIdx  = -1;
+let chartMercados, chartTipos;
 
 // ── STORAGE ──────────────────────────────────
-function carregarCarteira() {
-  try {
-    const s = localStorage.getItem(STORAGE_KEY);
-    return s ? JSON.parse(s) : [...CARTEIRA_PADRAO];
-  } catch(e) { return [...CARTEIRA_PADRAO]; }
+function carregarCarteira(){
+  try{ const s=localStorage.getItem(STORAGE_KEY); return s?JSON.parse(s):[...CARTEIRA_PADRAO]; }
+  catch(e){ return [...CARTEIRA_PADRAO]; }
 }
-function salvarStorage() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(carteira));
-    showToast('✓ Salvo automaticamente');
-  } catch(e) { console.error('Erro ao salvar:', e); }
+function salvarStorage(){
+  try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(carteira)); showToast('✓ Salvo'); }
+  catch(e){}
 }
-
-// ── EXPORTAR ─────────────────────────────────
-function exportar() {
-  const dados = { versao: 1, exportadoEm: new Date().toISOString(), carteira };
-  const blob = new Blob([JSON.stringify(dados, null, 2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `carteira_${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-  showToast('✓ Arquivo exportado com sucesso');
+function exportar(){
+  const blob=new Blob([JSON.stringify({versao:2,exportadoEm:new Date().toISOString(),carteira},null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=`carteira_${new Date().toISOString().slice(0,10)}.json`; a.click();
+  showToast('✓ Exportado');
 }
-
-// ── IMPORTAR ─────────────────────────────────
-function importar(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const dados = JSON.parse(ev.target.result);
-      const lista = dados.carteira || dados;
-      if (!Array.isArray(lista)) throw new Error('formato inválido');
-      carteira = lista;
-      salvarStorage();
-      closeModals();
-      refresh();
-      showToast('✓ Carteira importada com sucesso');
-    } catch(err) {
-      alert('Arquivo inválido. Certifique-se de usar um arquivo exportado por este dashboard.');
-    }
+function importar(e){
+  const file=e.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      carteira=d.carteira||d;
+      if(!Array.isArray(carteira))throw new Error();
+      salvarStorage(); closeModals(); refresh(); showToast('✓ Importado');
+    }catch(){ alert('Arquivo inválido.'); }
   };
-  reader.readAsText(file);
-  e.target.value = '';
+  reader.readAsText(file); e.target.value='';
 }
 
-// ── TOAST ────────────────────────────────────
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+// ── TOAST / STATUS ────────────────────────────
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+function setStatus(s,msg){ document.getElementById('status-dot').className='dot'+(s==='loading'?' loading':s==='error'?' error':''); document.getElementById('update-label').textContent=msg; }
+
+// ── TABS ─────────────────────────────────────
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  event.target.classList.add('active');
 }
 
 // ── UTILITÁRIOS ──────────────────────────────
-const R   = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-const USD = v => v.toLocaleString('en-US',{style:'currency',currency:'USD'});
-const P   = v => (v>=0?'+':'')+v.toFixed(2)+'%';
-const cls = v => v>=0?'pos':'neg';
+const R   = v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const USD = v=>v.toLocaleString('en-US',{style:'currency',currency:'USD'});
+const P   = v=>(v>=0?'+':'')+v.toFixed(2)+'%';
+const cls = v=>v>=0?'pos':'neg';
+function toBRL(a){ const p=precos[a.ticker]; if(!p)return a.pmedio*(a.mercado==='US'?usdBrl:1); return p.moeda==='USD'?p.preco*usdBrl:p.preco; }
+function pmedioEmBRL(a){ return a.mercado==='US'?a.pmedio*usdBrl:a.pmedio; }
+function getPreco(a){ return precos[a.ticker]||{preco:a.pmedio,var:0,moeda:a.mercado==='US'?'USD':'BRL'}; }
 
-function setStatus(state,msg){
-  document.getElementById('status-dot').className='dot'+(state==='loading'?' loading':state==='error'?' error':'');
-  document.getElementById('update-label').textContent=msg;
-}
-function showError(msg){
-  const b=document.getElementById('error-banner');
-  b.textContent=msg; b.style.display=msg?'block':'none';
-}
-
-// ── CÂMBIO ───────────────────────────────────
+// ── FETCH ─────────────────────────────────────
 async function fetchCambio(){
-  try{
-    const r=await fetch(`https://brapi.dev/api/v2/currency?currency=USD-BRL&token=${BRAPI_TOKEN}`);
-    const d=await r.json();
-    if(d.currency?.[0]) usdBrl=d.currency[0].bidPrice||usdBrl;
-  }catch(e){}
+  try{ const r=await fetch(`https://brapi.dev/api/v2/currency?currency=USD-BRL&token=${BRAPI_TOKEN}`); const d=await r.json(); if(d.currency?.[0])usdBrl=d.currency[0].bidPrice||usdBrl; }catch(e){}
 }
-
-// ── BRASIL — 1 ativo por vez ─────────────────
+async function fetchUS(){
+  for(const a of carteira.filter(x=>x.mercado==='US')){
+    try{
+      const url=`https://query1.finance.yahoo.com/v8/finance/chart/${a.ticker}?interval=1d&range=1d`;
+      const r=await fetch(PROXY+encodeURIComponent(url));
+      const w=await r.json(); const d=JSON.parse(w.contents);
+      const meta=d.chart.result[0].meta;
+      const preco=meta.regularMarketPrice, prev=meta.previousClose||meta.chartPreviousClose;
+      precos[a.ticker]={preco,var:prev?((preco-prev)/prev)*100:0,moeda:'USD'};
+    }catch(e){ if(!precos[a.ticker])precos[a.ticker]={preco:a.pmedio,var:0,moeda:'USD'}; }
+  }
+}
 async function fetchBR(){
-  const ativos=carteira.filter(a=>a.mercado==='BR');
-  let erros=0;
-  for(const a of ativos){
+  for(const a of carteira.filter(x=>x.mercado==='BR')){
     try{
       const r=await fetch(`https://brapi.dev/api/quote/${a.ticker}?token=${BRAPI_TOKEN}`);
       const d=await r.json();
-      if(d.results?.[0]){
-        const item=d.results[0];
-        precos[a.ticker]={preco:item.regularMarketPrice,var:item.regularMarketChangePercent||0,moeda:'BRL'};
-      }
-    }catch(e){
-      erros++;
-      if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:'BRL'};
-    }
-    await new Promise(res=>setTimeout(res,300));
-  }
-  if(erros===ativos.length && ativos.length>0) throw new Error('BR falhou');
-}
-
-// ── EUA — Yahoo Finance via proxy ─────────────
-async function fetchUS(){
-  const ativos=carteira.filter(a=>a.mercado==='US');
-  for(const a of ativos){
-    try{
-      const url=`https://query1.finance.yahoo.com/v8/finance/chart/${a.ticker}?interval=1d&range=1d`;
-      const r=await fetch(CORS_PROXY+encodeURIComponent(url));
-      const w=await r.json();
-      const d=JSON.parse(w.contents);
-      const meta=d.chart.result[0].meta;
-      const preco=meta.regularMarketPrice;
-      const prev=meta.previousClose||meta.chartPreviousClose;
-      precos[a.ticker]={preco,var:prev?((preco-prev)/prev)*100:0,moeda:'USD'};
-    }catch(e){
-      if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:'USD'};
-    }
+      if(d.results?.[0]){ const item=d.results[0]; precos[a.ticker]={preco:item.regularMarketPrice,var:item.regularMarketChangePercent||0,moeda:'BRL'}; }
+    }catch(e){ if(!precos[a.ticker])precos[a.ticker]={preco:a.pmedio,var:0,moeda:'BRL'}; }
+    await new Promise(r=>setTimeout(r,300));
   }
 }
 
-// ── CONVERSÃO ─────────────────────────────────
-function toBRL(a){const p=precos[a.ticker];if(!p)return a.pmedio;return p.moeda==='USD'?p.preco*usdBrl:p.preco;}
-function pmedioEmBRL(a){return a.mercado==='US'?a.pmedio*usdBrl:a.pmedio;}
-
-// ── MÉTRICAS ──────────────────────────────────
-function calcMetrics(){
-  let pat=0,custo=0,divs=0,varDia=0;
-  const tipos=new Set();
+// ── CALCULAR TOTAIS ───────────────────────────
+function calcTotais(){
+  let pat=0,custo=0,varDia=0;
   carteira.forEach(a=>{
-    const p=precos[a.ticker]||{preco:a.pmedio,var:0,moeda:a.mercado==='US'?'USD':'BRL'};
-    const val=a.qtd*toBRL(a),cst=a.qtd*pmedioEmBRL(a);
-    pat+=val;custo+=cst;divs+=a.div||0;varDia+=val*(p.var/100);tipos.add(a.tipo);
+    const p=getPreco(a);
+    const val=a.qtd*toBRL(a), cst=a.qtd*pmedioEmBRL(a);
+    pat+=val; custo+=cst; varDia+=val*(p.var/100);
   });
-  const res=pat-custo,resPct=(res/custo)*100,varPct=(varDia/pat)*100;
-  document.getElementById('m-pat').textContent=R(pat);
-  document.getElementById('m-vardia').innerHTML=`<span class="${cls(varDia)}">${R(varDia)} hoje (${P(varPct)})</span>`;
-  document.getElementById('m-res').textContent=R(res);
-  document.getElementById('m-res').className='metric-value '+cls(res);
-  document.getElementById('m-respct').innerHTML=`<span class="${cls(res)}">${P(resPct)} desde a compra</span>`;
-  document.getElementById('m-div').textContent=R(divs);
-  document.getElementById('m-count').textContent=carteira.length;
-  const tn={acao:'Ações',fii:'FIIs',etf:'ETFs',renda:'Renda Fixa'};
-  document.getElementById('m-tipos').textContent=[...tipos].map(t=>tn[t]).join(', ');
-  return pat;
+  return {pat,custo,res:pat-custo,resPct:(pat-custo)/custo*100,varDia,varDiaPct:varDia/pat*100};
 }
 
-// ── TABELA ────────────────────────────────────
-function buildTable(pat){
-  const tl={acao:'Ação',fii:'FII',etf:'ETF',renda:'Renda Fixa'};
+// ── VISÃO GERAL ───────────────────────────────
+function buildVisaoGeral(){
+  const t=calcTotais();
+  document.getElementById('m-pat').textContent=R(t.pat);
+  document.getElementById('m-vardia').innerHTML=`<span class="${cls(t.varDia)}">${R(t.varDia)} hoje (${P(t.varDiaPct)})</span>`;
+  document.getElementById('m-custo').textContent=R(t.custo);
+  document.getElementById('m-res-pct').innerHTML=`<span class="${cls(t.res)}">${P(t.resPct)} de retorno</span>`;
+  document.getElementById('m-res').textContent=R(t.res);
+  document.getElementById('m-res').className='metric-value '+cls(t.res);
+  document.getElementById('m-vardia2').innerHTML=`<span class="${cls(t.varDia)}">${P(t.varDiaPct)} hoje</span>`;
+  document.getElementById('m-cambio').textContent=`R$ ${usdBrl.toFixed(2)}`;
+
+  // Totais por mercado
+  let patUS=0, patBR=0;
+  carteira.forEach(a=>{ const v=a.qtd*toBRL(a); if(a.mercado==='US')patUS+=v; else patBR+=v; });
+  const pctUS=(patUS/t.pat)*100, pctBR=(patBR/t.pat)*100;
+
+  // Chart mercados
+  const ctx1=document.getElementById('chartMercados').getContext('2d');
+  if(chartMercados)chartMercados.destroy();
+  chartMercados=new Chart(ctx1,{
+    type:'doughnut',
+    data:{labels:['EUA','Brasil'],datasets:[{data:[patUS,patBR],backgroundColor:['#4f8ef7','#36d399'],borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
+      plugins:{legend:{position:'bottom',labels:{color:'#8b95b0',font:{size:11},padding:12}},
+        tooltip:{callbacks:{label:c=>`${c.label}: ${R(c.parsed)} (${((c.parsed/t.pat)*100).toFixed(1)}%)`}}}}
+  });
+
+  // Chart tipos EUA
+  let etfUS=0, acaoUS=0;
+  carteira.filter(a=>a.mercado==='US').forEach(a=>{ const v=a.qtd*toBRL(a); if(a.tipo==='etf')etfUS+=v; else acaoUS+=v; });
+  const ctx2=document.getElementById('chartTipos').getContext('2d');
+  if(chartTipos)chartTipos.destroy();
+  chartTipos=new Chart(ctx2,{
+    type:'doughnut',
+    data:{labels:['ETFs','Ações'],datasets:[{data:[etfUS,acaoUS],backgroundColor:['#fbbf24','#4f8ef7'],borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
+      plugins:{legend:{position:'bottom',labels:{color:'#8b95b0',font:{size:11},padding:12}},
+        tooltip:{callbacks:{label:c=>`${c.label}: ${R(c.parsed)} (${((c.parsed/(etfUS+acaoUS))*100).toFixed(1)}%)`}}}}
+  });
+
+  // Resumo alocação
+  const deltaUS=pctUS-META_US_PCT, deltaBR=pctBR-META_BR_PCT;
+  const pctETF=(etfUS/(etfUS+acaoUS))*100, pctAcaoUS=(acaoUS/(etfUS+acaoUS))*100;
+  const deltaETF=pctETF-META_ETF_PCT, deltaAcaoUS=pctAcaoUS-META_ACAO_PCT;
+
+  function alocBar(label,atual,meta,cor){
+    const d=atual-meta;
+    const badge=Math.abs(d)<0.5?`<span class="delta-badge delta-ok">≈ meta</span>`:
+      d>0?`<span class="delta-badge delta-pos">+${d.toFixed(1)}% acima</span>`:
+          `<span class="delta-badge delta-neg">${d.toFixed(1)}% abaixo</span>`;
+    return `<div class="aloc-row">
+      <div class="aloc-left"><div class="aloc-dot" style="background:${cor}"></div><span>${label}</span></div>
+      <div class="aloc-right">
+        <span style="color:var(--text2)">meta ${meta}%</span>
+        <span style="font-weight:600">${atual.toFixed(1)}%</span>
+        ${badge}
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('resumo-aloc').innerHTML=
+    alocBar('EUA (carteira total)',pctUS,META_US_PCT,'#4f8ef7')+
+    alocBar('Brasil (carteira total)',pctBR,META_BR_PCT,'#36d399')+
+    alocBar('ETFs dentro do bucket EUA',pctETF,META_ETF_PCT,'#fbbf24')+
+    alocBar('Ações dentro do bucket EUA',pctAcaoUS,META_ACAO_PCT,'#f87272');
+}
+
+// ── TABELA DE ATIVOS ──────────────────────────
+function buildAtivos(){
+  const {pat}=calcTotais();
+  const tl={acao:'Ação',etf:'ETF',fii:'FII',renda:'Renda Fixa'};
   let html='';
   carteira.forEach((a,i)=>{
-    const p=precos[a.ticker]||{preco:a.pmedio,var:0,moeda:a.mercado==='US'?'USD':'BRL'};
-    const val=a.qtd*toBRL(a),cst=a.qtd*pmedioEmBRL(a);
-    const res=val-cst,resPct=(res/cst)*100,peso=(val/pat)*100;
-    const precoFmt=p.moeda==='USD'
-      ?`${USD(p.preco)} <span style="font-size:10px;color:var(--text3)">(${R(p.preco*usdBrl)})</span>`
-      :R(p.preco);
-    const pmFmt=a.mercado==='US'?USD(a.pmedio):R(a.pmedio);
-    const usBadge=a.mercado==='US'?' <span class="tag tag-us" style="margin-left:4px">US</span>':'';
+    const p=getPreco(a);
+    const val=a.qtd*toBRL(a), cst=a.qtd*pmedioEmBRL(a);
+    const res=val-cst, resPct=(res/cst)*100, peso=(val/pat)*100;
+    const delta=peso-(a.pesoAlvo||0);
+    const deltaStr=a.pesoAlvo?`<span class="${Math.abs(delta)<0.5?'':''}${delta>0.5?'pos':delta<-0.5?'neg':''}" style="font-size:11px">${delta>0?'+':''}${delta.toFixed(1)}%</span>`:'—';
+    const precoFmt=p.moeda==='USD'?`${USD(p.preco)}<br><span style="font-size:10px;color:var(--text3)">${R(p.preco*usdBrl)}</span>`:R(p.preco);
     html+=`<tr>
-      <td><span class="ticker">${a.ticker}</span>${usBadge}<div class="nome">${a.nome}</div></td>
+      <td><span class="ticker-badge">${a.ticker}</span><div style="font-size:10px;color:var(--text2);margin-top:2px">${a.nome}</div></td>
+      <td style="font-size:11px;color:var(--text2)">${a.setor||'—'}</td>
       <td><span class="tag tag-${a.tipo}">${tl[a.tipo]}</span></td>
-      <td>${Number(a.qtd).toLocaleString('pt-BR')}</td>
-      <td style="color:var(--text2)">${pmFmt}</td>
-      <td style="font-weight:600">${precoFmt}</td>
-      <td class="${cls(p.var)}" style="font-weight:600">${P(p.var)}</td>
-      <td class="${cls(res)}">${R(res)}<div style="font-size:11px">${P(resPct)}</div></td>
-      <td><span style="font-size:12px;color:var(--text2)">${peso.toFixed(1)}%</span>
-        <div class="bar-track"><div class="bar-fill" style="width:${Math.min(peso,100)}%"></div></div></td>
+      <td style="font-size:11px">${Number(a.qtd).toFixed(4)}</td>
+      <td style="color:var(--text2);font-size:11px">${a.mercado==='US'?USD(a.pmedio):R(a.pmedio)}</td>
+      <td style="font-weight:600;font-size:11px">${precoFmt}</td>
+      <td class="${cls(p.var)}" style="font-weight:600;font-size:11px">${P(p.var)}</td>
+      <td style="font-weight:600">${R(val)}</td>
+      <td class="${cls(res)}">${R(res)}<div style="font-size:10px">${P(resPct)}</div></td>
+      <td>
+        <span style="font-size:12px">${peso.toFixed(1)}%</span>
+        <div class="prog-wrap" style="width:60px"><div class="prog-fill" style="width:${Math.min(peso/((a.pesoAlvo||peso)||1)*100,150)}%;background:#4f8ef7;opacity:.8"></div></div>
+      </td>
+      <td style="font-size:11px;color:var(--text2)">${a.pesoAlvo?a.pesoAlvo+'%':'—'}</td>
+      <td>${deltaStr}</td>
       <td style="white-space:nowrap">
-        <button class="btn btn-edit" onclick="editarAtivo(${i})">✎ Editar</button>
-        <button class="btn btn-del"  onclick="removerAtivo(${i})">✕</button>
+        <button class="btn" onclick="editarAtivo(${i})" style="padding:3px 8px;font-size:10px;color:var(--accent2);border-color:#4f8ef730;margin-right:3px">✎</button>
+        <button class="btn" onclick="removerAtivo(${i})" style="padding:3px 8px;font-size:10px;color:var(--red);border-color:#f8727230">✕</button>
       </td>
     </tr>`;
   });
-  document.getElementById('tbody').innerHTML=html;
+  document.getElementById('tbody-ativos').innerHTML=html;
 }
 
-// ── GRÁFICOS ──────────────────────────────────
-function buildCharts(pat){
-  const ctx1=document.getElementById('chartEvol').getContext('2d');
-  if(evolChart)evolChart.destroy();
-  evolChart=new Chart(ctx1,{type:'line',data:{labels:evolLabels,datasets:[{
-    label:'Patrimônio',data:evolData,borderColor:'#4f8ef7',backgroundColor:'rgba(79,142,247,.07)',
-    fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#4f8ef7',borderWidth:2
-  }]},options:{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>R(c.parsed.y)}}},
-    scales:{x:{grid:{color:'#1e2535'},ticks:{color:'#8b95b0',font:{size:10}}},
-            y:{grid:{color:'#1e2535'},ticks:{color:'#8b95b0',font:{size:10},callback:v=>'R$'+Math.round(v/1000)+'k'}}}}});
+// ── ALOCAÇÃO & META ───────────────────────────
+function buildAlocacao(){
+  const {pat}=calcTotais();
+  let patUS=0,patBR=0,etfUS=0,acaoUS=0;
+  carteira.forEach(a=>{
+    const v=a.qtd*toBRL(a);
+    if(a.mercado==='US'){patUS+=v;if(a.tipo==='etf')etfUS+=v;else acaoUS+=v;}
+    else patBR+=v;
+  });
+  const pctUS=(patUS/pat)*100,pctBR=(patBR/pat)*100;
+  const pctETF=patUS?(etfUS/patUS)*100:0,pctAcao=patUS?(acaoUS/patUS)*100:0;
 
-  const tipos={acao:0,fii:0,etf:0,renda:0};
-  carteira.forEach(a=>{tipos[a.tipo]+=a.qtd*toBRL(a);});
-  const cores=['#4f8ef7','#36d399','#fbbf24','#c084fc'];
-  const nomes=['Ações','FIIs','ETFs','Renda Fixa'];
-  const vals=Object.values(tipos);
-  const ctx2=document.getElementById('chartAloc').getContext('2d');
-  if(alocChart)alocChart.destroy();
-  alocChart=new Chart(ctx2,{type:'doughnut',data:{labels:nomes,datasets:[{data:vals,backgroundColor:cores,borderWidth:0,hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${((c.parsed/pat)*100).toFixed(1)}%`}}}}});
-  let leg='';
-  nomes.forEach((n,i)=>{leg+=`<div class="aloc-item"><div class="aloc-left"><div class="aloc-dot" style="background:${cores[i]}"></div>${n}</div><span style="font-weight:600">${((vals[i]/pat)*100).toFixed(1)}%</span></div>`;});
-  document.getElementById('aloc-leg').innerHTML=leg;
-}
-
-// ── MODAIS ────────────────────────────────────
-function openModal(tipo, idx) {
-  closeModals();
-  if(tipo==='import'){
-    document.getElementById('modal-import').classList.add('open');
-    return;
+  function barItem(label,atual,meta,cor){
+    const d=atual-meta, w=Math.min(atual,100);
+    const badge=Math.abs(d)<0.5?`<span class="delta-badge delta-ok">≈ meta</span>`:
+      d>0?`<span class="delta-badge delta-pos">+${d.toFixed(1)}%</span>`:
+          `<span class="delta-badge delta-neg">${d.toFixed(1)}%</span>`;
+    return `<div style="margin-bottom:16px">
+      <div class="prog-label"><span style="font-size:13px">${label}</span><div style="display:flex;gap:8px;align-items:center"><span style="color:var(--text2)">meta ${meta}%</span><span style="font-weight:600">${atual.toFixed(1)}%</span>${badge}</div></div>
+      <div class="prog-wrap"><div class="prog-fill" style="width:${w}%;background:${cor}"></div></div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px">${R(label.includes('EUA')||label.includes('ETF')||label.includes('Ação')?patUS*(atual/100):patBR*(atual/100))}</div>
+    </div>`;
   }
-  editIndex = (idx !== undefined) ? idx : -1;
-  const isEdit = editIndex >= 0;
-  document.getElementById('modal-add-title').textContent = isEdit ? 'Editar ativo' : 'Adicionar ativo';
-  document.getElementById('modal-add-sub').textContent   = isEdit ? 'Atualize os dados da posição.' : 'Os dados são salvos automaticamente no seu navegador.';
-  document.getElementById('btn-salvar-ativo').textContent= isEdit ? 'Salvar alterações' : 'Adicionar';
+
+  document.getElementById('aloc-geo').innerHTML=
+    barItem('EUA',pctUS,META_US_PCT,'#4f8ef7')+
+    barItem('Brasil',pctBR,META_BR_PCT,'#36d399');
+
+  document.getElementById('aloc-us-tipo').innerHTML=patUS?
+    barItem('ETFs (dentro do EUA)',pctETF,META_ETF_PCT,'#fbbf24')+
+    barItem('Ações (dentro do EUA)',pctAcao,META_ACAO_PCT,'#f87272'):
+    '<p style="color:var(--text2);font-size:13px">Nenhum ativo EUA cadastrado.</p>';
+
+  // Por ativo
+  const usAtivos=carteira.filter(a=>a.mercado==='US');
+  let html='';
+  usAtivos.sort((a,b)=>(b.pesoAlvo||0)-(a.pesoAlvo||0)).forEach(a=>{
+    const val=a.qtd*toBRL(a);
+    const pesoAtual=patUS?(val/patUS)*100:0;
+    const meta=a.pesoAlvo||0;
+    const delta=pesoAtual-meta;
+    const cor=a.tipo==='etf'?'#fbbf24':'#4f8ef7';
+    html+=`<div style="margin-bottom:12px">
+      <div class="prog-label">
+        <span><span class="ticker-badge">${a.ticker}</span> <span style="font-size:11px;color:var(--text2)">${a.nome}</span></span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:11px;color:var(--text2)">meta ${meta}%</span>
+          <span style="font-size:12px;font-weight:600">${pesoAtual.toFixed(1)}%</span>
+          <span class="delta-badge ${Math.abs(delta)<0.5?'delta-ok':delta>0?'delta-pos':'delta-neg'}">${delta>0?'+':''}${delta.toFixed(1)}%</span>
+        </div>
+      </div>
+      <div class="prog-wrap"><div class="prog-fill" style="width:${Math.min(pesoAtual,100)}%;background:${cor};opacity:.85"></div></div>
+    </div>`;
+  });
+  document.getElementById('aloc-ativos').innerHTML=html||'<p style="color:var(--text2)">Nenhum ativo.</p>';
+}
+
+// ── REBALANCEAMENTO ───────────────────────────
+function calcRebal(){
+  const aporte=parseFloat(document.getElementById('sim-valor').value)||0;
+  const destino=document.getElementById('sim-destino').value;
+  const {pat}=calcTotais();
+  const patTotal=pat+aporte;
+
+  let patUS=0,patBR=0;
+  carteira.forEach(a=>{ const v=a.qtd*toBRL(a); if(a.mercado==='US')patUS+=v; else patBR+=v; });
+
+  // Quanto deve ir para cada mercado
+  let aporteUS=0, aporteBR=0;
+  if(destino==='US'){ aporteUS=aporte; }
+  else if(destino==='BR'){ aporteBR=aporte; }
+  else {
+    // Automático: calcular quanto falta para atingir a meta
+    const metaUS=patTotal*META_US_PCT/100;
+    const metaBR=patTotal*META_BR_PCT/100;
+    const faltaUS=Math.max(0,metaUS-patUS);
+    const faltaBR=Math.max(0,metaBR-patBR);
+    if(faltaUS+faltaBR===0){ aporteUS=aporte*META_US_PCT/100; aporteBR=aporte*META_BR_PCT/100; }
+    else {
+      const total=faltaUS+faltaBR;
+      aporteUS=aporte*(faltaUS/total);
+      aporteBR=aporte*(faltaBR/total);
+    }
+  }
+
+  let html=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+    <div class="rebal-card"><div class="rebal-left"><div style="font-size:11px;color:var(--text2)">Aportar em EUA</div><div class="rebal-amount">${R(aporteUS)}</div><div class="rebal-detail">${USD(aporteUS/usdBrl)} · ${((aporteUS/aporte)*100).toFixed(1)}% do aporte</div></div></div>
+    <div class="rebal-card"><div class="rebal-left"><div style="font-size:11px;color:var(--text2)">Aportar no Brasil</div><div class="rebal-amount">${R(aporteBR)}</div><div class="rebal-detail">${((aporteBR/aporte)*100).toFixed(1)}% do aporte</div></div></div>
+  </div>`;
+
+  if(aporteUS>0){
+    // Distribuir entre ativos EUA conforme peso alvo
+    const usAtivos=carteira.filter(a=>a.mercado==='US'&&(a.pesoAlvo||0)>0);
+    const totalPeso=usAtivos.reduce((s,a)=>s+(a.pesoAlvo||0),0);
+
+    // Primeiro: dentro do bucket EUA, separar ETF vs Ação
+    const aporteETF=aporteUS*META_ETF_PCT/100;
+    const aporteAcao=aporteUS*META_ACAO_PCT/100;
+    const totalPesoETF=usAtivos.filter(a=>a.tipo==='etf').reduce((s,a)=>s+(a.pesoAlvo||0),0);
+    const totalPesoAcao=usAtivos.filter(a=>a.tipo!=='etf').reduce((s,a)=>s+(a.pesoAlvo||0),0);
+
+    html+=`<div style="font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Distribuição por ativo (EUA)</div>`;
+    html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">`;
+
+    usAtivos.sort((a,b)=>(b.pesoAlvo||0)-(a.pesoAlvo||0)).forEach(a=>{
+      const isETF=a.tipo==='etf';
+      const totalBucket=isETF?totalPesoETF:totalPesoAcao;
+      const bucketVal=isETF?aporteETF:aporteAcao;
+      const valorAtivo=totalBucket?bucketVal*((a.pesoAlvo||0)/totalBucket):0;
+      const preco=precos[a.ticker]?.preco||a.pmedio;
+      const qtdComprar=valorAtivo/(preco*usdBrl);
+      html+=`<div class="rebal-card"><div class="rebal-left">
+        <div style="display:flex;gap:6px;align-items:center"><span class="ticker-badge">${a.ticker}</span><span class="tag tag-${a.tipo}" style="font-size:9px">${isETF?'ETF':'Ação'}</span></div>
+        <div class="rebal-amount" style="font-size:14px">${R(valorAtivo)}</div>
+        <div class="rebal-detail">${USD(valorAtivo/usdBrl)} · ~${qtdComprar.toFixed(4)} cotas · peso alvo ${a.pesoAlvo}%</div>
+      </div></div>`;
+    });
+    html+='</div>';
+  }
+
+  if(aporteBR>0){
+    html+=`<div style="font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 10px">Brasil</div>`;
+    const brAtivos=carteira.filter(a=>a.mercado==='BR');
+    if(brAtivos.length===0){
+      html+=`<div class="rebal-card"><div class="rebal-left"><div style="font-size:13px">${R(aporteBR)} para Brasil</div><div class="rebal-detail">Adicione ativos BR à carteira para ver a distribuição detalhada.</div></div></div>`;
+    } else {
+      const totalPesoBR=brAtivos.reduce((s,a)=>s+(a.pesoAlvo||1),0);
+      html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">`;
+      brAtivos.forEach(a=>{
+        const v=aporteBR*((a.pesoAlvo||1)/totalPesoBR);
+        html+=`<div class="rebal-card"><div class="rebal-left"><span class="ticker-badge">${a.ticker}</span><div class="rebal-amount" style="font-size:14px">${R(v)}</div></div></div>`;
+      });
+      html+='</div>';
+    }
+  }
+
+  document.getElementById('rebal-resultado').innerHTML=html;
+}
+
+// ── MODAL ─────────────────────────────────────
+function openModal(tipo,idx){
+  closeModals();
+  if(tipo==='import'){ document.getElementById('modal-import').classList.add('open'); return; }
+  editIdx=idx!==undefined?idx:-1;
+  const isEdit=editIdx>=0;
+  document.getElementById('modal-title').textContent=isEdit?'Editar ativo':'Adicionar ativo';
+  document.getElementById('btn-salvar').textContent=isEdit?'Salvar':'Adicionar';
   if(isEdit){
-    const a=carteira[idx];
+    const a=carteira[editIdx];
     document.getElementById('f-ticker').value=a.ticker;
     document.getElementById('f-nome').value=a.nome;
+    document.getElementById('f-setor').value=a.setor||'';
     document.getElementById('f-mercado').value=a.mercado;
     document.getElementById('f-tipo').value=a.tipo;
     document.getElementById('f-qtd').value=a.qtd;
     document.getElementById('f-pm').value=a.pmedio;
-    document.getElementById('f-div').value=a.div||0;
+    document.getElementById('f-peso').value=a.pesoAlvo||'';
+    document.getElementById('f-div').value=a.div||'';
   } else {
-    document.getElementById('f-ticker').value='';
-    document.getElementById('f-nome').value='';
-    document.getElementById('f-mercado').value='BR';
+    ['f-ticker','f-nome','f-setor','f-qtd','f-pm','f-peso','f-div'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f-mercado').value='US';
     document.getElementById('f-tipo').value='acao';
-    document.getElementById('f-qtd').value='';
-    document.getElementById('f-pm').value='';
-    document.getElementById('f-div').value='';
   }
   document.getElementById('modal-add').classList.add('open');
 }
-function closeModals(){
-  document.querySelectorAll('.modal-bg').forEach(m=>m.classList.remove('open'));
-}
-
+function closeModals(){ document.querySelectorAll('.modal-bg').forEach(m=>m.classList.remove('open')); }
 function salvarAtivo(){
   const ticker=document.getElementById('f-ticker').value.trim().toUpperCase();
   const nome=document.getElementById('f-nome').value.trim();
+  const setor=document.getElementById('f-setor').value.trim();
   const mercado=document.getElementById('f-mercado').value;
   const tipo=document.getElementById('f-tipo').value;
   const qtd=parseFloat(document.getElementById('f-qtd').value);
   const pmedio=parseFloat(document.getElementById('f-pm').value);
+  const pesoAlvo=parseFloat(document.getElementById('f-peso').value)||0;
   const div=parseFloat(document.getElementById('f-div').value)||0;
-  if(!ticker||!nome||!qtd||!pmedio){alert('Preencha todos os campos obrigatórios.');return;}
-  const ativo={ticker,nome,tipo,mercado,qtd,pmedio,div};
-  if(editIndex>=0){
-    carteira[editIndex]=ativo;
-  } else {
-    carteira.push(ativo);
-  }
-  salvarStorage();
-  closeModals();
-  refresh();
+  if(!ticker||!nome||!qtd||!pmedio){ alert('Preencha ticker, nome, quantidade e preço médio.'); return; }
+  const ativo={ticker,nome,setor,tipo,mercado,qtd,pmedio,pesoAlvo,div};
+  if(editIdx>=0) carteira[editIdx]=ativo; else carteira.push(ativo);
+  salvarStorage(); closeModals(); refresh();
 }
-
-function editarAtivo(i){ openModal('add', i); }
-function removerAtivo(i){
-  if(confirm(`Remover ${carteira[i].ticker} da carteira?`)){
-    carteira.splice(i,1);
-    salvarStorage();
-    refresh();
-  }
-}
+function editarAtivo(i){ openModal('add',i); }
+function removerAtivo(i){ if(confirm(`Remover ${carteira[i].ticker}?`)){ carteira.splice(i,1); salvarStorage(); refresh(); } }
 
 // ── REFRESH ───────────────────────────────────
 async function refresh(){
   setStatus('loading','Buscando cotações...');
-  showError('');
   document.getElementById('btn-refresh').disabled=true;
-  let erroBR=false;
-  try{await fetchCambio();}catch(e){}
-  try{await fetchBR();}catch(e){erroBR=true;}
-  try{await fetchUS();}catch(e){}
-  const pat=calcMetrics();
-  buildTable(pat);
-  buildCharts(pat);
+  try{ await fetchCambio(); }catch(e){}
+  try{ await fetchUS(); }catch(e){}
+  try{ await fetchBR(); }catch(e){}
+  buildVisaoGeral();
+  buildAtivos();
+  buildAlocacao();
+  calcRebal();
   const t=new Date();
-  if(erroBR){
-    setStatus('error','Erro ao buscar cotações BR');
-    showError('⚠ Não foi possível buscar cotações BR. Usando último valor salvo.');
-  } else {
-    setStatus('ok',`Atualizado às ${t.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})} · USD/BRL ${usdBrl.toFixed(2)}`);
-  }
+  setStatus('ok',`Atualizado às ${t.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})} · USD/BRL ${usdBrl.toFixed(2)}`);
   document.getElementById('btn-refresh').disabled=false;
 }
 
