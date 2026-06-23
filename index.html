@@ -140,6 +140,7 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
     <button class="btn-theme" id="btnTheme" onclick="toggleTheme()" title="Alternar tema">🌙</button>
     <button class="btn g" onclick="openM('novo')">+ Novo Ativo</button>
     <button class="btn o" onclick="openM('aporte')">+ Aporte</button>
+    <button class="btn" style="border-color:#f8727250;color:var(--red)" onclick="openM('venda')">− Venda</button>
     <button class="btn" onclick="exp()">↓ Exportar</button>
     <button class="btn" onclick="openM('imp')">↑ Importar</button>
     <button class="btn" id="btnR" onclick="refresh()">↻ Atualizar</button>
@@ -323,6 +324,7 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
         <option value="">Todos os tipos</option>
         <option value="aporte">Aporte</option>
         <option value="novo">Cadastro inicial</option>
+        <option value="venda">Venda</option>
       </select>
       <input type="text" id="hsFiltBusca" placeholder="Buscar ticker..." style="width:160px;font-size:12px;padding:5px 8px" oninput="buildHistorico()">
     </div>
@@ -330,9 +332,8 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
   <div class="tw">
     <table>
       <thead><tr>
-        <th>Data</th><th>Ativo</th><th>Nome</th><th>Tipo Op.</th>
-        <th>Qtd</th><th>Preço (orig.)</th><th>Câmbio</th><th>Taxa</th>
-        <th>Valor (orig.)</th><th>Valor BRL</th><th>PM Resultante BRL</th><th>Obs.</th>
+        <th>Data</th><th>Ativo</th><th>Nome</th><th>Tipo Op.</th><th>Qtd</th><th>Preço</th><th>Câmbio</th><th>Taxa</th>
+        <th>Valor (orig.)</th><th>Valor BRL</th><th>Lucro/Prej. BRL</th><th>IR Est.</th><th>Líq. pós IR</th><th>PM</th><th>Obs.</th>
       </tr></thead>
       <tbody id="tbHist"></tbody>
     </table>
@@ -464,6 +465,83 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
   </div>
 </div>
 
+
+<!-- MODAL VENDA -->
+<div class="mb" id="mVenda">
+  <div class="md">
+    <div class="mt">📉 Registrar Venda</div>
+    <div class="fr">
+      <label class="fl">Ativo</label>
+      <select id="vTk" style="width:100%" onchange="vendaTickerChange()"></select>
+    </div>
+    <div id="vInfoBox" class="info-box" style="display:none"></div>
+    <div class="fg3">
+      <div class="fr">
+        <label class="fl">Qtd Vendida</label>
+        <input type="number" id="vQtd" placeholder="0.00000000" step="0.00000001" min="0" style="width:100%" oninput="vendaCalc()">
+        <div style="font-size:10px;color:var(--text2);margin-top:3px">Disponível: <span id="vQtdDisp">—</span></div>
+      </div>
+      <div class="fr">
+        <label class="fl" id="vPrecoLbl">Preço de Venda</label>
+        <div style="display:flex;align-items:center;gap:5px">
+          <span id="vMoeda" style="font-size:11px;font-weight:700;color:var(--green)">US$</span>
+          <input type="number" id="vPreco" placeholder="0.00" step="0.0001" min="0" style="width:100%" oninput="vendaCalc()">
+        </div>
+      </div>
+      <div class="fr">
+        <label class="fl">Câmbio Venda (USD/BRL)</label>
+        <input type="number" id="vCambio" placeholder="5.21" step="0.0001" min="0" style="width:100%" oninput="vendaCalc()">
+        <div style="font-size:10px;color:var(--text2);margin-top:3px">Atual: <span id="vCambioAtual">—</span></div>
+      </div>
+    </div>
+    <div class="fg">
+      <div class="fr">
+        <label class="fl">Taxa / Corretagem (BRL)</label>
+        <input type="number" id="vTaxa" placeholder="0.00" step="0.01" min="0" style="width:100%" oninput="vendaCalc()">
+      </div>
+      <div class="fr">
+        <label class="fl">Data da venda</label>
+        <input type="text" id="vData" placeholder="dd/mm/aaaa" style="width:100%">
+      </div>
+    </div>
+    <!-- Resultado calculado -->
+    <div id="vCalcBox" style="display:none">
+      <div class="info-box" style="border-color:var(--accent);margin-bottom:8px">
+        <div style="font-size:11px;font-weight:600;margin-bottom:8px;color:var(--accent)">📊 Resumo da operação</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px">
+          <div>Valor bruto venda: <strong id="vResBruto">—</strong></div>
+          <div>PM de compra: <strong id="vResPM">—</strong></div>
+          <div>Custo das cotas: <strong id="vResCusto">—</strong></div>
+          <div>Resultado bruto: <strong id="vResLucro">—</strong></div>
+          <div>Câmbio médio compra: <strong id="vResCambioComp">—</strong></div>
+          <div>Variação cambial: <strong id="vResVarCambio">—</strong></div>
+          <div>Taxa: <strong id="vResTaxa">—</strong></div>
+          <div>Resultado líquido: <strong id="vResLiq">—</strong></div>
+        </div>
+      </div>
+      <div class="info-box" style="border-color:var(--yellow)">
+        <div style="font-size:11px;font-weight:600;margin-bottom:8px;color:var(--yellow)">🧾 Imposto estimado (revise antes de confirmar)</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:8px" id="vImpRegra"></div>
+        <div class="fg">
+          <div class="fr">
+            <label class="fl">Base de cálculo (BRL)</label>
+            <input type="number" id="vImpBase" step="0.01" style="width:100%" oninput="vendaCalcImp()">
+          </div>
+          <div class="fr">
+            <label class="fl">Alíquota (%)</label>
+            <input type="number" id="vImpAliq" step="0.01" min="0" max="100" style="width:100%" oninput="vendaCalcImp()">
+          </div>
+        </div>
+        <div style="font-size:12px;margin-top:4px">Imposto estimado: <strong id="vImpValor" style="color:var(--red)">R$ 0,00</strong> | Resultado após IR: <strong id="vResAfterIR" class="pos">—</strong></div>
+      </div>
+    </div>
+    <div class="fr">
+      <label class="fl">Observação</label>
+      <input type="text" id="vObs" placeholder="Opcional" style="width:100%">
+    </div>
+    <div class="fa"><button class="bs" onclick="closeM()">Cancelar</button><button class="bp" style="background:var(--red)" onclick="saveVenda()">Confirmar Venda</button></div>
+  </div>
+</div>
 <!-- MODAL IMPORT -->
 <div class="mb" id="mImp">
   <div class="md">
@@ -628,6 +706,7 @@ function openM(t,idx){
     document.getElementById('ePa').value=a.pesoAlvo||'';
     document.getElementById('mEdit').classList.add('on');
   }
+  if(t==='venda'){\n    const sel=document.getElementById('vTk');\n    sel.innerHTML=carteira.filter(a=>a.qtd>0).map(a=>'<option value="'+a.ticker+'">'+a.ticker+' — '+a.nome+'</option>').join('');\n    document.getElementById('vData').value=new Date().toLocaleDateString('pt-BR');\n    document.getElementById('vCambio').value=usdBrl.toFixed(4);\n    document.getElementById('vCambioAtual').textContent='R$ '+usdBrl.toFixed(4);\n    document.getElementById('vQtd').value='';\n    document.getElementById('vPreco').value='';\n    document.getElementById('vTaxa').value='';\n    document.getElementById('vObs').value='';\n    document.getElementById('vCalcBox').style.display='none';\n    vendaTickerChange();\n    document.getElementById('mVenda').classList.add('on');\n    return;\n  }
 }
 
 // ═══════════════════ BUSCAR TICKER ═══════════════════
@@ -788,6 +867,159 @@ function saveAporte(){
 }
 
 function delAt(i){
+
+// ═══════════════════ VENDA ═══════════════════
+function cambioMedioCompra(tk){
+  // Calcula câmbio médio ponderado dos aportes do ativo
+  const aps=aportes.filter(a=>a.ticker===tk&&a.moeda==='USD');
+  if(!aps.length) return usdBrl;
+  const totalQtd=aps.reduce((s,a)=>s+a.qtd,0);
+  const totalPonderado=aps.reduce((s,a)=>s+(a.cambio*a.qtd),0);
+  return totalQtd>0?totalPonderado/totalQtd:usdBrl;
+}
+
+function calcImposto(tipo,mercado,lucroLiqBRL,qtdVendaBRL){
+  let aliq=0, regra='';
+  if(mercado==='US'){
+    if(tipo==='etf'||tipo==='acao'){
+      aliq=15; regra='Ganho de capital no exterior: alíquota de 15% sobre o lucro líquido em BRL.';
+    }
+  } else {
+    if(tipo==='fii'){ aliq=20; regra='FII: alíquota de 20% sobre o lucro.'; }
+    else if(tipo==='renda'){ aliq=17.5; regra='Renda Fixa: alíquota estimada de 17,5% (tabela regressiva — ajuste conforme prazo).'; }
+    else if(tipo==='acao'){
+      if(qtdVendaBRL<=20000){ aliq=0; regra='Ações BR: venda mensal ≤ R$20.000 — isento de IR. Verifique o total de vendas no mês.'; }
+      else { aliq=15; regra='Ações BR: venda mensal > R$20.000 — alíquota de 15% sobre o lucro.'; }
+    } else { aliq=15; regra='Alíquota padrão de 15% aplicada.'; }
+  }
+  return {aliq, imposto:lucroLiqBRL>0?lucroLiqBRL*(aliq/100):0, regra};
+}
+
+function vendaTickerChange(){
+  const tk=document.getElementById('vTk').value;
+  const at=carteira.find(a=>a.ticker===tk);
+  if(!at) return;
+  const isUS=at.mercado==='US';
+  document.getElementById('vMoeda').textContent=isUS?'US$':'R$';
+  document.getElementById('vQtdDisp').textContent=Number(at.qtd).toFixed(8);
+  document.getElementById('vCambio').closest('.fr').style.display=isUS?'block':'none';
+  const camMed=isUS?cambioMedioCompra(tk):1;
+  const infoBox=document.getElementById('vInfoBox');
+  infoBox.style.display='block';
+  infoBox.innerHTML='📋 <strong>'+at.ticker+'</strong> — '+at.nome+
+    ' | Qtd: <strong>'+Number(at.qtd).toFixed(8)+'</strong>'+
+    ' | PM: <strong>'+(isUS?'US$ ':'R$ ')+at.pmedio.toFixed(4)+'</strong>'+
+    (isUS?' | Câmbio médio compra: <strong>R$ '+camMed.toFixed(4)+'</strong>':'')+
+    ' | Tipo: <strong>'+at.tipo.toUpperCase()+'</strong>';
+  vendaCalc();
+}
+
+function vendaCalc(){
+  const tk=document.getElementById('vTk').value;
+  const at=carteira.find(a=>a.ticker===tk);
+  if(!at) return;
+  const isUS=at.mercado==='US';
+  const qtd=parseFloat(document.getElementById('vQtd').value)||0;
+  const preco=parseFloat(document.getElementById('vPreco').value)||0;
+  const cambioV=isUS?(parseFloat(document.getElementById('vCambio').value)||usdBrl):1;
+  const taxa=parseFloat(document.getElementById('vTaxa').value)||0;
+  const box=document.getElementById('vCalcBox');
+  if(!qtd||!preco){ box.style.display='none'; return; }
+  box.style.display='block';
+  const camMedComp=isUS?cambioMedioCompra(tk):1;
+  // Valores em moeda original
+  const bruto=qtd*preco; // USD ou BRL
+  const custo=qtd*at.pmedio; // USD ou BRL (PM)
+  // Converter para BRL
+  const brutoBRL=isUS?bruto*cambioV:bruto;
+  const custoBRL=isUS?custo*camMedComp:custo;
+  const lucroOperBRL=brutoBRL-custoBRL;
+  // Variação cambial (só EUA)
+  const varCambioBRL=isUS?custo*(cambioV-camMedComp):0;
+  const lucroLiqBRL=lucroOperBRL-taxa;
+  const fmt=v=>isUS?U(v):R(v);
+  document.getElementById('vResBruto').textContent=fmt(bruto)+' ('+R(brutoBRL)+')';
+  document.getElementById('vResPM').textContent=fmt(at.pmedio);
+  document.getElementById('vResCusto').textContent=fmt(custo)+' ('+R(custoBRL)+')';
+  document.getElementById('vResLucro').innerHTML='<span class="'+(lucroOperBRL>=0?'pos':'neg')+'">'+R(lucroOperBRL)+'</span>';
+  document.getElementById('vResCambioComp').textContent=isUS?'R$ '+camMedComp.toFixed(4):'—';
+  document.getElementById('vResVarCambio').innerHTML=isUS?'<span class="'+(varCambioBRL>=0?'pos':'neg')+'">'+R(varCambioBRL)+'</span>':'—';
+  document.getElementById('vResTaxa').textContent=taxa>0?R(taxa):'—';
+  document.getElementById('vResLiq').innerHTML='<span class="'+(lucroLiqBRL>=0?'pos':'neg')+'"><strong>'+R(lucroLiqBRL)+'</strong></span>';
+  // Imposto
+  const {aliq,imposto,regra}=calcImposto(at.tipo,at.mercado,lucroLiqBRL,brutoBRL);
+  document.getElementById('vImpRegra').textContent=regra;
+  document.getElementById('vImpBase').value=Math.max(0,lucroLiqBRL).toFixed(2);
+  document.getElementById('vImpAliq').value=aliq;
+  document.getElementById('vImpValor').textContent=R(imposto);
+  document.getElementById('vResAfterIR').textContent=R(lucroLiqBRL-imposto);
+  document.getElementById('vResAfterIR').className=lucroLiqBRL-imposto>=0?'pos':'neg';
+}
+
+function vendaCalcImp(){
+  const base=parseFloat(document.getElementById('vImpBase').value)||0;
+  const aliq=parseFloat(document.getElementById('vImpAliq').value)||0;
+  const imp=base*(aliq/100);
+  document.getElementById('vImpValor').textContent=R(imp);
+  const tk=document.getElementById('vTk').value;
+  const at=carteira.find(a=>a.ticker===tk);
+  if(!at) return;
+  const isUS=at.mercado==='US';
+  const qtd=parseFloat(document.getElementById('vQtd').value)||0;
+  const preco=parseFloat(document.getElementById('vPreco').value)||0;
+  const cambioV=isUS?(parseFloat(document.getElementById('vCambio').value)||usdBrl):1;
+  const taxa=parseFloat(document.getElementById('vTaxa').value)||0;
+  const bruto=qtd*preco;
+  const brutoBRL=isUS?bruto*cambioV:bruto;
+  const custo=qtd*at.pmedio;
+  const camMedComp=isUS?cambioMedioCompra(tk):1;
+  const custoBRL=isUS?custo*camMedComp:custo;
+  const liq=brutoBRL-custoBRL-taxa;
+  document.getElementById('vResAfterIR').textContent=R(liq-imp);
+  document.getElementById('vResAfterIR').className=liq-imp>=0?'pos':'neg';
+}
+
+function saveVenda(){
+  const tk=document.getElementById('vTk').value;
+  const at=carteira.find(a=>a.ticker===tk);
+  if(!at){ alert('Ativo não encontrado.'); return; }
+  const isUS=at.mercado==='US';
+  const qtd=parseFloat(document.getElementById('vQtd').value);
+  const preco=parseFloat(document.getElementById('vPreco').value);
+  const cambioV=isUS?(parseFloat(document.getElementById('vCambio').value)||usdBrl):1;
+  const taxa=parseFloat(document.getElementById('vTaxa').value)||0;
+  const data=document.getElementById('vData').value||new Date().toLocaleDateString('pt-BR');
+  const obs=document.getElementById('vObs').value.trim();
+  const impBase=parseFloat(document.getElementById('vImpBase').value)||0;
+  const impAliq=parseFloat(document.getElementById('vImpAliq').value)||0;
+  const imposto=impBase*(impAliq/100);
+  if(!qtd||qtd<=0||!preco||preco<=0){ alert('Preencha quantidade e preço de venda.'); return; }
+  if(qtd>at.qtd){ alert('Quantidade vendida ('+qtd.toFixed(8)+') maior que disponível ('+at.qtd.toFixed(8)+').'); return; }
+  const camMedComp=isUS?cambioMedioCompra(tk):1;
+  const bruto=qtd*preco;
+  const brutoBRL=isUS?bruto*cambioV:bruto;
+  const custo=qtd*at.pmedio;
+  const custoBRL=isUS?custo*camMedComp:custo;
+  const lucroOperBRL=brutoBRL-custoBRL;
+  const varCambioBRL=isUS?custo*(cambioV-camMedComp):0;
+  const lucroLiqBRL=lucroOperBRL-taxa;
+  // Registra no histórico
+  aportes.push({
+    ticker:tk, nome:at.nome, data, tipo:'venda',
+    valor:bruto, preco, cambio:cambioV, taxa, qtd,
+    valorBRL:brutoBRL, moeda:isUS?'USD':'BRL',
+    pmAnterior:at.pmedio, pmNovo:at.pmedio,
+    camMedComp, lucroOperBRL, varCambioBRL, lucroLiqBRL,
+    imposto, impAliq, obs
+  });
+  // Atualiza posição
+  const idx=carteira.findIndex(a=>a.ticker===tk);
+  carteira[idx].qtd=parseFloat((at.qtd-qtd).toFixed(8));
+  // Se zerou, mantém ativo mas zera qtd (não remove, para manter histórico)
+  save(); closeM(); renderAll(); buildHistorico();
+  const emoji=lucroLiqBRL>=0?'✅':'⚠️';
+  toast(emoji+' Venda registrada: '+R(lucroLiqBRL)+' líquido');
+}
   if(confirm('Remover '+carteira[i].ticker+'? Os aportes associados permanecem no histórico.')){ carteira.splice(i,1); save(); renderAll(); }
 }
 
@@ -1144,13 +1376,20 @@ function buildHistorico(){
   const tbody=document.getElementById('tbHist');
   if(!lista.length){ tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:var(--text2);padding:20px">Nenhum aporte encontrado.</td></tr>'; document.getElementById('hsResumo').innerHTML=''; return; }
 
-  const tl={aporte:'Aporte',novo:'Cadastro',reinvestimento:'Reinvestimento'};
-  const tc={aporte:'ta',novo:'tc',reinvestimento:'tf'};
+  const tl={aporte:'Aporte',novo:'Cadastro',reinvestimento:'Reinvestimento',venda:'Venda'};
+  const tc={aporte:'ta',novo:'tc',reinvestimento:'tf',venda:'tr'};
   let h='';
   [...lista].reverse().forEach(a=>{
     const isUS=a.moeda==='USD';
     const fmt=v=>isUS?U(v):R(v);
-    h+='<tr>';
+    const isVenda=a.tipo==='venda';
+    const lucro=a.lucroLiqBRL;
+    const lucroCell=isVenda?'<span class="'+(lucro>=0?'pos':'neg')+'" style="font-weight:600">'+R(lucro)+'</span>':'—';
+    const irCell=isVenda&&a.imposto>0?'<span style="color:var(--red)">'+R(a.imposto)+'</span> ('+a.impAliq+'%)':'—';
+    const liqIR=isVenda?(lucro-(a.imposto||0)):null;
+    const liqCell=isVenda?'<span class="'+(liqIR>=0?'pos':'neg')+'" style="font-weight:600">'+R(liqIR)+'</span>':'—';
+    const pmCell=isVenda?'<span style="font-size:10px;color:var(--text2)">'+fmt(a.pmAnterior)+'</span>':'<span style="color:var(--text2)">'+fmt(a.pmAnterior)+'</span> → <strong>'+fmt(a.pmNovo)+'</strong>';
+    h+='<tr'+(isVenda?' style="background:rgba(248,114,114,.04)"':'')+'>';
     h+='<td style="font-size:11px;white-space:nowrap">'+a.data+'</td>';
     h+='<td><span class="tk">'+a.ticker+'</span></td>';
     h+='<td style="font-size:10px;color:var(--text2)">'+a.nome+'</td>';
@@ -1161,17 +1400,27 @@ function buildHistorico(){
     h+='<td style="font-size:11px;color:var(--text2)">'+(a.taxa>0?R(a.taxa):'—')+'</td>';
     h+='<td style="font-size:11px">'+fmt(a.valor)+'</td>';
     h+='<td style="font-size:11px;font-weight:600">'+R(a.valorBRL)+'</td>';
-    h+='<td style="font-size:11px"><span style="color:var(--text2)">'+fmt(a.pmAnterior)+'</span> → <strong>'+fmt(a.pmNovo)+'</strong></td>';
+    h+='<td style="font-size:11px">'+lucroCell+'</td>';
+    h+='<td style="font-size:11px">'+irCell+'</td>';
+    h+='<td style="font-size:11px">'+liqCell+'</td>';
+    h+='<td style="font-size:11px">'+pmCell+'</td>';
     h+='<td style="font-size:10px;color:var(--text2)">'+(a.obs||'—')+'</td>';
     h+='</tr>';
   });
   tbody.innerHTML=h;
 
   // Resumo
-  const totalBRL=lista.reduce((s,a)=>s+a.valorBRL,0);
-  const totalQtd={};
-  lista.forEach(a=>{ totalQtd[a.ticker]=(totalQtd[a.ticker]||0)+a.qtd; });
-  document.getElementById('hsResumo').innerHTML='<div style="font-size:11px;color:var(--text2);margin-top:6px">'+lista.length+' operação(ões) · Total aportado: <strong style="color:var(--accent)">'+R(totalBRL)+'</strong></div>';
+  const vendas=lista.filter(a=>a.tipo==='venda');
+  const aportesBRL=lista.filter(a=>a.tipo!=='venda').reduce((s,a)=>s+a.valorBRL,0);
+  const lucroTotal=vendas.reduce((s,a)=>s+(a.lucroLiqBRL||0),0);
+  const irTotal=vendas.reduce((s,a)=>s+(a.imposto||0),0);
+  let resumo='<div style="font-size:11px;color:var(--text2);margin-top:6px;display:flex;gap:20px;flex-wrap:wrap">';
+  resumo+='<span>'+lista.length+' operação(ões)</span>';
+  if(aportesBRL>0) resumo+='<span>Total aportado: <strong style="color:var(--accent)">'+R(aportesBRL)+'</strong></span>';
+  if(vendas.length>0) resumo+='<span>Resultado vendas: <strong class="'+(lucroTotal>=0?'pos':'neg')+'">'+R(lucroTotal)+'</strong></span>';
+  if(irTotal>0) resumo+='<span>IR estimado total: <strong style="color:var(--red)">'+R(irTotal)+'</strong></span>';
+  resumo+='</div>';
+  document.getElementById('hsResumo').innerHTML=resumo;
 }
 
 // ═══════════════════ REFRESH ═══════════════════
@@ -1192,3 +1441,4 @@ setInterval(()=>{ if(document.getElementById('appContent').style.display!=='none
 </script>
 </body>
 </html>
+
