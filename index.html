@@ -181,6 +181,10 @@ input:focus,select:focus{border-color:var(--accent)}
       <div id="aloc-us-tipo"></div>
     </div>
   </div>
+  <div class="card section-gap">
+    <div class="card-title">Dentro do Brasil — Meta: 60% Renda Fixa · 30% Ações · 10% Caixa</div>
+    <div id="aloc-br-tipo"></div>
+  </div>
   <div class="card">
     <div class="card-title">Peso por ativo no EUA — atual vs meta</div>
     <div id="aloc-ativos"></div>
@@ -214,7 +218,7 @@ input:focus,select:focus{border-color:var(--accent)}
     <div class="form-row"><label class="form-label">Setor</label><input type="text" id="f-setor" placeholder="Ex: Tecnologia, Energia"></div>
     <div class="form-grid">
       <div class="form-row"><label class="form-label">Mercado</label><select id="f-mercado"><option value="US">EUA</option><option value="BR">Brasil</option></select></div>
-      <div class="form-row"><label class="form-label">Tipo</label><select id="f-tipo"><option value="acao">Ação</option><option value="etf">ETF</option><option value="fii">FII</option><option value="renda">Renda Fixa</option></select></div>
+      <div class="form-row"><label class="form-label">Tipo</label><select id="f-tipo"><option value="acao">Ação</option><option value="etf">ETF</option><option value="fii">FII</option><option value="renda">Renda Fixa</option><option value="caixa">Caixa (liquidez diária)</option></select></div>
     </div>
     <div class="form-grid">
       <div class="form-row"><label class="form-label">Quantidade</label><input type="number" id="f-qtd" placeholder="0" step="any" min="0"></div>
@@ -252,12 +256,19 @@ const PROXY = 'https://api.allorigins.win/get?url=';
 const STORAGE_KEY = 'carteira-v2';
 
 // ── METAS ────────────────────────────────────
-const META_US_PCT   = 30;   // % da carteira total em EUA
-const META_BR_PCT   = 70;   // % da carteira total em Brasil
-const META_ETF_PCT  = 55;   // % do bucket EUA em ETFs
-const META_ACAO_PCT = 45;   // % do bucket EUA em Ações
+const META_US_PCT      = 30;   // % da carteira total em EUA
+const META_BR_PCT      = 70;   // % da carteira total em Brasil
+const META_ETF_PCT     = 55;   // % do bucket EUA em ETFs
+const META_ACAO_PCT    = 45;   // % do bucket EUA em Ações
+// Metas dentro do Brasil
+const META_BR_RF_PCT   = 60;   // % do bucket BR em Renda Fixa
+const META_BR_ACAO_PCT = 30;   // % do bucket BR em Ações
+const META_BR_CAIXA_PCT= 10;   // % do bucket BR em Caixa (liquidez diária)
 
 const CARTEIRA_PADRAO = [
+  {ticker:"TESE-SELIC31", nome:"Tesouro Selic 2031",       tipo:"renda", mercado:"BR", qtd:1, pmedio:6143.34, div:0, pesoAlvo:0, setor:"Renda Fixa Gov.", vencimento:"2031-03-01"},
+  {ticker:"TESE-IPCA32",  nome:"Tesouro IPCA+ 2032",        tipo:"renda", mercado:"BR", qtd:1, pmedio:6244.96, div:0, pesoAlvo:0, setor:"Renda Fixa Gov.", vencimento:"2032-08-15"},
+  {ticker:"TESE-PRE29",   nome:"Tesouro Prefixado 2029",    tipo:"renda", mercado:"BR", qtd:1, pmedio:444.88,  div:0, pesoAlvo:0, setor:"Renda Fixa Gov.", vencimento:"2029-01-01"},
   {ticker:"BRK.B", nome:"Berkshire Hathaway",           tipo:"acao", mercado:"US", qtd:0.073544, pmedio:490.7227, div:0, pesoAlvo:5,  setor:"Holding/Qualidade"},
   {ticker:"COST",  nome:"Costco",                        tipo:"acao", mercado:"US", qtd:0.031081, pmedio:950.4435, div:0, pesoAlvo:4,  setor:"Consumo Defensivo"},
   {ticker:"DE",    nome:"Deere & Company",               tipo:"acao", mercado:"US", qtd:0.069737, pmedio:600.9700, div:0, pesoAlvo:3,  setor:"Agro/Máquinas"},
@@ -435,17 +446,35 @@ function buildVisaoGeral(){
     </div>`;
   }
 
+  // Breakdown Brasil para resumo
+  let rfBR2=0,acaoBR2=0,caixaBR2=0;
+  carteira.filter(a=>a.mercado==='BR').forEach(a=>{
+    const v=a.qtd*toBRL(a);
+    if(a.tipo==='caixa')caixaBR2+=v;
+    else if(a.tipo==='acao'||a.tipo==='etf'||a.tipo==='fii')acaoBR2+=v;
+    else rfBR2+=v;
+  });
+  const pctRF2=patBR?(rfBR2/patBR)*100:0;
+  const pctAcaoBR2=patBR?(acaoBR2/patBR)*100:0;
+  const pctCaixa2=patBR?(caixaBR2/patBR)*100:0;
+
   document.getElementById('resumo-aloc').innerHTML=
-    alocBar('EUA (carteira total)',pctUS,META_US_PCT,'#4f8ef7')+
-    alocBar('Brasil (carteira total)',pctBR,META_BR_PCT,'#36d399')+
-    alocBar('ETFs dentro do bucket EUA',pctETF,META_ETF_PCT,'#fbbf24')+
-    alocBar('Ações dentro do bucket EUA',pctAcaoUS,META_ACAO_PCT,'#f87272');
+    '<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;padding:8px 0 4px">Alocação geográfica</div>'+
+    alocBar('EUA',pctUS,META_US_PCT,'#4f8ef7')+
+    alocBar('Brasil',pctBR,META_BR_PCT,'#36d399')+
+    '<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;padding:12px 0 4px">Dentro do EUA</div>'+
+    alocBar('ETFs',pctETF,META_ETF_PCT,'#fbbf24')+
+    alocBar('Ações EUA',pctAcaoUS,META_ACAO_PCT,'#f87272')+
+    '<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;padding:12px 0 4px">Dentro do Brasil</div>'+
+    alocBar('Renda Fixa',pctRF2,META_BR_RF_PCT,'#c084fc')+
+    alocBar('Ações/FIIs BR',pctAcaoBR2,META_BR_ACAO_PCT,'#36d399')+
+    alocBar('Caixa (liquidez diária)',pctCaixa2,META_BR_CAIXA_PCT,'#fbbf24');
 }
 
 // ── TABELA DE ATIVOS ──────────────────────────
 function buildAtivos(){
   const {pat}=calcTotais();
-  const tl={acao:'Ação',etf:'ETF',fii:'FII',renda:'Renda Fixa'};
+  const tl={acao:'Ação',etf:'ETF',fii:'FII',renda:'Renda Fixa',caixa:'Caixa'};
   let html='';
   carteira.forEach((a,i)=>{
     const p=getPreco(a);
@@ -511,6 +540,27 @@ function buildAlocacao(){
     barItem('ETFs (dentro do EUA)',pctETF,META_ETF_PCT,'#fbbf24')+
     barItem('Ações (dentro do EUA)',pctAcao,META_ACAO_PCT,'#f87272'):
     '<p style="color:var(--text2);font-size:13px">Nenhum ativo EUA cadastrado.</p>';
+
+  // Breakdown Brasil
+  let rfBR=0, acaoBR=0, caixaBR=0;
+  carteira.filter(a=>a.mercado==='BR').forEach(a=>{
+    const v=a.qtd*toBRL(a);
+    if(a.tipo==='caixa') caixaBR+=v;
+    else if(a.tipo==='acao'||a.tipo==='etf'||a.tipo==='fii') acaoBR+=v;
+    else rfBR+=v; // renda
+  });
+  const pctRF=patBR?(rfBR/patBR)*100:0;
+  const pctAcaoBR=patBR?(acaoBR/patBR)*100:0;
+  const pctCaixa=patBR?(caixaBR/patBR)*100:0;
+
+  const alocBREl = document.getElementById('aloc-br-tipo');
+  if(alocBREl){
+    alocBREl.innerHTML = patBR ?
+      barItem('Renda Fixa (dentro do BR)',pctRF,META_BR_RF_PCT,'#c084fc')+
+      barItem('Ações/FIIs (dentro do BR)',pctAcaoBR,META_BR_ACAO_PCT,'#36d399')+
+      barItem('Caixa — liquidez diária (dentro do BR)',pctCaixa,META_BR_CAIXA_PCT,'#fbbf24'):
+      '<p style="color:var(--text2);font-size:13px">Nenhum ativo BR cadastrado.</p>';
+  }
 
   // Por ativo
   const usAtivos=carteira.filter(a=>a.mercado==='US');
@@ -600,16 +650,43 @@ function calcRebal(){
   }
 
   if(aporteBR>0){
-    html+=`<div style="font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 10px">Brasil</div>`;
-    const brAtivos=carteira.filter(a=>a.mercado==='BR');
-    if(brAtivos.length===0){
-      html+=`<div class="rebal-card"><div class="rebal-left"><div style="font-size:13px">${R(aporteBR)} para Brasil</div><div class="rebal-detail">Adicione ativos BR à carteira para ver a distribuição detalhada.</div></div></div>`;
-    } else {
-      const totalPesoBR=brAtivos.reduce((s,a)=>s+(a.pesoAlvo||1),0);
+    html+=`<div style="font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 10px">Brasil — R$ ${aporteBR.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div>`;
+
+    // Calcular quanto vai para cada bucket BR
+    const aporteRF     = aporteBR * META_BR_RF_PCT / 100;
+    const aporteAcaoBR = aporteBR * META_BR_ACAO_PCT / 100;
+    const aporteCaixa  = aporteBR * META_BR_CAIXA_PCT / 100;
+
+    html+=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+      <div class="rebal-card"><div class="rebal-left">
+        <div style="font-size:11px;color:var(--text2)">Renda Fixa (60%)</div>
+        <div class="rebal-amount">${R(aporteRF)}</div>
+      </div></div>
+      <div class="rebal-card"><div class="rebal-left">
+        <div style="font-size:11px;color:var(--text2)">Ações/FIIs BR (30%)</div>
+        <div class="rebal-amount">${R(aporteAcaoBR)}</div>
+        <div class="rebal-detail" style="color:var(--yellow)">⚠ Nenhum ativo cadastrado</div>
+      </div></div>
+      <div class="rebal-card"><div class="rebal-left">
+        <div style="font-size:11px;color:var(--text2)">Caixa — liquidez (10%)</div>
+        <div class="rebal-amount">${R(aporteCaixa)}</div>
+        <div class="rebal-detail" style="color:var(--yellow)">⚠ Título não definido</div>
+      </div></div>
+    </div>`;
+
+    // Distribuir Renda Fixa entre títulos existentes
+    const rfAtivos=carteira.filter(a=>a.mercado==='BR'&&a.tipo==='renda');
+    if(rfAtivos.length>0){
+      html+=`<div style="font-size:11px;color:var(--text2);margin-bottom:8px">Distribuição Renda Fixa por ativo:</div>`;
       html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">`;
-      brAtivos.forEach(a=>{
-        const v=aporteBR*((a.pesoAlvo||1)/totalPesoBR);
-        html+=`<div class="rebal-card"><div class="rebal-left"><span class="ticker-badge">${a.ticker}</span><div class="rebal-amount" style="font-size:14px">${R(v)}</div></div></div>`;
+      const totalPesoRF=rfAtivos.reduce((s,a)=>s+(a.pesoAlvo||1),0);
+      rfAtivos.forEach(a=>{
+        const v=aporteRF*((a.pesoAlvo||1)/totalPesoRF);
+        html+=`<div class="rebal-card"><div class="rebal-left">
+          <span class="ticker-badge">${a.ticker}</span>
+          <div style="font-size:11px;color:var(--text2);margin-top:3px">${a.nome}</div>
+          <div class="rebal-amount" style="font-size:14px">${R(v)}</div>
+        </div></div>`;
       });
       html+='</div>';
     }
