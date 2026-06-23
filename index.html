@@ -810,15 +810,26 @@ function totais(){
 
 // ═══════════════════ FETCH ═══════════════════
 async function fetchCambio(){
+  // Fonte 1: brapi currency endpoint
   try{
     const r=await fetch('https://brapi.dev/api/v2/currency?currency=USD-BRL&token='+TOK);
     const d=await r.json();
-    if(d.currency&&d.currency[0]&&d.currency[0].bidPrice>0){ usdBrl=d.currency[0].bidPrice; camUpd=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); return; }
+    const bid=d?.currency?.[0]?.bidPrice;
+    if(bid&&bid>4&&bid<10){ usdBrl=bid; camUpd=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); return; }
   }catch(e){}
+  // Fonte 2: brapi quote USDBRL=X
   try{
-    const r2=await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL');
-    const d2=await r2.json();
-    if(d2.USDBRL&&d2.USDBRL.bid>0){ usdBrl=parseFloat(d2.USDBRL.bid); camUpd=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); return; }
+    const r=await fetch('https://brapi.dev/api/quote/USDBRL=X?token='+TOK);
+    const d=await r.json();
+    const p=d?.results?.[0]?.regularMarketPrice;
+    if(p&&p>4&&p<10){ usdBrl=p; camUpd=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); return; }
+  }catch(e){}
+  // Fonte 3: exchangerate-api (pública, sem token)
+  try{
+    const r=await fetch('https://open.er-api.com/v6/latest/USD');
+    const d=await r.json();
+    const p=d?.rates?.BRL;
+    if(p&&p>4&&p<10){ usdBrl=p; camUpd=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' (ER-API)'; }
   }catch(e){}
 }
 async function fetchAll(){
