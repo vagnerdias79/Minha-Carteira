@@ -809,12 +809,20 @@ function totais(){
 }
 
 // ═══════════════════ FETCH ═══════════════════
-async function fetchAll(){
+async function fetchCambio(){
   try{
     const r=await fetch('https://brapi.dev/api/v2/currency?currency=USD-BRL&token='+TOK);
     const d=await r.json();
-    if(d.currency&&d.currency[0]){ usdBrl=d.currency[0].bidPrice||usdBrl; camUpd=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+    if(d.currency&&d.currency[0]&&d.currency[0].bidPrice>0){ usdBrl=d.currency[0].bidPrice; camUpd=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); return; }
   }catch(e){}
+  try{
+    const r2=await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL');
+    const d2=await r2.json();
+    if(d2.USDBRL&&d2.USDBRL.bid>0){ usdBrl=parseFloat(d2.USDBRL.bid); camUpd=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); return; }
+  }catch(e){}
+}
+async function fetchAll(){
+  await fetchCambio();
   const ativos=carteira.filter(a=>!a.ticker.startsWith('TESE-'));
   for(let i=0;i<ativos.length;i++){
     const a=ativos[i];
