@@ -696,16 +696,6 @@ function openM(t,idx){
     document.getElementById('mAporte').classList.add('on');
     return;
   }
-  if(t==='edit'&&idx!==undefined){
-    const a=carteira[idx];
-    document.getElementById('eTkHidden').value=idx;
-    document.getElementById('eNm').value=a.nome;
-    document.getElementById('eSt').value=a.setor||'';
-    document.getElementById('eMk').value=a.mercado;
-    document.getElementById('eTp').value=a.tipo;
-    document.getElementById('ePa').value=a.pesoAlvo||'';
-    document.getElementById('mEdit').classList.add('on');
-  }
   if(t==='venda'){
     const sel=document.getElementById('vTk');
     sel.innerHTML=carteira.filter(a=>a.qtd>0).map(a=>'<option value="'+a.ticker+'">'+a.ticker+' — '+a.nome+'</option>').join('');
@@ -720,6 +710,16 @@ function openM(t,idx){
     vendaTickerChange();
     document.getElementById('mVenda').classList.add('on');
     return;
+  }
+  if(t==='edit'&&idx!==undefined){
+    const a=carteira[idx];
+    document.getElementById('eTkHidden').value=idx;
+    document.getElementById('eNm').value=a.nome;
+    document.getElementById('eSt').value=a.setor||'';
+    document.getElementById('eMk').value=a.mercado;
+    document.getElementById('eTp').value=a.tipo;
+    document.getElementById('ePa').value=a.pesoAlvo||'';
+    document.getElementById('mEdit').classList.add('on');
   }
 }
 
