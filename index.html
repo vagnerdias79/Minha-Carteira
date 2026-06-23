@@ -252,7 +252,7 @@ input:focus,select:focus{border-color:var(--accent)}
 
 <script>
 const BRAPI_TOKEN = 'd5EMVrjrWTQMD6crf7PH4N';
-const PROXY = 'https://api.allorigins.win/get?url=';
+const PROXY = 'https://api.allorigins.win/get?url='; // fallback
 const STORAGE_KEY = 'carteira-v2';
 
 // ── METAS ────────────────────────────────────
@@ -353,16 +353,49 @@ async function fetchCambio(){
 }
 async function fetchUS(){
   const ativos=carteira.filter(x=>x.mercado==='US');
-  // Busca todos em paralelo — muito mais rápido
+  const tickers=ativos.map(a=>a.ticker).join(',');
+  
+  // Tenta brapi primeiro (mais estável), depois Yahoo via proxy como fallback
+  try {
+    // brapi suporta múltiplos tickers EUA separados por vírgula em um único request
+    const r=await fetch(`https://brapi.dev/api/quote/${tickers}?token=${BRAPI_TOKEN}`,{signal:AbortSignal.timeout(10000)});
+    const d=await r.json();
+    if(d.results&&d.results.length>0){
+      d.results.forEach(item=>{
+        precos[item.symbol]={preco:item.regularMarketPrice,var:item.regularMarketChangePercent||0,moeda:'USD'};
+      });
+      // Verificar se todos foram encontrados
+      const encontrados=d.results.map(x=>x.symbol);
+      const faltando=ativos.filter(a=>!encontrados.includes(a.ticker));
+      if(faltando.length>0) await fetchUSYahoo(faltando);
+      return;
+    }
+  } catch(e){ console.warn('brapi US falhou, tentando Yahoo...'); }
+  
+  // Fallback: Yahoo Finance via proxy para todos
+  await fetchUSYahoo(ativos);
+}
+
+async function fetchUSYahoo(ativos){
+  const PROXIES=[
+    url=>`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+    url=>`https://corsproxy.io/?${encodeURIComponent(url)}`,
+  ];
   await Promise.allSettled(ativos.map(async a=>{
-    try{
-      const url=`https://query1.finance.yahoo.com/v8/finance/chart/${a.ticker}?interval=1d&range=1d`;
-      const r=await fetch(PROXY+encodeURIComponent(url),{signal:AbortSignal.timeout(8000)});
-      const w=await r.json(); const d=JSON.parse(w.contents);
-      const meta=d.chart.result[0].meta;
-      const preco=meta.regularMarketPrice, prev=meta.previousClose||meta.chartPreviousClose;
-      precos[a.ticker]={preco,var:prev?((preco-prev)/prev)*100:0,moeda:'USD'};
-    }catch(e){ if(!precos[a.ticker])precos[a.ticker]={preco:a.pmedio,var:0,moeda:'USD'}; }
+    const yahooUrl=`https://query1.finance.yahoo.com/v8/finance/chart/${a.ticker}?interval=1d&range=1d`;
+    for(const proxyFn of PROXIES){
+      try{
+        const r=await fetch(proxyFn(yahooUrl),{signal:AbortSignal.timeout(8000)});
+        const w=await r.json();
+        const raw=w.contents||w;
+        const d=typeof raw==='string'?JSON.parse(raw):raw;
+        const meta=d.chart.result[0].meta;
+        const preco=meta.regularMarketPrice,prev=meta.previousClose||meta.chartPreviousClose;
+        precos[a.ticker]={preco,var:prev?((preco-prev)/prev)*100:0,moeda:'USD'};
+        return; // sucesso, sai do loop de proxies
+      }catch(e){ continue; }
+    }
+    if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:'USD'};
   }));
 }
 async function fetchBR(){
