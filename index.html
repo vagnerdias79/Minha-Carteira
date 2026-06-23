@@ -350,7 +350,7 @@ function getPreco(a){ return precos[a.ticker]||{preco:a.pmedio,var:0,moeda:a.mer
 // ── FETCH ─────────────────────────────────────
 async function fetchCambio(){
   try{
-    const r=await fetch(`https://brapi.dev/api/v2/currency?currency=USD-BRL&token=${BRAPI_TOKEN}`,{signal:AbortSignal.timeout(6000)});
+    const r=await fetch(`https://brapi.dev/api/v2/currency?currency=USD-BRL&token=${BRAPI_TOKEN}`);
     const d=await r.json();
     if(d.currency?.[0]) usdBrl=d.currency[0].bidPrice||usdBrl;
   }catch(e){ console.warn('câmbio fallback'); }
@@ -358,7 +358,7 @@ async function fetchCambio(){
 
 // Busca 1 ticker por vez na brapi (limite do plano gratuito)
 async function brapiQuote(ticker){
-  const r=await fetch(`https://brapi.dev/api/quote/${ticker}?token=${BRAPI_TOKEN}`,{signal:AbortSignal.timeout(8000)});
+  const r=await fetch(`https://brapi.dev/api/quote/${ticker}?token=${BRAPI_TOKEN}`);
   const d=await r.json();
   if(d.error) throw new Error(d.message);
   return d.results?.[0]||null;
