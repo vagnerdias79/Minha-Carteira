@@ -724,7 +724,7 @@ function openM(t,idx){
   }
 }
 
-// ═══════════════════ BUSCAR TICKER ═══════════════════
+// ═══ BUSCAR TICKER ═══
 async function buscarTicker(){
   const tk=document.getElementById('nTk').value.trim().toUpperCase();
   const mk=document.getElementById('nMk').value;
@@ -882,6 +882,8 @@ function saveAporte(){
 }
 
 function delAt(i){
+  if(confirm('Remover '+carteira[i].ticker+'? Os aportes associados permanecem no histórico.')){ carteira.splice(i,1); save(); renderAll(); }
+}
 
 // ═══════════════════ VENDA ═══════════════════
 function cambioMedioCompra(tk){
@@ -1035,6 +1037,8 @@ function saveVenda(){
   const emoji=lucroLiqBRL>=0?'✅':'⚠️';
   toast(emoji+' Venda registrada: '+R(lucroLiqBRL)+' líquido');
 }
+
+function delAt(i){
   if(confirm('Remover '+carteira[i].ticker+'? Os aportes associados permanecem no histórico.')){ carteira.splice(i,1); save(); renderAll(); }
 }
 
