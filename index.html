@@ -7,15 +7,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-
-/* TEMA */
 body{font-family:system-ui,sans-serif;min-height:100vh;transition:background .3s,color .3s}
 body.dark{background:#0f1117;color:#e8eaf0}
 body.light{background:#f0f2f8;color:#1a2035}
-
 body.dark{--bg1:#161b27;--bg2:#1e2535;--bg3:#262e42;--accent:#4f8ef7;--green:#36d399;--red:#f87272;--yellow:#fbbf24;--purple:#c084fc;--text2:#8b95b0;--border:#2a3350;--shadow:rgba(0,0,0,.4)}
 body.light{--bg1:#ffffff;--bg2:#f5f7fc;--bg3:#eaecf5;--accent:#2563eb;--green:#16a34a;--red:#dc2626;--yellow:#d97706;--purple:#9333ea;--text2:#64748b;--border:#d1d5e8;--shadow:rgba(0,0,0,.08)}
-
 .hdr{background:var(--bg1);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:9;box-shadow:0 2px 8px var(--shadow)}
 .logo{font-size:15px;font-weight:600}.logo span{color:var(--accent)}
 .hdr-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -26,12 +22,13 @@ body.light{--bg1:#ffffff;--bg2:#f5f7fc;--bg3:#eaecf5;--accent:#2563eb;--green:#1
 .btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:12px;padding:6px 12px;border-radius:7px;cursor:pointer;font-family:inherit;transition:background .15s,color .15s}
 .btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
 .btn.g{border-color:#36d39950;color:var(--green)}.btn.g:hover{background:var(--green);color:#0f1117}
+.btn.o{border-color:#fbbf2450;color:var(--yellow)}.btn.o:hover{background:var(--yellow);color:#0f1117}
 .btn-theme{font-size:16px;padding:5px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer;transition:background .15s}
 .btn-theme:hover{background:var(--accent);border-color:var(--accent)}
 .tabs{display:flex;background:var(--bg1);border-bottom:1px solid var(--border);padding:0 20px;overflow-x:auto}
 .tab{padding:10px 16px;font-size:13px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
 .tab.on{color:var(--accent);border-bottom-color:var(--accent)}
-.pg{display:none;padding:18px 20px;max-width:1280px;margin:0 auto}.pg.on{display:block}
+.pg{display:none;padding:18px 20px;max-width:1380px;margin:0 auto}.pg.on{display:block}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px}
@@ -39,15 +36,14 @@ body.light{--bg1:#ffffff;--bg2:#f5f7fc;--bg3:#eaecf5;--accent:#2563eb;--green:#1
 .lbl{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
 .val{font-size:22px;font-weight:600;letter-spacing:-.4px}
 .sub{font-size:11px;margin-top:4px;color:var(--text2)}
-.val-usd{font-size:13px;color:var(--text2);margin-top:2px}
+.val2{font-size:13px;color:var(--text2);margin-top:2px}
 .pos{color:var(--green)}.neg{color:var(--red)}
 .ctitle{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
 .ch{height:200px;position:relative}
-.ch2{height:155px;position:relative}
 .tw{background:var(--bg1);border:1px solid var(--border);border-radius:12px;overflow:auto;margin-bottom:16px;box-shadow:0 1px 4px var(--shadow)}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{background:var(--bg2);color:var(--text2);font-size:10px;text-transform:uppercase;letter-spacing:.04em;padding:9px 12px;text-align:left;white-space:nowrap}
-td{padding:10px 12px;border-top:1px solid var(--border);vertical-align:middle}
+td{padding:9px 12px;border-top:1px solid var(--border);vertical-align:middle}
 tr:hover td{background:rgba(79,142,247,.04)}
 .tk{background:var(--bg3);color:#7bb3ff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px}
 body.light .tk{color:var(--accent)}
@@ -77,14 +73,16 @@ input:focus,select:focus{border-color:var(--accent)}
 .rd{font-size:11px;color:var(--text2);margin-top:2px}
 .mb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;align-items:center;justify-content:center}
 .mb.on{display:flex}
-.md{background:var(--bg1);border:1px solid var(--border);border-radius:14px;padding:22px;width:460px;max-width:92vw;max-height:88vh;overflow-y:auto}
+.md{background:var(--bg1);border:1px solid var(--border);border-radius:14px;padding:22px;width:500px;max-width:94vw;max-height:90vh;overflow-y:auto}
 .mt{font-size:15px;font-weight:600;margin-bottom:14px}
 .fr{margin-bottom:11px}
 .fl{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;display:block}
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.fg4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:9px}
 .fa{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}
 .bp{background:var(--accent);color:#fff;border:none;padding:7px 16px;border-radius:7px;font-size:13px;cursor:pointer;font-family:inherit}
+.bp.grn{background:var(--green);color:#0f1117}
 .bs{background:transparent;color:var(--text2);border:1px solid var(--border);padding:7px 14px;border-radius:7px;font-size:13px;cursor:pointer;font-family:inherit}
 .ia{background:var(--bg2);border:1px dashed var(--border);border-radius:8px;padding:18px;text-align:center;font-size:12px;color:var(--text2);cursor:pointer}
 .ia:hover{border-color:var(--accent)}
@@ -95,11 +93,13 @@ input:focus,select:focus{border-color:var(--accent)}
 .pl{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
 .ai{display:flex;align-items:center;gap:7px;font-size:13px}
 .ad{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.sep{border:none;border-top:1px solid var(--border);margin:12px 0}
-.div-hist{max-height:200px;overflow-y:auto;margin-top:8px}
-.div-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
-.div-row:last-child{border-bottom:none}
-/* LOCK SCREEN */
+/* busca ticker */
+.fetch-box{background:var(--bg2);border:1px solid var(--accent);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px}
+.fetch-row{display:flex;justify-content:space-between;margin-bottom:4px}
+.fetch-row:last-child{margin-bottom:0}
+.fetch-spin{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* lock */
 .lock{position:fixed;inset:0;background:var(--bg2,#1e2535);z-index:999;display:flex;align-items:center;justify-content:center}
 .lock-box{background:var(--bg1,#161b27);border:1px solid var(--border,#2a3350);border-radius:16px;padding:32px;width:360px;max-width:90vw;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.4)}
 .lock-box h2{font-size:22px;margin-bottom:6px}
@@ -110,12 +110,17 @@ input:focus,select:focus{border-color:var(--accent)}
 .lock-icon{font-size:40px;margin-bottom:12px}
 .badge-div{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;background:#1a2a4a;color:#7bb3ff}
 body.light .badge-div{background:#dbeafe;color:#1d4ed8}
-@media(max-width:800px){.grid4{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}}
+.info-box{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;margin-bottom:12px;font-size:12px;color:var(--text2)}
+.calc-row{display:flex;align-items:center;gap:8px;margin-top:4px;font-size:12px;color:var(--text2)}
+.calc-val{color:var(--accent);font-weight:600}
+.hfilt{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.hfilt select{font-size:12px;padding:5px 8px}
+@media(max-width:800px){.grid4{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}.fg4{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body class="dark">
 
-<!-- LOCK SCREEN -->
+<!-- LOCK -->
 <div class="lock" id="lockScreen">
   <div class="lock-box">
     <div class="lock-icon">🔐</div>
@@ -133,7 +138,8 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
   <div class="hdr-r">
     <div class="badge"><div class="dot" id="dot"></div><span id="stlbl">Carregando...</span></div>
     <button class="btn-theme" id="btnTheme" onclick="toggleTheme()" title="Alternar tema">🌙</button>
-    <button class="btn g" onclick="openM('add')">+ Ativo</button>
+    <button class="btn g" onclick="openM('novo')">+ Novo Ativo</button>
+    <button class="btn o" onclick="openM('aporte')">+ Aporte</button>
     <button class="btn" onclick="exp()">↓ Exportar</button>
     <button class="btn" onclick="openM('imp')">↑ Importar</button>
     <button class="btn" id="btnR" onclick="refresh()">↻ Atualizar</button>
@@ -145,6 +151,7 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
   <div class="tab" onclick="showPg('al',this)">Alocação & Meta</div>
   <div class="tab" onclick="showPg('rb',this)">Rebalanceamento</div>
   <div class="tab" onclick="showPg('dv',this)">Dividendos</div>
+  <div class="tab" onclick="showPg('hs',this)">Histórico</div>
 </div>
 
 <!-- VISÃO GERAL -->
@@ -153,25 +160,26 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
     <div class="card">
       <div class="lbl">Patrimônio total</div>
       <div class="val" id="mpat">—</div>
-      <div class="val-usd" id="mpatUsd">—</div>
+      <div class="val2" id="mpatUsd">—</div>
       <div class="sub" id="mvd">—</div>
     </div>
     <div class="card">
-      <div class="lbl">Investido</div>
+      <div class="lbl">Investido (PM)</div>
       <div class="val" id="minv">—</div>
-      <div class="val-usd" id="minvUsd">—</div>
+      <div class="val2" id="minvUsd">—</div>
       <div class="sub" id="mrp">—</div>
     </div>
     <div class="card">
       <div class="lbl">Resultado</div>
       <div class="val" id="mres">—</div>
-      <div class="val-usd" id="mresUsd">—</div>
+      <div class="val2" id="mresUsd">—</div>
       <div class="sub" id="mvd2">—</div>
     </div>
     <div class="card">
       <div class="lbl">Câmbio USD/BRL</div>
       <div class="val" id="mcam">—</div>
-      <div class="sub">taxa atual</div>
+      <div class="val2" id="mcamUpd" style="font-size:10px">—</div>
+      <div class="sub">cotação em tempo real</div>
     </div>
   </div>
   <div class="grid2">
@@ -179,12 +187,12 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
     <div class="card"><div class="ctitle">EUA — ETF vs Ação</div><div class="ch"><canvas id="cTipo"></canvas></div></div>
   </div>
   <div class="grid2">
-    <div class="card"><div class="ctitle">Composição por tipo — ETFs</div><div class="ch"><canvas id="cEtf"></canvas></div></div>
-    <div class="card"><div class="ctitle">Composição por tipo — Ações EUA</div><div class="ch"><canvas id="cAcaoUS"></canvas></div></div>
+    <div class="card"><div class="ctitle">Composição ETFs</div><div class="ch"><canvas id="cEtf"></canvas></div></div>
+    <div class="card"><div class="ctitle">Composição Ações EUA</div><div class="ch"><canvas id="cAcaoUS"></canvas></div></div>
   </div>
   <div class="grid2" style="margin-bottom:16px">
     <div class="card"><div class="ctitle">Renda Fixa Brasil</div><div class="ch"><canvas id="cRF"></canvas></div></div>
-    <div class="card"><div class="ctitle">Ações/FIIs Brasil</div><div class="ch"><canvas id="cAcaoBR"></canvas></div></div>
+    <div class="card"><div class="ctitle">Ações / FIIs Brasil</div><div class="ch"><canvas id="cAcaoBR"></canvas></div></div>
   </div>
   <div class="card"><div class="ctitle">Resumo de alocação vs meta</div><div id="resAloc"></div></div>
 </div>
@@ -193,7 +201,13 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
 <div class="pg" id="pg-at">
   <div class="tw">
     <table>
-      <thead><tr><th>Ativo</th><th>Setor</th><th>Tipo</th><th>Qtd</th><th>PM</th><th>Cotação USD</th><th>Cotação BRL</th><th>Var%</th><th>Valor BRL</th><th>Valor USD</th><th>Resultado</th><th>Peso</th><th>Alvo</th><th>Δ</th><th>Div.</th><th></th></tr></thead>
+      <thead><tr>
+        <th>Ativo</th><th>Setor</th><th>Tipo</th><th>Qtd</th>
+        <th>PM (moeda orig.)</th><th>PM BRL</th>
+        <th>Cotação</th><th>Var%</th>
+        <th>Valor BRL</th><th>Valor USD</th>
+        <th>Resultado</th><th>Peso</th><th>Alvo</th><th>Δ</th><th>Div.</th><th></th>
+      </tr></thead>
       <tbody id="tbAt"></tbody>
     </table>
   </div>
@@ -233,11 +247,11 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
     <div class="card">
       <div class="lbl">Total Dividendos Recebidos</div>
       <div class="val pos" id="dvTotalBRL">—</div>
-      <div class="val-usd" id="dvTotalUSD">—</div>
+      <div class="val2" id="dvTotalUSD">—</div>
     </div>
     <div class="card">
       <div class="lbl">Impostos Pagos</div>
-      <div class="val" id="dvTotalImp" style="color:var(--red)">—</div>
+      <div class="val neg" id="dvTotalImp">—</div>
       <div class="sub">sobre dividendos recebidos</div>
     </div>
   </div>
@@ -268,7 +282,7 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
         </div>
       </div>
       <div class="fr">
-        <label class="fl" id="dvImpostoLabel">Imposto Pago</label>
+        <label class="fl">Imposto Pago</label>
         <div style="display:flex;align-items:center;gap:6px">
           <span id="dvMoedaTagImp" style="font-size:11px;font-weight:700;color:var(--red);white-space:nowrap">R$</span>
           <input type="number" id="dvImposto" placeholder="0.00" step="0.01" min="0" style="width:100%" oninput="dvCalcPct()">
@@ -282,46 +296,171 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
     </div>
     <div class="fr">
       <label class="fl">Observação (opcional)</label>
-      <input type="text" id="dvObs" placeholder="Ex: dividendo referente ao 1º trimestre" style="width:100%">
+      <input type="text" id="dvObs" placeholder="Ex: dividendo Q1" style="width:100%">
     </div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <button class="bp" onclick="regDiv()">Registrar dividendo</button>
       <label style="font-size:12px;color:var(--text2)">Reinvestir em:</label>
-      <select id="dvReinvest" style="width:200px">
-        <option value="">— escolher na hora —</option>
-      </select>
-      <button class="bp" style="background:var(--green)" onclick="reinvestDiv()">Reinvestir</button>
+      <select id="dvReinvest" style="width:200px"><option value="">— escolher ativo —</option></select>
+      <button class="bp grn" onclick="reinvestDiv()">Reinvestir</button>
     </div>
   </div>
   <div class="card">
     <div class="ctitle">Histórico de dividendos</div>
-    <div class="div-hist" id="dvHistorico">
-      <p style="color:var(--text2);font-size:12px">Nenhum dividendo registrado ainda.</p>
-    </div>
+    <div id="dvHistorico"><p style="color:var(--text2);font-size:12px">Nenhum dividendo registrado.</p></div>
   </div>
 </div>
+
+<!-- HISTÓRICO DE APORTES -->
+<div class="pg" id="pg-hs">
+  <div class="card" style="margin-bottom:16px">
+    <div class="ctitle">Filtros</div>
+    <div class="hfilt">
+      <select id="hsFiltAt" onchange="buildHistorico()">
+        <option value="">Todos os ativos</option>
+      </select>
+      <select id="hsFiltTp" onchange="buildHistorico()">
+        <option value="">Todos os tipos</option>
+        <option value="aporte">Aporte</option>
+        <option value="novo">Cadastro inicial</option>
+      </select>
+      <input type="text" id="hsFiltBusca" placeholder="Buscar ticker..." style="width:160px;font-size:12px;padding:5px 8px" oninput="buildHistorico()">
+    </div>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr>
+        <th>Data</th><th>Ativo</th><th>Nome</th><th>Tipo Op.</th>
+        <th>Qtd</th><th>Preço (orig.)</th><th>Câmbio</th><th>Taxa</th>
+        <th>Valor (orig.)</th><th>Valor BRL</th><th>PM Resultante BRL</th><th>Obs.</th>
+      </tr></thead>
+      <tbody id="tbHist"></tbody>
+    </table>
+  </div>
+  <div id="hsResumo" style="margin-top:4px"></div>
+</div>
+
 </div><!-- /appContent -->
 
-<!-- MODAL ADD/EDIT -->
-<div class="mb" id="mAdd">
+<!-- MODAL NOVO ATIVO -->
+<div class="mb" id="mNovo">
   <div class="md">
-    <div class="mt" id="mTitle">Adicionar ativo</div>
-    <div class="fr"><label class="fl">Ticker</label><input type="text" id="fTk" placeholder="Ex: AAPL, PETR4" style="width:100%"></div>
-    <div class="fr"><label class="fl">Nome</label><input type="text" id="fNm" placeholder="Nome completo" style="width:100%"></div>
-    <div class="fr"><label class="fl">Setor</label><input type="text" id="fSt" placeholder="Ex: Tecnologia" style="width:100%"></div>
-    <div class="fg">
-      <div class="fr"><label class="fl">Mercado</label><select id="fMk" style="width:100%"><option value="US">EUA</option><option value="BR">Brasil</option></select></div>
-      <div class="fr"><label class="fl">Tipo</label><select id="fTp" style="width:100%"><option value="acao">Ação</option><option value="etf">ETF</option><option value="fii">FII</option><option value="renda">Renda Fixa</option><option value="caixa">Caixa</option></select></div>
+    <div class="mt">➕ Novo Ativo</div>
+    <div class="fr" style="display:flex;gap:8px;align-items:flex-end">
+      <div style="flex:1">
+        <label class="fl">Ticker</label>
+        <input type="text" id="nTk" placeholder="Ex: AAPL, PETR4" style="width:100%" oninput="this.value=this.value.toUpperCase()">
+      </div>
+      <div>
+        <label class="fl">Mercado</label>
+        <select id="nMk" style="width:100px">
+          <option value="US">EUA (USD)</option>
+          <option value="BR">Brasil (BRL)</option>
+        </select>
+      </div>
+      <button class="bp" onclick="buscarTicker()" style="white-space:nowrap;padding:7px 14px">🔍 Buscar</button>
+    </div>
+    <div id="nFetchBox" style="display:none"></div>
+    <div id="nFormBox" style="display:none">
+      <div class="fg">
+        <div class="fr"><label class="fl">Nome</label><input type="text" id="nNm" style="width:100%"></div>
+        <div class="fr"><label class="fl">Setor</label><input type="text" id="nSt" style="width:100%"></div>
+      </div>
+      <div class="fg">
+        <div class="fr"><label class="fl">Tipo</label>
+          <select id="nTp" style="width:100%">
+            <option value="acao">Ação</option><option value="etf">ETF</option>
+            <option value="fii">FII</option><option value="renda">Renda Fixa</option><option value="caixa">Caixa</option>
+          </select>
+        </div>
+        <div class="fr"><label class="fl">Peso alvo (%)</label><input type="number" id="nPa" placeholder="0" step="0.1" min="0" style="width:100%"></div>
+      </div>
+      <div class="info-box">💡 Quantidade e preço médio serão definidos ao registrar o primeiro aporte. Dividendos são lançados na aba <strong>Dividendos</strong>.</div>
+      <div class="fa"><button class="bs" onclick="closeM()">Cancelar</button><button class="bp" onclick="saveNovo()">Cadastrar Ativo</button></div>
+    </div>
+    <div class="fa" id="nFaCancel" style="display:none"><button class="bs" onclick="closeM()">Cancelar</button></div>
+  </div>
+</div>
+
+<!-- MODAL APORTE -->
+<div class="mb" id="mAporte">
+  <div class="md">
+    <div class="mt">💰 Registrar Aporte</div>
+    <div class="fr" style="display:flex;gap:8px;align-items:flex-end">
+      <div style="flex:1">
+        <label class="fl">Ticker</label>
+        <select id="aTk" style="width:100%" onchange="aporteTickerChange()"></select>
+      </div>
+    </div>
+    <div id="aInfoBox" class="info-box" style="display:none"></div>
+    <div class="fg3">
+      <div class="fr">
+        <label class="fl" id="aValorLbl">Valor Aportado</label>
+        <div style="display:flex;align-items:center;gap:5px">
+          <span id="aMoeda" style="font-size:11px;font-weight:700;color:var(--accent)">US$</span>
+          <input type="number" id="aValor" placeholder="0.00" step="0.01" min="0" style="width:100%" oninput="aporteCalc()">
+        </div>
+      </div>
+      <div class="fr">
+        <label class="fl" id="aPrecoLbl">Preço Médio</label>
+        <div style="display:flex;align-items:center;gap:5px">
+          <span id="aMoeda2" style="font-size:11px;font-weight:700;color:var(--accent)">US$</span>
+          <input type="number" id="aPreco" placeholder="0.00" step="0.0001" min="0" style="width:100%" oninput="aporteCalc()">
+        </div>
+      </div>
+      <div class="fr">
+        <label class="fl">Câmbio USD/BRL</label>
+        <input type="number" id="aCambio" placeholder="5.2056" step="0.0001" min="0" style="width:100%" oninput="aporteCalc()" value="5.2056">
+      </div>
     </div>
     <div class="fg">
-      <div class="fr"><label class="fl">Quantidade</label><input type="number" id="fQt" placeholder="0" step="any" min="0" style="width:100%"></div>
-      <div class="fr"><label class="fl">Preço médio</label><input type="number" id="fPm" placeholder="0.00" step="0.01" min="0" style="width:100%"></div>
+      <div class="fr">
+        <label class="fl">Taxa / Corretagem (BRL)</label>
+        <input type="number" id="aTaxa" placeholder="0.00" step="0.01" min="0" style="width:100%" oninput="aporteCalc()">
+      </div>
+      <div class="fr">
+        <label class="fl">Data do aporte</label>
+        <input type="text" id="aData" placeholder="dd/mm/aaaa" style="width:100%" onfocus="if(!this.value)this.value=new Date().toLocaleDateString('pt-BR')">
+      </div>
+    </div>
+    <!-- Cálculo automático -->
+    <div class="info-box" id="aCalcBox" style="display:none">
+      <div class="calc-row">📦 Quantidade calculada: <span class="calc-val" id="aQtdCalc">—</span></div>
+      <div class="calc-row">💰 Valor em BRL: <span class="calc-val" id="aValBRL">—</span></div>
+      <div class="calc-row">📊 PM atual do ativo: <span class="calc-val" id="aPMatual">—</span> → Novo PM: <span class="calc-val" id="aPMnovo">—</span></div>
+    </div>
+    <div class="fr">
+      <label class="fl">Observação</label>
+      <input type="text" id="aObs" placeholder="Opcional" style="width:100%">
+    </div>
+    <div class="fa"><button class="bs" onclick="closeM()">Cancelar</button><button class="bp grn" onclick="saveAporte()">Confirmar Aporte</button></div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR ATIVO -->
+<div class="mb" id="mEdit">
+  <div class="md">
+    <div class="mt">✏️ Editar Ativo</div>
+    <input type="hidden" id="eTkHidden">
+    <div class="fg">
+      <div class="fr"><label class="fl">Nome</label><input type="text" id="eNm" style="width:100%"></div>
+      <div class="fr"><label class="fl">Setor</label><input type="text" id="eSt" style="width:100%"></div>
     </div>
     <div class="fg">
-      <div class="fr"><label class="fl">Peso alvo (%)</label><input type="number" id="fPa" placeholder="0" step="0.1" min="0" style="width:100%"></div>
-      <div class="fr"><label class="fl">Dividendos acumulados (R$)</label><input type="number" id="fDv" placeholder="0" step="0.01" min="0" style="width:100%"></div>
+      <div class="fr"><label class="fl">Mercado</label>
+        <select id="eMk" style="width:100%"><option value="US">EUA (USD)</option><option value="BR">Brasil (BRL)</option></select>
+      </div>
+      <div class="fr"><label class="fl">Tipo</label>
+        <select id="eTp" style="width:100%">
+          <option value="acao">Ação</option><option value="etf">ETF</option>
+          <option value="fii">FII</option><option value="renda">Renda Fixa</option><option value="caixa">Caixa</option>
+        </select>
+      </div>
     </div>
-    <div class="fa"><button class="bs" onclick="closeM()">Cancelar</button><button class="bp" id="btnSv" onclick="saveAt()">Adicionar</button></div>
+    <div class="fg">
+      <div class="fr"><label class="fl">Peso alvo (%)</label><input type="number" id="ePa" step="0.1" min="0" style="width:100%"></div>
+    </div>
+    <div class="fa"><button class="bs" onclick="closeM()">Cancelar</button><button class="bp" onclick="saveEdit()">Salvar</button></div>
   </div>
 </div>
 
@@ -342,106 +481,88 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════════════════════════════
-// SENHA
-// ═══════════════════════════════════
-const SENHA_KEY = 'mc-pwd';
-const SENHA_PADRAO = '1579'; // altere aqui para sua senha
-
+// ═══════════════════ SENHA ═══════════════════
+const SENHA_KEY='mc-pwd', SENHA_PADRAO='1579';
 function tryUnlock(){
-  const v = document.getElementById('lockPwd').value;
-  const stored = localStorage.getItem(SENHA_KEY) || SENHA_PADRAO;
-  if(v === stored){
-    document.getElementById('lockScreen').style.display = 'none';
-    document.getElementById('appContent').style.display = 'block';
-    document.getElementById('lockPwd').value = '';
-    document.getElementById('lockErr').textContent = '';
-    load();
-    refresh();
+  const v=document.getElementById('lockPwd').value;
+  const stored=localStorage.getItem(SENHA_KEY)||SENHA_PADRAO;
+  if(v===stored){
+    document.getElementById('lockScreen').style.display='none';
+    document.getElementById('appContent').style.display='block';
+    document.getElementById('lockPwd').value='';
+    document.getElementById('lockErr').textContent='';
+    load(); refresh();
   } else {
-    document.getElementById('lockErr').textContent = '❌ Senha incorreta. Tente novamente.';
-    document.getElementById('lockPwd').value = '';
+    document.getElementById('lockErr').textContent='❌ Senha incorreta. Tente novamente.';
+    document.getElementById('lockPwd').value='';
     document.getElementById('lockPwd').focus();
   }
 }
 
-// ═══════════════════════════════════
-// TEMA
-// ═══════════════════════════════════
+// ═══════════════════ TEMA ═══════════════════
 function toggleTheme(){
-  const isDark = document.body.classList.contains('dark');
-  document.body.classList.toggle('dark', !isDark);
-  document.body.classList.toggle('light', isDark);
-  document.getElementById('btnTheme').textContent = isDark ? '🌙' : '☀️';
-  localStorage.setItem('mc-theme', isDark ? 'dark' : 'light');
-  // Rebuild charts for new theme colors
-  if(Object.keys(precos).length > 0) renderAll();
+  const isDark=document.body.classList.contains('dark');
+  document.body.className=isDark?'light':'dark';
+  document.getElementById('btnTheme').textContent=isDark?'☀️':'🌙';
+  localStorage.setItem('mc-theme',isDark?'light':'dark');
+  if(Object.keys(precos).length>0) renderAll();
 }
 function loadTheme(){
-  const t = localStorage.getItem('mc-theme') || 'dark';
-  document.body.className = t;
-  document.getElementById('btnTheme').textContent = t === 'dark' ? '🌙' : '☀️';
+  const t=localStorage.getItem('mc-theme')||'dark';
+  document.body.className=t;
+  document.getElementById('btnTheme').textContent=t==='dark'?'🌙':'☀️';
 }
 loadTheme();
 
-// ═══════════════════════════════════
-// CONSTANTES
-// ═══════════════════════════════════
-const TOK = 'd5EMVrjrWTQMD6crf7PH4N';
-const SK  = 'mc-v4';
-const MUS=30, MBR=70, METF=55, MACAO=45;
-const MRF=60, MABR=30, MCAIXA=10;
+// ═══════════════════ CONSTANTES ═══════════════════
+const TOK='d5EMVrjrWTQMD6crf7PH4N', SK='mc-v5';
+const MUS=30,MBR=70,METF=55,MACAO=45,MRF=60,MABR=30,MCAIXA=10;
+const CORES=['#4f8ef7','#36d399','#f59e0b','#f87171','#a78bfa','#34d399','#fb923c','#60a5fa','#e879f9','#2dd4bf','#fbbf24','#818cf8'];
 
-// Cores vibrantes para gráficos
-const CORES = ['#4f8ef7','#36d399','#f59e0b','#f87171','#a78bfa','#34d399','#fb923c','#60a5fa','#e879f9','#2dd4bf','#fbbf24','#818cf8'];
-
-const PADRAO = [
-  {ticker:"BRK.B",nome:"Berkshire Hathaway",       tipo:"acao",mercado:"US",qtd:0.073544,pmedio:490.7227,div:0,pesoAlvo:5, setor:"Holding/Qualidade"},
-  {ticker:"COST", nome:"Costco",                    tipo:"acao",mercado:"US",qtd:0.031081,pmedio:950.4435,div:0,pesoAlvo:4, setor:"Consumo Defensivo"},
-  {ticker:"DE",   nome:"Deere & Company",           tipo:"acao",mercado:"US",qtd:0.069737,pmedio:600.9700,div:0,pesoAlvo:3, setor:"Agro/Máquinas"},
-  {ticker:"FCX",  nome:"Freeport-McMoRan",          tipo:"acao",mercado:"US",qtd:0.406341,pmedio:68.7600, div:0,pesoAlvo:2, setor:"Cobre/Mineração"},
-  {ticker:"INDA", nome:"iShares MSCI India ETF",    tipo:"etf", mercado:"US",qtd:0.647394,pmedio:49.9078, div:0,pesoAlvo:5, setor:"Índia"},
-  {ticker:"MELI", nome:"Mercado Libre",             tipo:"acao",mercado:"US",qtd:0.014046,pmedio:1607.5876,div:0,pesoAlvo:3,setor:"E-commerce/Fintech"},
-  {ticker:"MSFT", nome:"Microsoft",                 tipo:"acao",mercado:"US",qtd:0.073037,pmedio:373.3743,div:0,pesoAlvo:4, setor:"Tecnologia"},
-  {ticker:"NTR",  nome:"Nutrien",                   tipo:"acao",mercado:"US",qtd:0.184776,pmedio:62.4000, div:0,pesoAlvo:3, setor:"Fertilizantes/Agro"},
-  {ticker:"NVDA", nome:"Nvidia",                    tipo:"acao",mercado:"US",qtd:0.131692,pmedio:210.6425,div:0,pesoAlvo:4, setor:"Semicondutores"},
-  {ticker:"PWR",  nome:"Quanta Services",           tipo:"acao",mercado:"US",qtd:0.016147,pmedio:714.0500,div:0,pesoAlvo:3, setor:"Infraestrutura Energia"},
-  {ticker:"QQQM", nome:"Invesco NASDAQ 100 ETF",    tipo:"etf", mercado:"US",qtd:0.104892,pmedio:732.5600,div:0,pesoAlvo:10,setor:"Tecnologia"},
-  {ticker:"RACE", nome:"Ferrari",                   tipo:"acao",mercado:"US",qtd:0.100845,pmedio:350.0404,div:0,pesoAlvo:5, setor:"Luxo/Consumo Premium"},
-  {ticker:"SCHD", nome:"Schwab Dividend ETF",       tipo:"etf", mercado:"US",qtd:2.370142,pmedio:32.4200, div:0,pesoAlvo:10,setor:"Dividendos/Qualidade"},
-  {ticker:"SHLD", nome:"Global X Defense Tech ETF", tipo:"etf", mercado:"US",qtd:0.542984,pmedio:60.7016, div:0,pesoAlvo:5, setor:"Defesa"},
-  {ticker:"URA",  nome:"Global X Uranium ETF",      tipo:"etf", mercado:"US",qtd:0.794623,pmedio:48.3500, div:0,pesoAlvo:5, setor:"Energia Nuclear"},
-  {ticker:"V",    nome:"Visa",                      tipo:"acao",mercado:"US",qtd:0.034841,pmedio:330.9300,div:0,pesoAlvo:3, setor:"Pagamentos"},
-  {ticker:"VIST", nome:"Vista Energy",              tipo:"acao",mercado:"US",qtd:0.298568,pmedio:67.6229, div:0,pesoAlvo:3, setor:"Petróleo e Gás"},
-  {ticker:"VOO",  nome:"Vanguard S&P 500 ETF",      tipo:"etf", mercado:"US",qtd:0.156065,pmedio:689.3300,div:0,pesoAlvo:15,setor:"Índice EUA"},
-  {ticker:"VXUS", nome:"Vanguard Total International",tipo:"etf",mercado:"US",qtd:0.965943,pmedio:87.5000,div:0,pesoAlvo:5,setor:"Internacional ex-EUA"},
-  {ticker:"XOM",  nome:"Exxon Mobil",               tipo:"acao",mercado:"US",qtd:0.083757,pmedio:137.6600,div:0,pesoAlvo:3, setor:"Energia"},
-  {ticker:"TESE-SELIC31",nome:"Tesouro Selic 2031",    tipo:"renda",mercado:"BR",qtd:1,pmedio:6143.34,div:0,pesoAlvo:0,setor:"Renda Fixa Gov."},
-  {ticker:"TESE-IPCA32", nome:"Tesouro IPCA+ 2032",    tipo:"renda",mercado:"BR",qtd:1,pmedio:6244.96,div:0,pesoAlvo:0,setor:"Renda Fixa Gov."},
-  {ticker:"TESE-PRE29",  nome:"Tesouro Prefixado 2029",tipo:"renda",mercado:"BR",qtd:1,pmedio:444.88, div:0,pesoAlvo:0,setor:"Renda Fixa Gov."},
+const PADRAO=[
+  {ticker:"BRK.B",nome:"Berkshire Hathaway",tipo:"acao",mercado:"US",qtd:0.073544,pmedio:490.7227,pesoAlvo:5,setor:"Holding/Qualidade"},
+  {ticker:"COST",nome:"Costco",tipo:"acao",mercado:"US",qtd:0.031081,pmedio:950.4435,pesoAlvo:4,setor:"Consumo Defensivo"},
+  {ticker:"DE",nome:"Deere & Company",tipo:"acao",mercado:"US",qtd:0.069737,pmedio:600.9700,pesoAlvo:3,setor:"Agro/Máquinas"},
+  {ticker:"FCX",nome:"Freeport-McMoRan",tipo:"acao",mercado:"US",qtd:0.406341,pmedio:68.7600,pesoAlvo:2,setor:"Cobre/Mineração"},
+  {ticker:"INDA",nome:"iShares MSCI India ETF",tipo:"etf",mercado:"US",qtd:0.647394,pmedio:49.9078,pesoAlvo:5,setor:"Índia"},
+  {ticker:"MELI",nome:"Mercado Libre",tipo:"acao",mercado:"US",qtd:0.014046,pmedio:1607.5876,pesoAlvo:3,setor:"E-commerce/Fintech"},
+  {ticker:"MSFT",nome:"Microsoft",tipo:"acao",mercado:"US",qtd:0.073037,pmedio:373.3743,pesoAlvo:4,setor:"Tecnologia"},
+  {ticker:"NTR",nome:"Nutrien",tipo:"acao",mercado:"US",qtd:0.184776,pmedio:62.4000,pesoAlvo:3,setor:"Fertilizantes/Agro"},
+  {ticker:"NVDA",nome:"Nvidia",tipo:"acao",mercado:"US",qtd:0.131692,pmedio:210.6425,pesoAlvo:4,setor:"Semicondutores"},
+  {ticker:"PWR",nome:"Quanta Services",tipo:"acao",mercado:"US",qtd:0.016147,pmedio:714.0500,pesoAlvo:3,setor:"Infraestrutura Energia"},
+  {ticker:"QQQM",nome:"Invesco NASDAQ 100 ETF",tipo:"etf",mercado:"US",qtd:0.104892,pmedio:732.5600,pesoAlvo:10,setor:"Tecnologia"},
+  {ticker:"RACE",nome:"Ferrari",tipo:"acao",mercado:"US",qtd:0.100845,pmedio:350.0404,pesoAlvo:5,setor:"Luxo/Consumo Premium"},
+  {ticker:"SCHD",nome:"Schwab Dividend ETF",tipo:"etf",mercado:"US",qtd:2.370142,pmedio:32.4200,pesoAlvo:10,setor:"Dividendos/Qualidade"},
+  {ticker:"SHLD",nome:"Global X Defense Tech ETF",tipo:"etf",mercado:"US",qtd:0.542984,pmedio:60.7016,pesoAlvo:5,setor:"Defesa"},
+  {ticker:"URA",nome:"Global X Uranium ETF",tipo:"etf",mercado:"US",qtd:0.794623,pmedio:48.3500,pesoAlvo:5,setor:"Energia Nuclear"},
+  {ticker:"V",nome:"Visa",tipo:"acao",mercado:"US",qtd:0.034841,pmedio:330.9300,pesoAlvo:3,setor:"Pagamentos"},
+  {ticker:"VIST",nome:"Vista Energy",tipo:"acao",mercado:"US",qtd:0.298568,pmedio:67.6229,pesoAlvo:3,setor:"Petróleo e Gás"},
+  {ticker:"VOO",nome:"Vanguard S&P 500 ETF",tipo:"etf",mercado:"US",qtd:0.156065,pmedio:689.3300,pesoAlvo:15,setor:"Índice EUA"},
+  {ticker:"VXUS",nome:"Vanguard Total International",tipo:"etf",mercado:"US",qtd:0.965943,pmedio:87.5000,pesoAlvo:5,setor:"Internacional ex-EUA"},
+  {ticker:"XOM",nome:"Exxon Mobil",tipo:"acao",mercado:"US",qtd:0.083757,pmedio:137.6600,pesoAlvo:3,setor:"Energia"},
+  {ticker:"TESE-SELIC31",nome:"Tesouro Selic 2031",tipo:"renda",mercado:"BR",qtd:1,pmedio:6143.34,pesoAlvo:0,setor:"Renda Fixa Gov."},
+  {ticker:"TESE-IPCA32",nome:"Tesouro IPCA+ 2032",tipo:"renda",mercado:"BR",qtd:1,pmedio:6244.96,pesoAlvo:0,setor:"Renda Fixa Gov."},
+  {ticker:"TESE-PRE29",nome:"Tesouro Prefixado 2029",tipo:"renda",mercado:"BR",qtd:1,pmedio:444.88,pesoAlvo:0,setor:"Renda Fixa Gov."},
 ];
 
-let carteira, dividendos=[], precos={}, usdBrl=5.75, editIdx=-1;
-let cMerc, cTipo, cEtf, cAcaoUS, cRF, cAcaoBR;
+let carteira, dividendos=[], aportes=[], precos={}, usdBrl=5.75, camUpd='';
+let cMerc,cTipo,cEtf,cAcaoUS,cRF,cAcaoBR;
 
-// ═══════════════════════════════════
-// STORAGE
-// ═══════════════════════════════════
+// ═══════════════════ STORAGE ═══════════════════
 function load(){
-  try{ const s=localStorage.getItem(SK); const parsed=s?JSON.parse(s):null;
-    if(parsed){ carteira=parsed.carteira||JSON.parse(JSON.stringify(PADRAO)); dividendos=parsed.dividendos||[]; }
-    else { carteira=JSON.parse(JSON.stringify(PADRAO)); dividendos=[]; }
-  } catch(e){ carteira=JSON.parse(JSON.stringify(PADRAO)); dividendos=[]; }
+  try{
+    const s=localStorage.getItem(SK); const p=s?JSON.parse(s):null;
+    if(p){ carteira=p.carteira||JSON.parse(JSON.stringify(PADRAO)); dividendos=p.dividendos||[]; aportes=p.aportes||[]; }
+    else { carteira=JSON.parse(JSON.stringify(PADRAO)); dividendos=[]; aportes=[]; }
+  }catch(e){ carteira=JSON.parse(JSON.stringify(PADRAO)); dividendos=[]; aportes=[]; }
 }
 function save(){
-  try{ localStorage.setItem(SK,JSON.stringify({v:4,carteira,dividendos})); toast('✓ Salvo'); }catch(e){}
+  try{ localStorage.setItem(SK,JSON.stringify({v:5,carteira,dividendos,aportes})); toast('✓ Salvo'); }catch(e){}
 }
 
-// ═══════════════════════════════════
-// EXPORT/IMPORT
-// ═══════════════════════════════════
+// ═══════════════════ EXPORT/IMPORT ═══════════════════
 function exp(){
-  const b=new Blob([JSON.stringify({v:4,data:new Date().toISOString(),carteira,dividendos},null,2)],{type:'application/json'});
+  const b=new Blob([JSON.stringify({v:5,data:new Date().toISOString(),carteira,dividendos,aportes},null,2)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(b);
   a.download='carteira_'+new Date().toISOString().slice(0,10)+'.json'; a.click();
   toast('✓ Exportado');
@@ -452,18 +573,15 @@ function imp(e){
   r.onload=ev=>{
     try{
       const d=JSON.parse(ev.target.result);
-      carteira=d.carteira||d;
-      dividendos=d.dividendos||[];
+      carteira=d.carteira||d; dividendos=d.dividendos||[]; aportes=d.aportes||[];
       if(!Array.isArray(carteira))throw 0;
       save(); closeM(); refresh(); toast('✓ Importado');
-    } catch(e){ alert('Arquivo inválido.'); }
+    }catch(e){ alert('Arquivo inválido.'); }
   };
   r.readAsText(f); e.target.value='';
 }
 
-// ═══════════════════════════════════
-// UI HELPERS
-// ═══════════════════════════════════
+// ═══════════════════ UI ═══════════════════
 function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),2200); }
 function setSt(s,m){ document.getElementById('dot').className='dot'+(s==='l'?' l':s==='e'?' e':''); document.getElementById('stlbl').textContent=m; }
 function showPg(id,el){
@@ -471,43 +589,232 @@ function showPg(id,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.getElementById('pg-'+id).classList.add('on'); el.classList.add('on');
   if(id==='dv') buildDividendos();
+  if(id==='hs') buildHistorico();
+}
+function closeM(){ document.querySelectorAll('.mb').forEach(m=>m.classList.remove('on')); }
+function openM(t,idx){
+  closeM();
+  if(t==='imp'){ document.getElementById('mImp').classList.add('on'); return; }
+  if(t==='novo'){
+    document.getElementById('nTk').value='';
+    document.getElementById('nFetchBox').style.display='none';
+    document.getElementById('nFormBox').style.display='none';
+    document.getElementById('nFaCancel').style.display='flex';
+    document.getElementById('mNovo').classList.add('on');
+    setTimeout(()=>document.getElementById('nTk').focus(),100);
+    return;
+  }
+  if(t==='aporte'){
+    const sel=document.getElementById('aTk');
+    sel.innerHTML=carteira.map(a=>'<option value="'+a.ticker+'">'+a.ticker+' — '+a.nome+'</option>').join('');
+    document.getElementById('aValor').value='';
+    document.getElementById('aPreco').value='';
+    document.getElementById('aCambio').value='5.2056';
+    document.getElementById('aTaxa').value='';
+    document.getElementById('aObs').value='';
+    document.getElementById('aData').value=new Date().toLocaleDateString('pt-BR');
+    document.getElementById('aCalcBox').style.display='none';
+    aporteTickerChange();
+    document.getElementById('mAporte').classList.add('on');
+    return;
+  }
+  if(t==='edit'&&idx!==undefined){
+    const a=carteira[idx];
+    document.getElementById('eTkHidden').value=idx;
+    document.getElementById('eNm').value=a.nome;
+    document.getElementById('eSt').value=a.setor||'';
+    document.getElementById('eMk').value=a.mercado;
+    document.getElementById('eTp').value=a.tipo;
+    document.getElementById('ePa').value=a.pesoAlvo||'';
+    document.getElementById('mEdit').classList.add('on');
+  }
 }
 
-// ═══════════════════════════════════
-// FORMATOS
-// ═══════════════════════════════════
+// ═══════════════════ BUSCAR TICKER ═══════════════════
+async function buscarTicker(){
+  const tk=document.getElementById('nTk').value.trim().toUpperCase();
+  const mk=document.getElementById('nMk').value;
+  if(!tk){ alert('Digite o ticker.'); return; }
+  const box=document.getElementById('nFetchBox');
+  box.style.display='block';
+  box.innerHTML='<div class="fetch-box"><span class="fetch-spin"></span> Buscando dados de <strong>'+tk+'</strong>...</div>';
+  document.getElementById('nFormBox').style.display='none';
+  try{
+    const r=await fetch('https://brapi.dev/api/quote/'+tk+'?token='+TOK);
+    const d=await r.json();
+    if(d.results&&d.results[0]){
+      const res=d.results[0];
+      const nome=res.longName||res.shortName||tk;
+      const cotacao=res.regularMarketPrice||0;
+      const moeda=mk==='US'?'USD':'BRL';
+      // Tentar inferir tipo
+      let tipo='acao';
+      const nmLow=nome.toLowerCase();
+      if(nmLow.includes('etf')||nmLow.includes('fund')||nmLow.includes('trust')) tipo='etf';
+      if(nmLow.includes('fii')||nmLow.includes('fundo imobiliario')||nmLow.includes('fundo imobiliário')) tipo='fii';
+
+      box.innerHTML='<div class="fetch-box" style="border-color:var(--green)">'+
+        '<div class="fetch-row"><span style="color:var(--text2)">Nome encontrado:</span><span style="color:var(--green);font-weight:600">'+nome+'</span></div>'+
+        '<div class="fetch-row"><span style="color:var(--text2)">Cotação atual:</span><span style="font-weight:600">'+(moeda==='USD'?'US$ ':'R$ ')+cotacao.toFixed(2)+'</span></div>'+
+        '<div class="fetch-row"><span style="color:var(--text2)">Mercado:</span><span>'+(mk==='US'?'🇺🇸 EUA (USD)':'🇧🇷 Brasil (BRL)')+'</span></div>'+
+        '<div style="margin-top:6px;font-size:10px;color:var(--text2)">Confirme ou ajuste os dados abaixo antes de cadastrar.</div>'+
+        '</div>';
+
+      document.getElementById('nNm').value=nome;
+      document.getElementById('nSt').value=res.sector||'';
+      document.getElementById('nTp').value=tipo;
+      document.getElementById('nPa').value='';
+      document.getElementById('nFormBox').style.display='block';
+      document.getElementById('nFaCancel').style.display='none';
+
+      // salva cotação
+      precos[tk]={preco:cotacao,var:res.regularMarketChangePercent||0,moeda};
+    } else {
+      box.innerHTML='<div class="fetch-box" style="border-color:var(--red)">⚠ Ticker <strong>'+tk+'</strong> não encontrado. Verifique o código e tente novamente.</div>';
+    }
+  }catch(e){
+    box.innerHTML='<div class="fetch-box" style="border-color:var(--red)">❌ Erro ao buscar. Verifique sua conexão.</div>';
+  }
+}
+
+function saveNovo(){
+  const tk=document.getElementById('nTk').value.trim().toUpperCase();
+  const mk=document.getElementById('nMk').value;
+  const nm=document.getElementById('nNm').value.trim();
+  const st=document.getElementById('nSt').value.trim();
+  const tp=document.getElementById('nTp').value;
+  const pa=parseFloat(document.getElementById('nPa').value)||0;
+  if(!tk||!nm){ alert('Preencha pelo menos ticker e nome.'); return; }
+  if(carteira.find(a=>a.ticker===tk)){ alert('Ativo '+tk+' já existe na carteira.'); return; }
+  carteira.push({ticker:tk,nome:nm,setor:st,tipo:tp,mercado:mk,qtd:0,pmedio:0,pesoAlvo:pa});
+  save(); closeM(); renderAll(); toast('✓ Ativo cadastrado: '+tk);
+}
+
+function saveEdit(){
+  const idx=parseInt(document.getElementById('eTkHidden').value);
+  const a=carteira[idx];
+  a.nome=document.getElementById('eNm').value.trim();
+  a.setor=document.getElementById('eSt').value.trim();
+  a.mercado=document.getElementById('eMk').value;
+  a.tipo=document.getElementById('eTp').value;
+  a.pesoAlvo=parseFloat(document.getElementById('ePa').value)||0;
+  save(); closeM(); renderAll(); toast('✓ Ativo atualizado');
+}
+
+// ═══════════════════ APORTE ═══════════════════
+function aporteTickerChange(){
+  const tk=document.getElementById('aTk').value;
+  const at=carteira.find(a=>a.ticker===tk);
+  if(!at) return;
+  const isUS=at.mercado==='US';
+  const moeda=isUS?'US$':'R$';
+  document.getElementById('aMoeda').textContent=moeda;
+  document.getElementById('aMoeda2').textContent=moeda;
+  // Câmbio só visível para EUA
+  document.getElementById('aCambio').closest('.fr').style.display=isUS?'block':'none';
+  const infoBox=document.getElementById('aInfoBox');
+  infoBox.style.display='block';
+  const pmAtual=at.mercado==='US'?at.pmedio:at.pmedio;
+  const pmLabel=isUS?'US$ '+pmAtual.toFixed(4):'R$ '+pmAtual.toFixed(4);
+  infoBox.innerHTML='📋 <strong>'+at.ticker+'</strong> — '+at.nome+
+    ' | Qtd atual: <strong>'+Number(at.qtd).toFixed(8)+'</strong>'+
+    ' | PM atual: <strong>'+pmLabel+'</strong>'+
+    ' | Mercado: '+(isUS?'🇺🇸 EUA (USD)':'🇧🇷 Brasil (BRL)');
+  aporteCalc();
+}
+
+function aporteCalc(){
+  const tk=document.getElementById('aTk').value;
+  const at=carteira.find(a=>a.ticker===tk);
+  if(!at) return;
+  const isUS=at.mercado==='US';
+  const valor=parseFloat(document.getElementById('aValor').value)||0;
+  const preco=parseFloat(document.getElementById('aPreco').value)||0;
+  const cambio=isUS?(parseFloat(document.getElementById('aCambio').value)||usdBrl):1;
+  const taxa=parseFloat(document.getElementById('aTaxa').value)||0;
+  const box=document.getElementById('aCalcBox');
+  if(!valor||!preco){ box.style.display='none'; return; }
+  box.style.display='block';
+  const qtdNova=valor/preco;
+  const valorBRL=isUS?(valor*cambio)+taxa:valor+taxa;
+  // Novo PM ponderado
+  const custoAtual=at.qtd*at.pmedio; // na moeda original
+  const novoTotalQtd=at.qtd+qtdNova;
+  const novoPM=novoTotalQtd>0?(custoAtual+(valor))/novoTotalQtd:preco;
+  const novoPMBRL=isUS?novoPM*cambio:novoPM;
+  const pmAtualLabel=isUS?'US$ '+at.pmedio.toFixed(4):'R$ '+at.pmedio.toFixed(4);
+  const pmNovoLabel=isUS?'US$ '+novoPM.toFixed(4)+' (R$ '+novoPMBRL.toFixed(4)+')':'R$ '+novoPM.toFixed(4);
+  document.getElementById('aQtdCalc').textContent=qtdNova.toFixed(8)+' cotas';
+  document.getElementById('aValBRL').textContent='R$ '+valorBRL.toFixed(2);
+  document.getElementById('aPMatual').textContent=pmAtualLabel;
+  document.getElementById('aPMnovo').textContent=pmNovoLabel;
+}
+
+function saveAporte(){
+  const tk=document.getElementById('aTk').value;
+  const at=carteira.find(a=>a.ticker===tk);
+  if(!at){ alert('Ativo não encontrado.'); return; }
+  const isUS=at.mercado==='US';
+  const valor=parseFloat(document.getElementById('aValor').value);
+  const preco=parseFloat(document.getElementById('aPreco').value);
+  const cambio=isUS?(parseFloat(document.getElementById('aCambio').value)||usdBrl):1;
+  const taxa=parseFloat(document.getElementById('aTaxa').value)||0;
+  const data=document.getElementById('aData').value||new Date().toLocaleDateString('pt-BR');
+  const obs=document.getElementById('aObs').value.trim();
+  if(!valor||valor<=0||!preco||preco<=0){ alert('Preencha valor aportado e preço médio.'); return; }
+
+  const qtdNova=valor/preco;
+  const custoAtual=at.qtd*at.pmedio;
+  const pmAnterior=at.pmedio;
+  const novoTotalQtd=at.qtd+qtdNova;
+  const novoPM=novoTotalQtd>0?(custoAtual+valor)/novoTotalQtd:preco;
+  const valorBRL=isUS?(valor*cambio)+taxa:valor+taxa;
+
+  // Registra aporte no histórico
+  aportes.push({
+    ticker:tk, nome:at.nome, data, tipo:'aporte',
+    valor, preco, cambio:isUS?cambio:1, taxa, qtd:qtdNova,
+    valorBRL, moeda:isUS?'USD':'BRL',
+    pmAnterior, pmNovo:novoPM, obs
+  });
+
+  // Atualiza ativo
+  const idx=carteira.findIndex(a=>a.ticker===tk);
+  carteira[idx].qtd=novoTotalQtd;
+  carteira[idx].pmedio=novoPM;
+
+  save(); closeM(); renderAll(); buildHistorico();
+  toast('✓ Aporte registrado: +'+qtdNova.toFixed(8)+' '+tk);
+}
+
+function delAt(i){
+  if(confirm('Remover '+carteira[i].ticker+'? Os aportes associados permanecem no histórico.')){ carteira.splice(i,1); save(); renderAll(); }
+}
+
+// ═══════════════════ FORMATOS ═══════════════════
 const R=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const U=v=>v.toLocaleString('en-US',{style:'currency',currency:'USD'});
 const P=v=>(v>=0?'+':'')+v.toFixed(2)+'%';
 const C=v=>v>=0?'pos':'neg';
 
-// ═══════════════════════════════════
-// PREÇOS
-// ═══════════════════════════════════
+// ═══════════════════ PREÇOS ═══════════════════
 function pBRL(a){ const p=precos[a.ticker]; if(!p)return a.pmedio*(a.mercado==='US'?usdBrl:1); return p.moeda==='USD'?p.preco*usdBrl:p.preco; }
-function pUSD(a){ const p=precos[a.ticker]; if(!p)return a.pmedio*(a.mercado==='BR'?1/usdBrl:1); return p.moeda==='USD'?p.preco:p.preco/usdBrl; }
 function pmBRL(a){ return a.mercado==='US'?a.pmedio*usdBrl:a.pmedio; }
 function getP(a){ return precos[a.ticker]||{preco:a.pmedio,var:0,moeda:a.mercado==='US'?'USD':'BRL'}; }
 
-// ═══════════════════════════════════
-// TOTAIS
-// ═══════════════════════════════════
 function totais(){
   let pat=0,custo=0,vd=0;
   carteira.forEach(a=>{ const v=a.qtd*pBRL(a),c=a.qtd*pmBRL(a),p=getP(a); pat+=v;custo+=c;vd+=v*(p.var/100); });
-  return {pat,custo,res:pat-custo,rp:(pat-custo)/custo*100,vd,vdp:vd/pat*100};
+  return {pat,custo,res:pat-custo,rp:custo?((pat-custo)/custo*100):0,vd,vdp:pat?(vd/pat*100):0};
 }
 
-// ═══════════════════════════════════
-// FETCH COTAÇÕES
-// ═══════════════════════════════════
+// ═══════════════════ FETCH ═══════════════════
 async function fetchAll(){
   try{
     const r=await fetch('https://brapi.dev/api/v2/currency?currency=USD-BRL&token='+TOK);
     const d=await r.json();
-    if(d.currency&&d.currency[0]) usdBrl=d.currency[0].bidPrice||usdBrl;
+    if(d.currency&&d.currency[0]){ usdBrl=d.currency[0].bidPrice||usdBrl; camUpd=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
   }catch(e){}
-
   const ativos=carteira.filter(a=>!a.ticker.startsWith('TESE-'));
   for(let i=0;i<ativos.length;i++){
     const a=ativos[i];
@@ -517,23 +824,14 @@ async function fetchAll(){
       const d=await r.json();
       if(d.results&&d.results[0]){
         precos[a.ticker]={preco:d.results[0].regularMarketPrice,var:d.results[0].regularMarketChangePercent||0,moeda:a.mercado==='US'?'USD':'BRL'};
-      } else {
-        if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:a.mercado==='US'?'USD':'BRL'};
-      }
-    }catch(e){
-      if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:a.mercado==='US'?'USD':'BRL'};
-    }
-    renderAll();
-    await new Promise(r=>setTimeout(r,250));
+      } else if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:a.mercado==='US'?'USD':'BRL'};
+    }catch(e){ if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:a.mercado==='US'?'USD':'BRL'}; }
+    renderAll(); await new Promise(r=>setTimeout(r,250));
   }
-  carteira.filter(a=>a.ticker.startsWith('TESE-')).forEach(a=>{
-    if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:'BRL'};
-  });
+  carteira.filter(a=>a.ticker.startsWith('TESE-')).forEach(a=>{ if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:'BRL'}; });
 }
 
-// ═══════════════════════════════════
-// RENDER PRINCIPAL
-// ═══════════════════════════════════
+// ═══════════════════ RENDER ═══════════════════
 function renderAll(){
   const t=totais();
   document.getElementById('mpat').textContent=R(t.pat);
@@ -547,113 +845,54 @@ function renderAll(){
   document.getElementById('mresUsd').textContent=U(t.res/usdBrl);
   document.getElementById('mvd2').innerHTML='<span class="'+C(t.vd)+'">'+P(t.vdp)+' hoje</span>';
   document.getElementById('mcam').textContent='R$ '+usdBrl.toFixed(4);
-
-  buildCharts(t.pat);
-  buildResumo(t.pat);
-  buildAtivos(t.pat);
-  buildAloc(t.pat);
-  calcRb();
+  document.getElementById('mcamUpd').textContent=camUpd?'atualizado às '+camUpd:'';
+  buildCharts(t.pat); buildResumo(t.pat); buildAtivos(t.pat); buildAloc(t.pat); calcRb();
 }
 
-// ═══════════════════════════════════
-// GRÁFICOS
-// ═══════════════════════════════════
-function chartOpts(labels, data, colors){
-  const isDark = document.body.classList.contains('dark');
-  const txtColor = isDark ? '#8b95b0' : '#64748b';
-  return {
-    type:'doughnut',
-    data:{
-      labels,
-      datasets:[{data, backgroundColor:colors, borderWidth:2, borderColor: isDark?'#161b27':'#ffffff', hoverOffset:6}]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      cutout:'58%',
-      plugins:{
-        legend:{position:'bottom',labels:{color:txtColor,font:{size:10},padding:8,boxWidth:12}},
-        tooltip:{callbacks:{label:c=>{
-          const tot=c.dataset.data.reduce((a,b)=>a+b,0);
-          return c.label+': '+R(c.parsed)+' ('+(c.parsed/tot*100).toFixed(1)+'%)';
-        }}},
-        // Mostrar % dentro das fatias
-        datalabels: false
-      }
-    },
-    plugins:[{
-      id:'pctLabel',
-      afterDatasetsDraw(chart){
-        const {ctx,data}=chart;
-        const tot=data.datasets[0].data.reduce((a,b)=>a+b,0);
-        chart.getDatasetMeta(0).data.forEach((arc,i)=>{
-          const pct=(data.datasets[0].data[i]/tot*100);
-          if(pct<4)return;
-          const {x,y}=arc.tooltipPosition();
-          ctx.save();
-          ctx.fillStyle='#fff';
-          ctx.font='bold 10px system-ui';
-          ctx.textAlign='center';
-          ctx.textBaseline='middle';
-          ctx.shadowColor='rgba(0,0,0,.5)';
-          ctx.shadowBlur=3;
-          ctx.fillText(pct.toFixed(1)+'%',x,y);
-          ctx.restore();
-        });
-      }
-    }]
-  };
-}
-
-function mkChart(canvasId, ref, labels, data, colors){
+// ═══════════════════ GRÁFICOS ═══════════════════
+function mkChart(canvasId,ref,labels,data,colors){
   if(ref) ref.destroy();
+  const isDark=document.body.classList.contains('dark');
+  const txtColor=isDark?'#8b95b0':'#64748b';
   const ctx=document.getElementById(canvasId).getContext('2d');
-  return new Chart(ctx, chartOpts(labels, data, colors));
+  return new Chart(ctx,{
+    type:'doughnut',
+    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:2,borderColor:isDark?'#161b27':'#ffffff',hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
+      plugins:{legend:{position:'bottom',labels:{color:txtColor,font:{size:10},padding:8,boxWidth:12}},
+        tooltip:{callbacks:{label:c=>{const tot=c.dataset.data.reduce((a,b)=>a+b,0); return c.label+': '+R(c.parsed)+' ('+(c.parsed/tot*100).toFixed(1)+'%)';}}}}},
+    plugins:[{id:'pct',afterDatasetsDraw(chart){
+      const {ctx,data}=chart; const tot=data.datasets[0].data.reduce((a,b)=>a+b,0);
+      chart.getDatasetMeta(0).data.forEach((arc,i)=>{
+        const pct=data.datasets[0].data[i]/tot*100; if(pct<4)return;
+        const {x,y}=arc.tooltipPosition(); ctx.save();
+        ctx.fillStyle='#fff'; ctx.font='bold 10px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.shadowColor='rgba(0,0,0,.6)'; ctx.shadowBlur=3; ctx.fillText(pct.toFixed(1)+'%',x,y); ctx.restore();
+      });
+    }}]
+  });
 }
 
 function buildCharts(pat){
-  let us=0,br=0,etf=0,ac=0,rf=0,acao_br=0,cx=0;
-  const etfMap={}, acaoUSMap={}, rfMap={}, acaoBRMap={};
-
+  let us=0,br=0,etf=0,ac=0,rf=0,acbr=0;
+  const etfM={},acUSM={},rfM={},acBRM={};
   carteira.forEach(a=>{
     const v=a.qtd*pBRL(a);
-    if(a.mercado==='US'){
-      us+=v;
-      if(a.tipo==='etf'){ etf+=v; etfMap[a.ticker]=(etfMap[a.ticker]||0)+v; }
-      else { ac+=v; acaoUSMap[a.ticker]=(acaoUSMap[a.ticker]||0)+v; }
-    } else {
-      br+=v;
-      if(a.tipo==='caixa') cx+=v;
-      else if(a.tipo==='renda'){ rf+=v; rfMap[a.ticker]=(rfMap[a.ticker]||0)+v; }
-      else { acao_br+=v; acaoBRMap[a.ticker]=(acaoBRMap[a.ticker]||0)+v; }
-    }
+    if(a.mercado==='US'){ us+=v; if(a.tipo==='etf'){etf+=v;etfM[a.ticker]=(etfM[a.ticker]||0)+v;}else{ac+=v;acUSM[a.ticker]=(acUSM[a.ticker]||0)+v;} }
+    else{ br+=v; if(a.tipo==='renda'){rf+=v;rfM[a.ticker]=(rfM[a.ticker]||0)+v;}else if(a.tipo!=='caixa'){acbr+=v;acBRM[a.ticker]=(acBRM[a.ticker]||0)+v;} }
   });
-
-  // EUA vs BR
-  cMerc = mkChart('cMerc', cMerc, ['EUA','Brasil'], [us,br], ['#4f8ef7','#36d399']);
-  // ETF vs Ação
-  cTipo = mkChart('cTipo', cTipo, ['ETFs','Ações'], [etf,ac], ['#f59e0b','#4f8ef7']);
-
-  // Composição ETFs
-  const etfL=Object.keys(etfMap), etfD=Object.values(etfMap);
-  cEtf = mkChart('cEtf', cEtf, etfL, etfD, CORES.slice(0,etfL.length));
-
-  // Composição Ações EUA
-  const acL=Object.keys(acaoUSMap), acD=Object.values(acaoUSMap);
-  cAcaoUS = mkChart('cAcaoUS', cAcaoUS, acL, acD, CORES.slice(0,acL.length));
-
-  // Renda Fixa BR
-  const rfL=Object.keys(rfMap), rfD=Object.values(rfMap);
-  if(rfL.length>0) cRF = mkChart('cRF', cRF, rfL, rfD, CORES.slice(0,rfL.length));
-
-  // Ações BR
-  const abrL=Object.keys(acaoBRMap), abrD=Object.values(acaoBRMap);
-  if(abrL.length>0) cAcaoBR = mkChart('cAcaoBR', cAcaoBR, abrL, abrD, CORES.slice(0,abrL.length));
+  cMerc=mkChart('cMerc',cMerc,['EUA','Brasil'],[us,br],['#4f8ef7','#36d399']);
+  cTipo=mkChart('cTipo',cTipo,['ETFs','Ações'],[etf,ac],['#f59e0b','#4f8ef7']);
+  const etfL=Object.keys(etfM),etfD=Object.values(etfM);
+  if(etfL.length) cEtf=mkChart('cEtf',cEtf,etfL,etfD,CORES.slice(0,etfL.length));
+  const acL=Object.keys(acUSM),acD=Object.values(acUSM);
+  if(acL.length) cAcaoUS=mkChart('cAcaoUS',cAcaoUS,acL,acD,CORES.slice(0,acL.length));
+  const rfL=Object.keys(rfM),rfD=Object.values(rfM);
+  if(rfL.length) cRF=mkChart('cRF',cRF,rfL,rfD,CORES.slice(0,rfL.length));
+  const abrL=Object.keys(acBRM),abrD=Object.values(acBRM);
+  if(abrL.length) cAcaoBR=mkChart('cAcaoBR',cAcaoBR,abrL,abrD,CORES.slice(0,abrL.length));
 }
 
-// ═══════════════════════════════════
-// RESUMO ALOCAÇÃO
-// ═══════════════════════════════════
 function alocRow(label,atual,meta,cor){
   const d=atual-meta;
   const badge=Math.abs(d)<0.5?'<span class="dbadge dok">≈ meta</span>':d>0?'<span class="dbadge dup">+'+d.toFixed(1)+'%</span>':'<span class="dbadge ddn">'+d.toFixed(1)+'%</span>';
@@ -661,15 +900,11 @@ function alocRow(label,atual,meta,cor){
 }
 
 function buildResumo(pat){
-  let us=0,br=0,etf=0,ac=0,rf=0,acao_br=0,cx=0;
-  carteira.forEach(a=>{
-    const v=a.qtd*pBRL(a);
-    if(a.mercado==='US'){us+=v;if(a.tipo==='etf')etf+=v;else ac+=v;}
-    else{br+=v;if(a.tipo==='caixa')cx+=v;else if(a.tipo==='acao'||a.tipo==='etf'||a.tipo==='fii')acao_br+=v;else rf+=v;}
-  });
-  const pus=pat?(us/pat)*100:0,pbr=pat?(br/pat)*100:0;
-  const petf=(etf+ac)?(etf/(etf+ac))*100:0,pac=(etf+ac)?(ac/(etf+ac))*100:0;
-  const prf=br?(rf/br)*100:0,pabr=br?(acao_br/br)*100:0,pcx=br?(cx/br)*100:0;
+  let us=0,br=0,etf=0,ac=0,rf=0,acbr=0,cx=0;
+  carteira.forEach(a=>{ const v=a.qtd*pBRL(a); if(a.mercado==='US'){us+=v;if(a.tipo==='etf')etf+=v;else ac+=v;}else{br+=v;if(a.tipo==='caixa')cx+=v;else if(a.tipo==='acao'||a.tipo==='etf'||a.tipo==='fii')acbr+=v;else rf+=v;} });
+  const pus=pat?us/pat*100:0,pbr=pat?br/pat*100:0;
+  const petf=(etf+ac)?etf/(etf+ac)*100:0,pac=(etf+ac)?ac/(etf+ac)*100:0;
+  const prf=br?rf/br*100:0,pabr=br?acbr/br*100:0,pcx=br?cx/br*100:0;
   document.getElementById('resAloc').innerHTML=
     '<div style="font-size:10px;color:var(--text2);text-transform:uppercase;margin:6px 0 2px">Geográfica</div>'+
     alocRow('EUA',pus,MUS,'#4f8ef7')+alocRow('Brasil',pbr,MBR,'#36d399')+
@@ -686,56 +921,45 @@ function barItem(label,atual,meta,cor){
 }
 
 function buildAloc(pat){
-  let us=0,br=0,etf=0,ac=0,rf=0,acao_br=0,cx=0;
-  carteira.forEach(a=>{
-    const v=a.qtd*pBRL(a);
-    if(a.mercado==='US'){us+=v;if(a.tipo==='etf')etf+=v;else ac+=v;}
-    else{br+=v;if(a.tipo==='caixa')cx+=v;else if(a.tipo==='acao'||a.tipo==='etf'||a.tipo==='fii')acao_br+=v;else rf+=v;}
-  });
-  const pus=pat?(us/pat)*100:0,pbr=pat?(br/pat)*100:0;
-  const petf=(etf+ac)?(etf/(etf+ac))*100:0,pac=(etf+ac)?(ac/(etf+ac))*100:0;
-  const prf=br?(rf/br)*100:0,pabr=br?(acao_br/br)*100:0,pcx=br?(cx/br)*100:0;
-
+  let us=0,br=0,etf=0,ac=0,rf=0,acbr=0,cx=0;
+  carteira.forEach(a=>{ const v=a.qtd*pBRL(a); if(a.mercado==='US'){us+=v;if(a.tipo==='etf')etf+=v;else ac+=v;}else{br+=v;if(a.tipo==='caixa')cx+=v;else if(a.tipo==='acao'||a.tipo==='etf'||a.tipo==='fii')acbr+=v;else rf+=v;} });
+  const pus=pat?us/pat*100:0,pbr=pat?br/pat*100:0;
+  const petf=(etf+ac)?etf/(etf+ac)*100:0,pac=(etf+ac)?ac/(etf+ac)*100:0;
+  const prf=br?rf/br*100:0,pabr=br?acbr/br*100:0,pcx=br?cx/br*100:0;
   document.getElementById('alGeo').innerHTML=barItem('EUA',pus,MUS,'#4f8ef7')+barItem('Brasil',pbr,MBR,'#36d399');
   document.getElementById('alUS').innerHTML=barItem('ETFs',petf,METF,'#f59e0b')+barItem('Ações',pac,MACAO,'#f87172');
   document.getElementById('alBR').innerHTML=barItem('Renda Fixa',prf,MRF,'#c084fc')+barItem('Ações/FIIs',pabr,MABR,'#36d399')+barItem('Caixa',pcx,MCAIXA,'#f59e0b');
-
-  const usAt=carteira.filter(a=>a.mercado==='US');
-  let h='';
+  const usAt=carteira.filter(a=>a.mercado==='US'); let h='';
   usAt.sort((a,b)=>(b.pesoAlvo||0)-(a.pesoAlvo||0)).forEach(a=>{
-    const v=a.qtd*pBRL(a),pa=us?(v/us)*100:0,meta=a.pesoAlvo||0,d=pa-meta;
+    const v=a.qtd*pBRL(a),pa=us?v/us*100:0,meta=a.pesoAlvo||0,d=pa-meta;
     const cor=a.tipo==='etf'?'#f59e0b':'#4f8ef7';
     h+='<div style="margin-bottom:11px"><div class="pl"><span><span class="tk">'+a.ticker+'</span> <span style="font-size:10px;color:var(--text2)">'+a.nome+'</span></span><div style="display:flex;gap:7px;align-items:center"><span style="font-size:10px;color:var(--text2)">meta '+meta+'%</span><span style="font-size:12px;font-weight:600">'+pa.toFixed(1)+'%</span><span class="dbadge '+(Math.abs(d)<0.5?'dok':d>0?'dup':'ddn')+'">'+P(d)+'</span></div></div><div class="prog"><div class="pf" style="width:'+Math.min(pa,100)+'%;background:'+cor+'"></div></div></div>';
   });
   document.getElementById('alAt').innerHTML=h||'<p style="color:var(--text2)">Nenhum ativo EUA.</p>';
 }
 
-// ═══════════════════════════════════
-// TABELA DE ATIVOS
-// ═══════════════════════════════════
+// ═══════════════════ TABELA ATIVOS ═══════════════════
 function buildAtivos(pat){
   const tl={acao:'Ação',etf:'ETF',fii:'FII',renda:'Renda Fixa',caixa:'Caixa'};
   const tc={acao:'ta',etf:'te',fii:'tf',renda:'tr',caixa:'tc'};
   let h='';
   carteira.forEach((a,i)=>{
-    const p=getP(a),v=a.qtd*pBRL(a),c=a.qtd*pmBRL(a),res=v-c,rp=(res/c)*100,peso=(v/pat)*100,d=peso-(a.pesoAlvo||0);
-    const cotUSD = p.moeda==='USD' ? U(p.preco) : U(p.preco/usdBrl);
-    const cotBRL = p.moeda==='USD' ? R(p.preco*usdBrl) : R(p.preco);
-    const pm=a.mercado==='US'?U(a.pmedio):R(a.pmedio);
-    // Dividendos do ativo
+    const p=getP(a),v=a.qtd*pBRL(a),c=a.qtd*pmBRL(a),res=v-c,rp=c?(res/c*100):0,peso=pat?v/pat*100:0,d=peso-(a.pesoAlvo||0);
+    const isUS=a.mercado==='US';
+    const cotLabel=isUS?U(p.preco)+' / '+R(p.preco*usdBrl):R(p.preco);
+    const pmOrig=isUS?U(a.pmedio):R(a.pmedio);
+    const pmBRLval=isUS?R(a.pmedio*usdBrl):R(a.pmedio);
     const divAt=dividendos.filter(d=>d.ticker===a.ticker);
     const divTotal=divAt.reduce((s,d)=>s+d.valor,0);
-    const isUS=a.mercado==='US';
     const divBadge=divTotal>0?'<span class="badge-div">'+(isUS?U(divTotal):R(divTotal))+'</span>':'<span style="color:var(--text2);font-size:10px">—</span>';
-
     h+='<tr>';
     h+='<td><span class="tk">'+a.ticker+'</span><div style="font-size:10px;color:var(--text2);margin-top:2px">'+a.nome+'</div></td>';
     h+='<td style="font-size:10px;color:var(--text2)">'+(a.setor||'—')+'</td>';
     h+='<td><span class="tag '+tc[a.tipo]+'">'+tl[a.tipo]+'</span></td>';
-    h+='<td style="font-size:11px">'+Number(a.qtd).toFixed(4)+'</td>';
-    h+='<td style="color:var(--text2);font-size:11px">'+pm+'</td>';
-    h+='<td style="font-size:11px">'+cotUSD+'</td>';
-    h+='<td style="font-weight:600;font-size:11px">'+cotBRL+'</td>';
+    h+='<td style="font-size:11px">'+Number(a.qtd).toFixed(8)+'</td>';
+    h+='<td style="font-size:11px">'+pmOrig+'</td>';
+    h+='<td style="font-size:11px;color:var(--text2)">'+pmBRLval+'</td>';
+    h+='<td style="font-size:11px">'+cotLabel+'</td>';
     h+='<td class="'+C(p.var)+'" style="font-weight:600;font-size:11px">'+P(p.var)+'</td>';
     h+='<td style="font-weight:600">'+R(v)+'</td>';
     h+='<td style="font-size:11px;color:var(--text2)">'+U(v/usdBrl)+'</td>';
@@ -744,136 +968,96 @@ function buildAtivos(pat){
     h+='<td style="font-size:11px;color:var(--text2)">'+(a.pesoAlvo?a.pesoAlvo+'%':'—')+'</td>';
     h+='<td><span class="'+C(d)+'" style="font-size:11px">'+(a.pesoAlvo?(d>0?'+':'')+d.toFixed(1)+'%':'—')+'</span></td>';
     h+='<td>'+divBadge+'</td>';
-    h+='<td style="white-space:nowrap"><button class="btn" onclick="editAt('+i+')" style="padding:3px 7px;font-size:10px;color:#7bb3ff;border-color:#4f8ef730;margin-right:3px">✎</button><button class="btn" onclick="delAt('+i+')" style="padding:3px 7px;font-size:10px;color:var(--red);border-color:#f8727230">✕</button></td>';
+    h+='<td style="white-space:nowrap"><button class="btn" onclick="openM(\'edit\','+i+')" style="padding:3px 7px;font-size:10px;color:#7bb3ff;border-color:#4f8ef730;margin-right:3px">✎</button><button class="btn" onclick="delAt('+i+')" style="padding:3px 7px;font-size:10px;color:var(--red);border-color:#f8727230">✕</button></td>';
     h+='</tr>';
   });
   document.getElementById('tbAt').innerHTML=h;
 }
 
-// ═══════════════════════════════════
-// REBALANCEAMENTO
-// ═══════════════════════════════════
+// ═══════════════════ REBALANCEAMENTO ═══════════════════
 function calcRb(){
   const aporte=parseFloat(document.getElementById('simVal').value)||0;
   const dest=document.getElementById('simDest').value;
-  const {pat}=totais();
-  const tot=pat+aporte;
+  const {pat}=totais(); const tot=pat+aporte;
   let us=0,br=0;
   carteira.forEach(a=>{ const v=a.qtd*pBRL(a); if(a.mercado==='US')us+=v; else br+=v; });
   let aus=0,abr=0;
-  if(dest==='US'){aus=aporte;}
-  else if(dest==='BR'){abr=aporte;}
+  if(dest==='US'){aus=aporte;}else if(dest==='BR'){abr=aporte;}
   else{
-    const mu=tot*MUS/100,mb=tot*MBR/100;
-    const fu=Math.max(0,mu-us),fb=Math.max(0,mb-br);
+    const fu=Math.max(0,tot*MUS/100-us),fb=Math.max(0,tot*MBR/100-br);
     const ft=fu+fb;
-    if(ft===0){aus=aporte*MUS/100;abr=aporte*MBR/100;}
-    else{aus=aporte*(fu/ft);abr=aporte*(fb/ft);}
+    if(ft===0){aus=aporte*MUS/100;abr=aporte*MBR/100;}else{aus=aporte*(fu/ft);abr=aporte*(fb/ft);}
   }
-
   let h='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">';
   h+='<div class="rc"><div><div class="rd">Aportar EUA</div><div class="ra">'+R(aus)+'</div><div class="rd">'+U(aus/usdBrl)+' · '+((aus/(aporte||1))*100).toFixed(1)+'%</div></div></div>';
   h+='<div class="rc"><div><div class="rd">Aportar Brasil</div><div class="ra">'+R(abr)+'</div><div class="rd">'+((abr/(aporte||1))*100).toFixed(1)+'% do aporte</div></div></div></div>';
-
   if(aus>0){
     const aetf=aus*METF/100,aac=aus*MACAO/100;
     const usAt=carteira.filter(a=>a.mercado==='US'&&(a.pesoAlvo||0)>0);
     const tpetf=usAt.filter(a=>a.tipo==='etf').reduce((s,a)=>s+(a.pesoAlvo||0),0);
     const tpac=usAt.filter(a=>a.tipo!=='etf').reduce((s,a)=>s+(a.pesoAlvo||0),0);
-    h+='<div style="font-size:10px;color:var(--text2);text-transform:uppercase;margin-bottom:8px">Distribuição EUA</div>';
-    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+    h+='<div style="font-size:10px;color:var(--text2);text-transform:uppercase;margin-bottom:8px">Distribuição EUA</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
     usAt.sort((a,b)=>(b.pesoAlvo||0)-(a.pesoAlvo||0)).forEach(a=>{
       const ie=a.tipo==='etf',tb=ie?tpetf:tpac,bv=ie?aetf:aac;
-      const v=tb?bv*((a.pesoAlvo||0)/tb):0,pr=precos[a.ticker]?.preco||a.pmedio;
-      h+='<div class="rc"><div><span class="tk">'+a.ticker+'</span><span class="tag '+(ie?'te':'ta')+'" style="margin-left:5px">'+(ie?'ETF':'Ação')+'</span>';
-      h+='<div class="ra" style="font-size:13px">'+R(v)+'</div>';
-      h+='<div class="rd">'+U(v/usdBrl)+' · ~'+(v/(pr*usdBrl)).toFixed(4)+' cotas · alvo '+a.pesoAlvo+'%</div></div></div>';
+      const v=tb?bv*(a.pesoAlvo||0)/tb:0,pr=precos[a.ticker]?.preco||a.pmedio;
+      h+='<div class="rc"><div><span class="tk">'+a.ticker+'</span><span class="tag '+(ie?'te':'ta')+'" style="margin-left:5px">'+(ie?'ETF':'Ação')+'</span><div class="ra" style="font-size:13px">'+R(v)+'</div><div class="rd">'+U(v/usdBrl)+' · ~'+(v/(pr*usdBrl)).toFixed(4)+' cotas · alvo '+a.pesoAlvo+'%</div></div></div>';
     });
     h+='</div>';
   }
-
   if(abr>0){
     const arf=abr*MRF/100,aabr=abr*MABR/100,acx=abr*MCAIXA/100;
-    h+='<div style="font-size:10px;color:var(--text2);text-transform:uppercase;margin:14px 0 8px">Distribuição Brasil</div>';
-    h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">';
+    h+='<div style="font-size:10px;color:var(--text2);text-transform:uppercase;margin:14px 0 8px">Distribuição Brasil</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">';
     h+='<div class="rc"><div><div class="rd">Renda Fixa (60%)</div><div class="ra">'+R(arf)+'</div></div></div>';
-    h+='<div class="rc"><div><div class="rd">Ações/FIIs BR (30%)</div><div class="ra">'+R(aabr)+'</div>'+(carteira.filter(a=>a.mercado==='BR'&&(a.tipo==='acao'||a.tipo==='fii')).length===0?'<div class="rd" style="color:var(--yellow)">⚠ sem ativos cadastrados</div>':'')+'</div></div>';
-    h+='<div class="rc"><div><div class="rd">Caixa (10%)</div><div class="ra">'+R(acx)+'</div>'+(carteira.filter(a=>a.mercado==='BR'&&a.tipo==='caixa').length===0?'<div class="rd" style="color:var(--yellow)">⚠ título não definido</div>':'')+'</div></div></div>';
+    h+='<div class="rc"><div><div class="rd">Ações/FIIs BR (30%)</div><div class="ra">'+R(aabr)+'</div></div></div>';
+    h+='<div class="rc"><div><div class="rd">Caixa (10%)</div><div class="ra">'+R(acx)+'</div></div></div></div>';
   }
   document.getElementById('rbRes').innerHTML=h;
 }
 
-// ═══════════════════════════════════
-// DIVIDENDOS
-// ═══════════════════════════════════
+// ═══════════════════ DIVIDENDOS ═══════════════════
 function dvAtivoChange(){
-  const tk = document.getElementById('dvAtivo').value;
-  const at = carteira.find(a=>a.ticker===tk);
-  const isUS = at && at.mercado==='US';
-  const moeda = isUS ? 'US$' : 'R$';
-  document.getElementById('dvMoedaTag').textContent = moeda;
-  document.getElementById('dvMoedaTagImp').textContent = moeda;
+  const tk=document.getElementById('dvAtivo').value;
+  const at=carteira.find(a=>a.ticker===tk);
+  const isUS=at&&at.mercado==='US';
+  const moeda=isUS?'US$':'R$';
+  document.getElementById('dvMoedaTag').textContent=moeda;
+  document.getElementById('dvMoedaTagImp').textContent=moeda;
   dvCalcPct();
 }
-
 function dvCalcPct(){
-  const v = parseFloat(document.getElementById('dvValor').value)||0;
-  const imp = parseFloat(document.getElementById('dvImposto').value)||0;
-  const pct = v>0 ? (imp/v*100).toFixed(1) : '0.0';
-  document.getElementById('dvPctCalc').textContent = pct;
+  const v=parseFloat(document.getElementById('dvValor').value)||0;
+  const imp=parseFloat(document.getElementById('dvImposto').value)||0;
+  document.getElementById('dvPctCalc').textContent=v>0?(imp/v*100).toFixed(1):'0.0';
 }
 
 function buildDividendos(){
-  // Preenche selects
-  const sel = document.getElementById('dvAtivo');
-  const selR = document.getElementById('dvReinvest');
-  sel.innerHTML = carteira.map(a=>'<option value="'+a.ticker+'">'+a.ticker+' — '+a.nome+(a.mercado==='US'?' (USD)':' (BRL)')+'</option>').join('');
-  selR.innerHTML = '<option value="">— escolher ativo —</option>' + carteira.map(a=>'<option value="'+a.ticker+'">'+a.ticker+' — '+a.nome+'</option>').join('');
+  const sel=document.getElementById('dvAtivo');
+  const selR=document.getElementById('dvReinvest');
+  sel.innerHTML=carteira.map(a=>'<option value="'+a.ticker+'">'+a.ticker+' — '+a.nome+(a.mercado==='US'?' (USD)':' (BRL)')+'</option>').join('');
+  selR.innerHTML='<option value="">— escolher ativo —</option>'+carteira.map(a=>'<option value="'+a.ticker+'">'+a.ticker+' — '+a.nome+'</option>').join('');
   dvAtivoChange();
-
-  // Totais — converte tudo para BRL
-  const totalBRL = dividendos.reduce((s,d)=>{
-    const at=carteira.find(a=>a.ticker===d.ticker);
-    return s + (at&&at.mercado==='US' ? d.valor*usdBrl : d.valor);
-  },0);
-  const totalImp = dividendos.reduce((s,d)=>{
-    const at=carteira.find(a=>a.ticker===d.ticker);
-    const imp = d.impostoValor||0;
-    return s + (at&&at.mercado==='US' ? imp*usdBrl : imp);
-  },0);
-  document.getElementById('dvTotalBRL').textContent = R(totalBRL);
-  document.getElementById('dvTotalUSD').textContent = U(totalBRL/usdBrl);
-  document.getElementById('dvTotalImp').textContent = R(totalImp);
-
-  // Histórico
-  if(dividendos.length===0){
-    document.getElementById('dvHistorico').innerHTML='<p style="color:var(--text2);font-size:12px;padding:8px 0">Nenhum dividendo registrado ainda.</p>';
-    return;
-  }
-  const sorted=[...dividendos].reverse();
-  let h='<table style="font-size:12px;width:100%"><thead><tr><th>Data</th><th>Ativo</th><th>Periodicidade</th><th>Valor Bruto</th><th>Imposto Pago</th><th>Alíquota</th><th>Valor Líquido</th><th>Obs.</th><th></th></tr></thead><tbody>';
-  sorted.forEach((d,i)=>{
+  const totalBRL=dividendos.reduce((s,d)=>{ const at=carteira.find(a=>a.ticker===d.ticker); return s+(at&&at.mercado==='US'?d.valor*usdBrl:d.valor); },0);
+  const totalImp=dividendos.reduce((s,d)=>{ const at=carteira.find(a=>a.ticker===d.ticker); const imp=d.impostoValor||0; return s+(at&&at.mercado==='US'?imp*usdBrl:imp); },0);
+  document.getElementById('dvTotalBRL').textContent=R(totalBRL);
+  document.getElementById('dvTotalUSD').textContent=U(totalBRL/usdBrl);
+  document.getElementById('dvTotalImp').textContent=R(totalImp);
+  if(dividendos.length===0){ document.getElementById('dvHistorico').innerHTML='<p style="color:var(--text2);font-size:12px;padding:8px 0">Nenhum dividendo registrado.</p>'; return; }
+  let h='<div style="overflow-x:auto"><table style="font-size:12px;width:100%"><thead><tr><th>Data</th><th>Ativo</th><th>Periodicidade</th><th>Valor Bruto</th><th>Imposto Pago</th><th>Alíquota</th><th>Valor Líquido</th><th>Obs.</th><th></th></tr></thead><tbody>';
+  [...dividendos].reverse().forEach((d,i)=>{
     const at=carteira.find(a=>a.ticker===d.ticker);
     const isUS=at&&at.mercado==='US';
     const fmt=v=>isUS?U(v):R(v);
-    const fmtBRL=v=>isUS?R(v*usdBrl):R(v);
     const imp=d.impostoValor||0;
     const pct=d.valor>0?(imp/d.valor*100).toFixed(1):'0.0';
-    const liq=d.valor-imp;
     const ri=dividendos.length-1-i;
-    h+='<tr>';
-    h+='<td>'+d.data+'</td>';
-    h+='<td><span class="tk">'+d.ticker+'</span></td>';
-    h+='<td><span style="font-size:10px;color:var(--text2)">'+d.periodo+'</span></td>';
-    h+='<td class="pos" style="font-weight:600">'+fmt(d.valor)+'<div style="font-size:10px;color:var(--text2)">'+fmtBRL(d.valor)+'</div></td>';
-    h+='<td style="color:var(--red)">'+fmt(imp)+'</td>';
-    h+='<td style="color:var(--text2);font-size:11px">'+pct+'%</td>';
-    h+='<td class="pos" style="font-weight:600">'+fmt(liq)+'</td>';
+    h+='<tr><td>'+d.data+'</td><td><span class="tk">'+d.ticker+'</span></td><td style="font-size:10px;color:var(--text2)">'+d.periodo+'</td>';
+    h+='<td class="pos" style="font-weight:600">'+fmt(d.valor)+(isUS?'<div style="font-size:10px;color:var(--text2)">'+R(d.valor*usdBrl)+'</div>':'')+'</td>';
+    h+='<td style="color:var(--red)">'+fmt(imp)+'</td><td style="color:var(--text2);font-size:11px">'+pct+'%</td>';
+    h+='<td class="pos" style="font-weight:600">'+fmt(d.valor-imp)+'</td>';
     h+='<td style="font-size:10px;color:var(--text2)">'+(d.obs||'—')+'</td>';
-    h+='<td><button class="btn" onclick="delDiv('+ri+')" style="padding:2px 6px;font-size:10px;color:var(--red);border-color:#f8727230">✕</button></td>';
-    h+='</tr>';
+    h+='<td><button class="btn" onclick="delDiv('+ri+')" style="padding:2px 6px;font-size:10px;color:var(--red);border-color:#f8727230">✕</button></td></tr>';
   });
-  h+='</tbody></table>';
+  h+='</tbody></table></div>';
   document.getElementById('dvHistorico').innerHTML=h;
 }
 
@@ -884,12 +1068,10 @@ function regDiv(){
   const impostoValor=parseFloat(document.getElementById('dvImposto').value)||0;
   const data=document.getElementById('dvData').value||new Date().toLocaleDateString('pt-BR');
   const obs=document.getElementById('dvObs').value.trim();
-  if(!tk||!valor||valor<=0){alert('Preencha o ativo e o valor do dividendo.');return;}
+  if(!tk||!valor||valor<=0){ alert('Preencha o ativo e o valor do dividendo.'); return; }
   const at=carteira.find(a=>a.ticker===tk);
-  const isUS=at&&at.mercado==='US';
-  dividendos.push({ticker:tk,periodo,valor,impostoValor,moeda:isUS?'USD':'BRL',data,obs});
-  save();
-  buildDividendos();
+  dividendos.push({ticker:tk,periodo,valor,impostoValor,moeda:at&&at.mercado==='US'?'USD':'BRL',data,obs});
+  save(); buildDividendos();
   document.getElementById('dvValor').value='';
   document.getElementById('dvImposto').value='';
   document.getElementById('dvPctCalc').textContent='0.0';
@@ -900,78 +1082,80 @@ function regDiv(){
 function reinvestDiv(){
   const destTk=document.getElementById('dvReinvest').value;
   const valor=parseFloat(document.getElementById('dvValor').value);
-  if(!destTk){alert('Escolha o ativo de destino do reinvestimento.');return;}
-  if(!valor||valor<=0){alert('Informe o valor a reinvestir.');return;}
+  if(!destTk){ alert('Escolha o ativo de destino.'); return; }
+  if(!valor||valor<=0){ alert('Informe o valor a reinvestir.'); return; }
   const idx=carteira.findIndex(a=>a.ticker===destTk);
-  if(idx<0){alert('Ativo não encontrado.');return;}
+  if(idx<0){ alert('Ativo não encontrado.'); return; }
   const a=carteira[idx];
-  const pr=pBRL(a);
-  if(!pr||pr<=0){alert('Preço do ativo indisponível.');return;}
-  const qtdExtra=valor/pr;
+  const isUS=a.mercado==='US';
+  const valorNaMoeda=isUS?valor/usdBrl:valor; // valor vem em USD ou BRL
+  const pr=precos[a.ticker]?.preco||a.pmedio;
+  const qtdExtra=valorNaMoeda/pr;
+  const custoAtual=a.qtd*a.pmedio;
   carteira[idx].qtd+=qtdExtra;
-  // Ajusta preço médio
-  const custoAtual=a.qtd*pmBRL(a);
-  carteira[idx].pmedio=(custoAtual+valor)/carteira[idx].qtd * (a.mercado==='US'?1/usdBrl:1);
-  save();
-  renderAll();
-  toast('✓ Reinvestido '+R(valor)+' em '+destTk+' (+'+qtdExtra.toFixed(6)+' cotas)');
+  carteira[idx].pmedio=(custoAtual+valorNaMoeda)/carteira[idx].qtd;
+  aportes.push({ticker:destTk,nome:a.nome,data:new Date().toLocaleDateString('pt-BR'),tipo:'reinvestimento',valor:valorNaMoeda,preco:pr,cambio:isUS?usdBrl:1,taxa:0,qtd:qtdExtra,valorBRL:valor,moeda:isUS?'USD':'BRL',pmAnterior:a.pmedio,pmNovo:carteira[idx].pmedio,obs:'Reinvestimento de dividendo'});
+  save(); renderAll(); buildHistorico();
+  toast('✓ Reinvestido em '+destTk+' (+'+qtdExtra.toFixed(8)+' cotas)');
 }
 
-function delDiv(i){
-  if(confirm('Remover este dividendo?')){ dividendos.splice(i,1); save(); buildDividendos(); }
-}
+function delDiv(i){ if(confirm('Remover este dividendo?')){ dividendos.splice(i,1); save(); buildDividendos(); } }
 
-// ═══════════════════════════════════
-// MODAL
-// ═══════════════════════════════════
-function openM(t,idx){
-  closeM();
-  if(t==='imp'){document.getElementById('mImp').classList.add('on');return;}
-  editIdx=idx!==undefined?idx:-1;
-  const isE=editIdx>=0;
-  document.getElementById('mTitle').textContent=isE?'Editar ativo':'Adicionar ativo';
-  document.getElementById('btnSv').textContent=isE?'Salvar':'Adicionar';
-  if(isE){
-    const a=carteira[editIdx];
-    document.getElementById('fTk').value=a.ticker;
-    document.getElementById('fNm').value=a.nome;
-    document.getElementById('fSt').value=a.setor||'';
-    document.getElementById('fMk').value=a.mercado;
-    document.getElementById('fTp').value=a.tipo;
-    document.getElementById('fQt').value=a.qtd;
-    document.getElementById('fPm').value=a.pmedio;
-    document.getElementById('fPa').value=a.pesoAlvo||'';
-    document.getElementById('fDv').value=a.div||'';
-  } else {
-    ['fTk','fNm','fSt','fQt','fPm','fPa','fDv'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('fMk').value='US';
-    document.getElementById('fTp').value='acao';
+// ═══════════════════ HISTÓRICO ═══════════════════
+function buildHistorico(){
+  const filtAt=document.getElementById('hsFiltAt')?.value||'';
+  const filtTp=document.getElementById('hsFiltTp')?.value||'';
+  const filtBusca=(document.getElementById('hsFiltBusca')?.value||'').toUpperCase();
+
+  // Preenche filtro de ativos
+  const selAt=document.getElementById('hsFiltAt');
+  if(selAt){
+    const cur=selAt.value;
+    const tks=[...new Set(aportes.map(a=>a.ticker))].sort();
+    selAt.innerHTML='<option value="">Todos os ativos</option>'+tks.map(t=>'<option value="'+t+'"'+(t===cur?' selected':'')+'>'+t+'</option>').join('');
   }
-  document.getElementById('mAdd').classList.add('on');
-}
-function closeM(){ document.querySelectorAll('.mb').forEach(m=>m.classList.remove('on')); }
 
-function saveAt(){
-  const tk=document.getElementById('fTk').value.trim().toUpperCase();
-  const nm=document.getElementById('fNm').value.trim();
-  const st=document.getElementById('fSt').value.trim();
-  const mk=document.getElementById('fMk').value;
-  const tp=document.getElementById('fTp').value;
-  const qt=parseFloat(document.getElementById('fQt').value);
-  const pm=parseFloat(document.getElementById('fPm').value);
-  const pa=parseFloat(document.getElementById('fPa').value)||0;
-  const dv=parseFloat(document.getElementById('fDv').value)||0;
-  if(!tk||!nm||!qt||!pm){alert('Preencha ticker, nome, quantidade e preço médio.');return;}
-  const at={ticker:tk,nome:nm,setor:st,tipo:tp,mercado:mk,qtd:qt,pmedio:pm,pesoAlvo:pa,div:dv};
-  if(editIdx>=0)carteira[editIdx]=at; else carteira.push(at);
-  save();closeM();refresh();
-}
-function editAt(i){openM('add',i);}
-function delAt(i){if(confirm('Remover '+carteira[i].ticker+'?')){carteira.splice(i,1);save();refresh();}}
+  let lista=aportes.filter(a=>{
+    if(filtAt&&a.ticker!==filtAt) return false;
+    if(filtTp&&a.tipo!==filtTp) return false;
+    if(filtBusca&&!a.ticker.includes(filtBusca)&&!a.nome.toUpperCase().includes(filtBusca)) return false;
+    return true;
+  });
 
-// ═══════════════════════════════════
-// REFRESH
-// ═══════════════════════════════════
+  const tbody=document.getElementById('tbHist');
+  if(!lista.length){ tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:var(--text2);padding:20px">Nenhum aporte encontrado.</td></tr>'; document.getElementById('hsResumo').innerHTML=''; return; }
+
+  const tl={aporte:'Aporte',novo:'Cadastro',reinvestimento:'Reinvestimento'};
+  const tc={aporte:'ta',novo:'tc',reinvestimento:'tf'};
+  let h='';
+  [...lista].reverse().forEach(a=>{
+    const isUS=a.moeda==='USD';
+    const fmt=v=>isUS?U(v):R(v);
+    h+='<tr>';
+    h+='<td style="font-size:11px;white-space:nowrap">'+a.data+'</td>';
+    h+='<td><span class="tk">'+a.ticker+'</span></td>';
+    h+='<td style="font-size:10px;color:var(--text2)">'+a.nome+'</td>';
+    h+='<td><span class="tag '+(tc[a.tipo]||'ta')+'">'+tl[a.tipo]+'</span></td>';
+    h+='<td style="font-size:11px">'+Number(a.qtd).toFixed(8)+'</td>';
+    h+='<td style="font-size:11px">'+fmt(a.preco)+'</td>';
+    h+='<td style="font-size:11px;color:var(--text2)">'+(isUS?'R$ '+Number(a.cambio).toFixed(4):'—')+'</td>';
+    h+='<td style="font-size:11px;color:var(--text2)">'+(a.taxa>0?R(a.taxa):'—')+'</td>';
+    h+='<td style="font-size:11px">'+fmt(a.valor)+'</td>';
+    h+='<td style="font-size:11px;font-weight:600">'+R(a.valorBRL)+'</td>';
+    h+='<td style="font-size:11px"><span style="color:var(--text2)">'+fmt(a.pmAnterior)+'</span> → <strong>'+fmt(a.pmNovo)+'</strong></td>';
+    h+='<td style="font-size:10px;color:var(--text2)">'+(a.obs||'—')+'</td>';
+    h+='</tr>';
+  });
+  tbody.innerHTML=h;
+
+  // Resumo
+  const totalBRL=lista.reduce((s,a)=>s+a.valorBRL,0);
+  const totalQtd={};
+  lista.forEach(a=>{ totalQtd[a.ticker]=(totalQtd[a.ticker]||0)+a.qtd; });
+  document.getElementById('hsResumo').innerHTML='<div style="font-size:11px;color:var(--text2);margin-top:6px">'+lista.length+' operação(ões) · Total aportado: <strong style="color:var(--accent)">'+R(totalBRL)+'</strong></div>';
+}
+
+// ═══════════════════ REFRESH ═══════════════════
 async function refresh(){
   setSt('l','Buscando cotações...');
   document.getElementById('btnR').disabled=true;
@@ -982,7 +1166,7 @@ async function refresh(){
   document.getElementById('btnR').disabled=false;
 }
 
-// INIT — só carrega após senha
+// INIT
 loadTheme();
 document.getElementById('lockPwd').focus();
 setInterval(()=>{ if(document.getElementById('appContent').style.display!=='none') refresh(); },5*60*1000);
