@@ -246,7 +246,7 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
     <div class="fg" style="margin-bottom:10px">
       <div class="fr">
         <label class="fl">Ativo</label>
-        <select id="dvAtivo" style="width:100%"></select>
+        <select id="dvAtivo" style="width:100%" onchange="dvAtivoChange()"></select>
       </div>
       <div class="fr">
         <label class="fl">Periodicidade</label>
@@ -261,12 +261,19 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
     </div>
     <div class="fg3">
       <div class="fr">
-        <label class="fl">Valor Recebido (R$)</label>
-        <input type="number" id="dvValor" placeholder="0.00" step="0.01" min="0" style="width:100%">
+        <label class="fl" id="dvValorLabel">Valor Recebido</label>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span id="dvMoedaTag" style="font-size:11px;font-weight:700;color:var(--accent);white-space:nowrap">R$</span>
+          <input type="number" id="dvValor" placeholder="0.00" step="0.01" min="0" style="width:100%" oninput="dvCalcPct()">
+        </div>
       </div>
       <div class="fr">
-        <label class="fl">Imposto (%) — ex: 15</label>
-        <input type="number" id="dvImposto" placeholder="0" step="0.01" min="0" max="100" style="width:100%">
+        <label class="fl" id="dvImpostoLabel">Imposto Pago</label>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span id="dvMoedaTagImp" style="font-size:11px;font-weight:700;color:var(--red);white-space:nowrap">R$</span>
+          <input type="number" id="dvImposto" placeholder="0.00" step="0.01" min="0" style="width:100%" oninput="dvCalcPct()">
+        </div>
+        <div style="font-size:10px;color:var(--text2);margin-top:3px">≈ <span id="dvPctCalc">0.0</span>% sobre o bruto</div>
       </div>
       <div class="fr">
         <label class="fl">Data</label>
@@ -339,7 +346,7 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
 // SENHA
 // ═══════════════════════════════════
 const SENHA_KEY = 'mc-pwd';
-const SENHA_PADRAO = '1234'; // altere aqui para sua senha
+const SENHA_PADRAO = '1579'; // altere aqui para sua senha
 
 function tryUnlock(){
   const v = document.getElementById('lockPwd').value;
@@ -718,7 +725,8 @@ function buildAtivos(pat){
     // Dividendos do ativo
     const divAt=dividendos.filter(d=>d.ticker===a.ticker);
     const divTotal=divAt.reduce((s,d)=>s+d.valor,0);
-    const divBadge=divTotal>0?'<span class="badge-div">'+R(divTotal)+'</span>':'<span style="color:var(--text2);font-size:10px">—</span>';
+    const isUS=a.mercado==='US';
+    const divBadge=divTotal>0?'<span class="badge-div">'+(isUS?U(divTotal):R(divTotal))+'</span>':'<span style="color:var(--text2);font-size:10px">—</span>';
 
     h+='<tr>';
     h+='<td><span class="tk">'+a.ticker+'</span><div style="font-size:10px;color:var(--text2);margin-top:2px">'+a.nome+'</div></td>';
@@ -798,16 +806,41 @@ function calcRb(){
 // ═══════════════════════════════════
 // DIVIDENDOS
 // ═══════════════════════════════════
+function dvAtivoChange(){
+  const tk = document.getElementById('dvAtivo').value;
+  const at = carteira.find(a=>a.ticker===tk);
+  const isUS = at && at.mercado==='US';
+  const moeda = isUS ? 'US$' : 'R$';
+  document.getElementById('dvMoedaTag').textContent = moeda;
+  document.getElementById('dvMoedaTagImp').textContent = moeda;
+  dvCalcPct();
+}
+
+function dvCalcPct(){
+  const v = parseFloat(document.getElementById('dvValor').value)||0;
+  const imp = parseFloat(document.getElementById('dvImposto').value)||0;
+  const pct = v>0 ? (imp/v*100).toFixed(1) : '0.0';
+  document.getElementById('dvPctCalc').textContent = pct;
+}
+
 function buildDividendos(){
   // Preenche selects
   const sel = document.getElementById('dvAtivo');
   const selR = document.getElementById('dvReinvest');
-  sel.innerHTML = carteira.map(a=>'<option value="'+a.ticker+'">'+a.ticker+' — '+a.nome+'</option>').join('');
+  sel.innerHTML = carteira.map(a=>'<option value="'+a.ticker+'">'+a.ticker+' — '+a.nome+(a.mercado==='US'?' (USD)':' (BRL)')+'</option>').join('');
   selR.innerHTML = '<option value="">— escolher ativo —</option>' + carteira.map(a=>'<option value="'+a.ticker+'">'+a.ticker+' — '+a.nome+'</option>').join('');
+  dvAtivoChange();
 
-  // Totais
-  const totalBRL = dividendos.reduce((s,d)=>s+d.valor,0);
-  const totalImp = dividendos.reduce((s,d)=>s+(d.valor*(d.imposto||0)/100),0);
+  // Totais — converte tudo para BRL
+  const totalBRL = dividendos.reduce((s,d)=>{
+    const at=carteira.find(a=>a.ticker===d.ticker);
+    return s + (at&&at.mercado==='US' ? d.valor*usdBrl : d.valor);
+  },0);
+  const totalImp = dividendos.reduce((s,d)=>{
+    const at=carteira.find(a=>a.ticker===d.ticker);
+    const imp = d.impostoValor||0;
+    return s + (at&&at.mercado==='US' ? imp*usdBrl : imp);
+  },0);
   document.getElementById('dvTotalBRL').textContent = R(totalBRL);
   document.getElementById('dvTotalUSD').textContent = U(totalBRL/usdBrl);
   document.getElementById('dvTotalImp').textContent = R(totalImp);
@@ -818,17 +851,24 @@ function buildDividendos(){
     return;
   }
   const sorted=[...dividendos].reverse();
-  let h='<table style="font-size:12px;width:100%"><thead><tr><th>Data</th><th>Ativo</th><th>Periodicidade</th><th>Valor Bruto</th><th>Imposto (%)</th><th>Valor Líquido</th><th>Obs.</th><th></th></tr></thead><tbody>';
+  let h='<table style="font-size:12px;width:100%"><thead><tr><th>Data</th><th>Ativo</th><th>Periodicidade</th><th>Valor Bruto</th><th>Imposto Pago</th><th>Alíquota</th><th>Valor Líquido</th><th>Obs.</th><th></th></tr></thead><tbody>';
   sorted.forEach((d,i)=>{
-    const liq=d.valor*(1-(d.imposto||0)/100);
+    const at=carteira.find(a=>a.ticker===d.ticker);
+    const isUS=at&&at.mercado==='US';
+    const fmt=v=>isUS?U(v):R(v);
+    const fmtBRL=v=>isUS?R(v*usdBrl):R(v);
+    const imp=d.impostoValor||0;
+    const pct=d.valor>0?(imp/d.valor*100).toFixed(1):'0.0';
+    const liq=d.valor-imp;
     const ri=dividendos.length-1-i;
     h+='<tr>';
     h+='<td>'+d.data+'</td>';
     h+='<td><span class="tk">'+d.ticker+'</span></td>';
     h+='<td><span style="font-size:10px;color:var(--text2)">'+d.periodo+'</span></td>';
-    h+='<td class="pos" style="font-weight:600">'+R(d.valor)+'<div style="font-size:10px;color:var(--text2)">'+U(d.valor/usdBrl)+'</div></td>';
-    h+='<td style="color:var(--red)">'+(d.imposto||0)+'%</td>';
-    h+='<td class="pos" style="font-weight:600">'+R(liq)+'</td>';
+    h+='<td class="pos" style="font-weight:600">'+fmt(d.valor)+'<div style="font-size:10px;color:var(--text2)">'+fmtBRL(d.valor)+'</div></td>';
+    h+='<td style="color:var(--red)">'+fmt(imp)+'</td>';
+    h+='<td style="color:var(--text2);font-size:11px">'+pct+'%</td>';
+    h+='<td class="pos" style="font-weight:600">'+fmt(liq)+'</td>';
     h+='<td style="font-size:10px;color:var(--text2)">'+(d.obs||'—')+'</td>';
     h+='<td><button class="btn" onclick="delDiv('+ri+')" style="padding:2px 6px;font-size:10px;color:var(--red);border-color:#f8727230">✕</button></td>';
     h+='</tr>';
@@ -841,15 +881,18 @@ function regDiv(){
   const tk=document.getElementById('dvAtivo').value;
   const periodo=document.getElementById('dvPeriodo').value;
   const valor=parseFloat(document.getElementById('dvValor').value);
-  const imposto=parseFloat(document.getElementById('dvImposto').value)||0;
+  const impostoValor=parseFloat(document.getElementById('dvImposto').value)||0;
   const data=document.getElementById('dvData').value||new Date().toLocaleDateString('pt-BR');
   const obs=document.getElementById('dvObs').value.trim();
   if(!tk||!valor||valor<=0){alert('Preencha o ativo e o valor do dividendo.');return;}
-  dividendos.push({ticker:tk,periodo,valor,imposto,data,obs});
+  const at=carteira.find(a=>a.ticker===tk);
+  const isUS=at&&at.mercado==='US';
+  dividendos.push({ticker:tk,periodo,valor,impostoValor,moeda:isUS?'USD':'BRL',data,obs});
   save();
   buildDividendos();
   document.getElementById('dvValor').value='';
   document.getElementById('dvImposto').value='';
+  document.getElementById('dvPctCalc').textContent='0.0';
   document.getElementById('dvObs').value='';
   toast('✓ Dividendo registrado');
 }
