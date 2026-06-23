@@ -352,48 +352,48 @@ async function fetchCambio(){
   try{
     const r=await fetch(`https://brapi.dev/api/v2/currency?currency=USD-BRL&token=${BRAPI_TOKEN}`);
     const d=await r.json();
-    if(d.currency?.[0]) usdBrl=d.currency[0].bidPrice||usdBrl;
-  }catch(e){ console.warn('câmbio fallback'); }
+    if(d.currency&&d.currency[0]) usdBrl=d.currency[0].bidPrice||usdBrl;
+  }catch(e){}
 }
 
-// Busca 1 ticker por vez na brapi (limite do plano gratuito)
-async function brapiQuote(ticker){
-  const r=await fetch(`https://brapi.dev/api/quote/${ticker}?token=${BRAPI_TOKEN}`);
-  const d=await r.json();
-  if(d.error) throw new Error(d.message);
-  return d.results?.[0]||null;
-}
-
-// EUA — todos em paralelo (cada um = 1 request)
-async function fetchUS(){
-  const ativos=carteira.filter(x=>x.mercado==='US');
-  await Promise.allSettled(ativos.map(async a=>{
+// Busca sequencial com delay — mais lento mas 100% estável no plano gratuito
+async function fetchTodos(){
+  const todos=carteira.filter(x=>!x.ticker.startsWith('TESE-'));
+  
+  for(const a of todos){
     try{
-      const item=await brapiQuote(a.ticker);
-      if(item) precos[a.ticker]={preco:item.regularMarketPrice,var:item.regularMarketChangePercent||0,moeda:'USD'};
-      else if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:'USD'};
+      const r=await fetch(`https://brapi.dev/api/quote/${a.ticker}?token=${BRAPI_TOKEN}`);
+      const d=await r.json();
+      if(d.results&&d.results[0]){
+        const item=d.results[0];
+        precos[a.ticker]={
+          preco:item.regularMarketPrice,
+          var:item.regularMarketChangePercent||0,
+          moeda:a.mercado==='US'?'USD':'BRL'
+        };
+      } else {
+        if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:a.mercado==='US'?'USD':'BRL'};
+      }
     }catch(e){
-      if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:'USD'};
+      if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:a.mercado==='US'?'USD':'BRL'};
     }
-  }));
-}
-
-// BR — em paralelo também, exceto Tesouro (sem API)
-async function fetchBR(){
-  const ativos=carteira.filter(x=>x.mercado==='BR'&&!x.ticker.startsWith('TESE-'));
-  await Promise.allSettled(ativos.map(async a=>{
+    // Delay entre requests para não sobrecarregar a API
+    await new Promise(res=>setTimeout(res,200));
+    
+    // Atualiza o display a cada ativo buscado para dar feedback visual
     try{
-      const item=await brapiQuote(a.ticker);
-      if(item) precos[a.ticker]={preco:item.regularMarketPrice,var:item.regularMarketChangePercent||0,moeda:'BRL'};
-      else if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:'BRL'};
-    }catch(e){
-      if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:'BRL'};
-    }
-  }));
+      const pat=calcTotais().pat;
+      if(pat>0){ buildVisaoGeral(); buildAtivos(); }
+    }catch(e){}
+  }
+  
   // Tesouro: usa valor cadastrado
   carteira.filter(x=>x.ticker.startsWith('TESE-')).forEach(a=>{
     if(!precos[a.ticker]) precos[a.ticker]={preco:a.pmedio,var:0,moeda:'BRL'};
   });
 }
+
+async function fetchUS(){ /* incluído em fetchTodos */ }
+async function fetchBR(){ /* incluído em fetchTodos */ }
 
 
