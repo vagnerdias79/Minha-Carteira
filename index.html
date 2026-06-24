@@ -369,6 +369,371 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
 </div>
 
 <div class="toast" id="toast"></div>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;min-height:100vh;transition:background .3s,color .3s}
+body.dark{background:#0f1117;color:#e8eaf0}
+body.light{background:#f0f2f8;color:#1a2035}
+body.dark{--bg1:#161b27;--bg2:#1e2535;--bg3:#262e42;--accent:#4f8ef7;--green:#36d399;--red:#f87272;--yellow:#fbbf24;--purple:#c084fc;--text2:#8b95b0;--border:#2a3350;--shadow:rgba(0,0,0,.4)}
+body.light{--bg1:#fff;--bg2:#f5f7fc;--bg3:#eaecf5;--accent:#2563eb;--green:#16a34a;--red:#dc2626;--yellow:#d97706;--purple:#9333ea;--text2:#64748b;--border:#d1d5e8;--shadow:rgba(0,0,0,.08)}
+.hdr{background:var(--bg1);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:9;box-shadow:0 2px 8px var(--shadow)}
+.logo{font-size:15px;font-weight:600}.logo span{color:var(--accent)}
+.hdr-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);margin-right:6px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+.dot.l{background:var(--yellow)}.dot.e{background:var(--red);animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:12px;padding:6px 12px;border-radius:7px;cursor:pointer;font-family:inherit;transition:background .15s,color .15s}
+.btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.g{border-color:#36d39950;color:var(--green)}.btn.g:hover{background:var(--green);color:#0f1117}
+.btn.o{border-color:#fbbf2450;color:var(--yellow)}.btn.o:hover{background:var(--yellow);color:#0f1117}
+.btn.r{border-color:#f8727250;color:var(--red)}.btn.r:hover{background:var(--red);color:#fff}
+.btn-theme{font-size:16px;padding:5px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer}
+.tabs{display:flex;background:var(--bg1);border-bottom:1px solid var(--border);padding:0 20px;overflow-x:auto}
+.tab{padding:10px 16px;font-size:13px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.pg{display:none;padding:18px 20px;max-width:1380px;margin:0 auto}.pg.on{display:block}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px}
+.card{background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:14px 16px;box-shadow:0 1px 4px var(--shadow)}
+.lbl{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.val{font-size:22px;font-weight:600;letter-spacing:-.4px}
+.sub{font-size:11px;margin-top:4px;color:var(--text2)}
+.val2{font-size:13px;color:var(--text2);margin-top:2px}
+.pos{color:var(--green)}.neg{color:var(--red)}
+.ctitle{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.ch{height:200px;position:relative}
+.tw{background:var(--bg1);border:1px solid var(--border);border-radius:12px;overflow:auto;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--bg2);color:var(--text2);font-size:10px;text-transform:uppercase;letter-spacing:.04em;padding:9px 12px;text-align:left;white-space:nowrap}
+td{padding:9px 12px;border-top:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:rgba(79,142,247,.04)}
+.tk{background:var(--bg3);color:#7bb3ff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px}
+body.light .tk{color:var(--accent)}
+.tag{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:600}
+.ta{background:#1a2a4a;color:#7bb3ff}.te{background:#2a2a1a;color:#fbbf24}
+.tf{background:#1a3a2a;color:#36d399}.tr{background:#2a1a3a;color:#c084fc}.tc{background:#1a2a3a;color:#36d399}
+body.light .ta{background:#dbeafe;color:#1d4ed8}
+body.light .te{background:#fef9c3;color:#854d0e}
+body.light .tf{background:#dcfce7;color:#15803d}
+body.light .tr{background:#f3e8ff;color:#7e22ce}
+body.light .tc{background:#e0f2fe;color:#0369a1}
+.bar{background:var(--bg3);border-radius:3px;height:5px;overflow:hidden;margin-top:3px}
+.bf{height:100%;border-radius:3px}
+.row-a{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.row-a:last-child{border-bottom:none}
+.dbadge{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600}
+.dok{background:#1a2a3a;color:#7bb3ff}.dup{background:#1a3a2a;color:var(--green)}.ddn{background:#2a1a1a;color:var(--red)}
+body.light .dok{background:#dbeafe;color:#1d4ed8}
+body.light .dup{background:#dcfce7;color:#15803d}
+body.light .ddn{background:#fee2e2;color:#dc2626}
+.si{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.si label{font-size:13px;color:var(--text2)}
+input[type=number],input[type=text],input[type=password],select{background:var(--bg2);border:1px solid var(--border);color:inherit;padding:7px 10px;border-radius:7px;font-size:13px;font-family:inherit;outline:none;transition:border-color .15s}
+input:focus,select:focus{border-color:var(--accent)}
+.rc{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:11px 13px;margin-bottom:8px}
+.ra{font-size:15px;font-weight:600;color:var(--green)}
+.rd{font-size:11px;color:var(--text2);margin-top:2px}
+.mb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;align-items:center;justify-content:center}
+.mb.on{display:flex}
+.md{background:var(--bg1);border:1px solid var(--border);border-radius:14px;padding:22px;width:500px;max-width:94vw;max-height:90vh;overflow-y:auto}
+.mt{font-size:15px;font-weight:600;margin-bottom:14px}
+.fr{margin-bottom:11px}
+.fl{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;display:block}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.fa{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}
+.bp{background:var(--accent);color:#fff;border:none;padding:7px 16px;border-radius:7px;font-size:13px;cursor:pointer;font-family:inherit}
+.bp.grn{background:var(--green);color:#0f1117}
+.bp.red{background:var(--red);color:#fff}
+.bs{background:transparent;color:var(--text2);border:1px solid var(--border);padding:7px 14px;border-radius:7px;font-size:13px;cursor:pointer;font-family:inherit}
+.ia{background:var(--bg2);border:1px dashed var(--border);border-radius:8px;padding:18px;text-align:center;font-size:12px;color:var(--text2);cursor:pointer}
+.ia:hover{border-color:var(--accent)}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid #36d39940;color:var(--green);font-size:12px;padding:9px 16px;border-radius:9px;z-index:99;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.on{opacity:1}
+.prog{background:var(--bg3);border-radius:4px;height:6px;overflow:hidden;margin-top:4px}
+.pf{height:100%;border-radius:4px}
+.pl{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
+.ai{display:flex;align-items:center;gap:7px;font-size:13px}
+.ad{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.fetch-box{background:var(--bg2);border:1px solid var(--accent);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px}
+.fetch-spin{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.lock{position:fixed;inset:0;background:var(--bg2,#1e2535);z-index:999;display:flex;align-items:center;justify-content:center}
+.lock-box{background:var(--bg1,#161b27);border:1px solid var(--border,#2a3350);border-radius:16px;padding:32px;width:360px;max-width:90vw;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.lock-box h2{font-size:22px;margin-bottom:6px}
+.lock-box p{color:var(--text2,#8b95b0);font-size:13px;margin-bottom:20px}
+.lock-box input{width:100%;margin-bottom:12px;padding:10px 14px;font-size:15px;text-align:center;letter-spacing:.1em}
+.lock-box .bp{width:100%;padding:10px;font-size:14px}
+.lock-err{color:var(--red,#f87272);font-size:12px;margin-top:8px;min-height:18px}
+.lock-icon{font-size:40px;margin-bottom:12px}
+.badge-div{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;background:#1a2a4a;color:#7bb3ff}
+body.light .badge-div{background:#dbeafe;color:#1d4ed8}
+.info-box{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;margin-bottom:12px;font-size:12px;color:var(--text2)}
+.calc-row{display:flex;align-items:center;gap:8px;margin-top:4px;font-size:12px;color:var(--text2)}
+.calc-val{color:var(--accent);font-weight:600}
+.hfilt{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.hfilt select{font-size:12px;padding:5px 8px}
+.venda-row td{background:rgba(248,114,114,.04)!important}
+@media(max-width:800px){.grid4{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}}
+</style>
+</head>
+<body class="dark">
+
+<div class="lock" id="lockScreen">
+  <div class="lock-box">
+    <div class="lock-icon">&#x1F510;</div>
+    <h2>Minha <span style="color:var(--accent,#4f8ef7)">Carteira</span></h2>
+    <p>Digite a senha para acessar</p>
+    <input type="password" id="lockPwd" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;" onkeydown="if(event.key==='Enter')tryUnlock()">
+    <button class="bp" onclick="tryUnlock()">Entrar</button>
+    <div class="lock-err" id="lockErr"></div>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+<div class="hdr">
+  <div class="logo">minha <span>carteira</span></div>
+  <div class="hdr-r">
+    <div class="badge"><div class="dot" id="dot"></div><span id="stlbl">Carregando...</span></div>
+    <button class="btn-theme" id="btnTheme" onclick="toggleTheme()">&#x1F319;</button>
+    <button class="btn g" onclick="openM('novo')">+ Novo Ativo</button>
+    <button class="btn o" onclick="openM('aporte')">+ Aporte</button>
+    <button class="btn r" onclick="openM('venda')">&#x2212; Venda</button>
+    <button class="btn" onclick="exp()">&#x2193; Exportar</button>
+    <button class="btn" onclick="openM('imp')">&#x2191; Importar</button>
+    <button class="btn" id="btnR" onclick="refresh()">&#x21BB; Atualizar</button>
+  </div>
+</div>
+<div class="tabs">
+  <div class="tab on" onclick="showPg('vg',this)">Vis&#xE3;o Geral</div>
+  <div class="tab" onclick="showPg('at',this)">Ativos</div>
+  <div class="tab" onclick="showPg('al',this)">Aloca&#xE7;&#xE3;o &amp; Meta</div>
+
+  <div class="tab" onclick="showPg('dv',this)">Dividendos</div>
+  <div class="tab" onclick="showPg('hs',this)">Hist&#xF3;rico</div>
+</div>
+
+<!-- VISAO GERAL -->
+<div class="pg on" id="pg-vg">
+  <div class="grid4">
+    <div class="card"><div class="lbl">Patrim&#xF4;nio total</div><div class="val" id="mpat">&#x2014;</div><div class="val2" id="mpatUsd">&#x2014;</div><div class="sub" id="mvd">&#x2014;</div></div>
+    <div class="card"><div class="lbl">Investido (PM)</div><div class="val" id="minv">&#x2014;</div><div class="val2" id="minvUsd">&#x2014;</div><div class="sub" id="mrp">&#x2014;</div></div>
+    <div class="card"><div class="lbl">Resultado</div><div class="val" id="mres">&#x2014;</div><div class="val2" id="mresUsd">&#x2014;</div><div class="sub" id="mvd2">&#x2014;</div></div>
+    <div class="card"><div class="lbl">C&#xE2;mbio USD/BRL</div><div class="val" id="mcam">&#x2014;</div><div class="val2" id="mcamUpd" style="font-size:10px"></div><div class="sub">cota&#xE7;&#xE3;o em tempo real</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><div class="ctitle">EUA vs Brasil</div><div class="ch"><canvas id="cMerc"></canvas></div></div>
+    <div class="card"><div class="ctitle">EUA &#x2014; ETF vs A&#xE7;&#xE3;o</div><div class="ch"><canvas id="cTipo"></canvas></div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><div class="ctitle">Composi&#xE7;&#xE3;o ETFs</div><div class="ch"><canvas id="cEtf"></canvas></div></div>
+    <div class="card"><div class="ctitle">Composi&#xE7;&#xE3;o A&#xE7;&#xF5;es EUA</div><div class="ch"><canvas id="cAcaoUS"></canvas></div></div>
+  </div>
+  <div class="grid2" style="margin-bottom:16px">
+    <div class="card"><div class="ctitle">Renda Fixa Brasil</div><div class="ch"><canvas id="cRF"></canvas></div></div>
+    <div class="card"><div class="ctitle">A&#xE7;&#xF5;es / FIIs Brasil</div><div class="ch"><canvas id="cAcaoBR"></canvas></div></div>
+  </div>
+  <div class="card"><div class="ctitle">Resumo de aloca&#xE7;&#xE3;o vs meta</div><div id="resAloc"></div></div>
+</div>
+
+<!-- ATIVOS -->
+<div class="pg" id="pg-at">
+  <div class="tw"><table>
+    <thead><tr><th>Ativo</th><th>Setor</th><th>Tipo</th><th>Qtd</th><th>PM orig.</th><th>PM BRL</th><th>Cota&#xE7;&#xE3;o</th><th>Var%</th><th>Valor BRL</th><th>Valor USD</th><th>Resultado</th><th>Peso</th><th>Alvo</th><th>&#x394;</th><th>Div.</th><th></th></tr></thead>
+    <tbody id="tbAt"></tbody>
+  </table></div>
+</div>
+
+<!-- ALOCACAO -->
+<div class="pg" id="pg-al">
+  <div class="grid2">
+    <div class="card"><div class="ctitle">Geogr&#xE1;fica &#x2014; Meta 30% EUA / 70% BR</div><div id="alGeo"></div></div>
+    <div class="card"><div class="ctitle">EUA &#x2014; Meta 55% ETF / 45% A&#xE7;&#xE3;o</div><div id="alUS"></div></div>
+  </div>
+  <div class="card" style="margin-bottom:16px"><div class="ctitle">Brasil &#x2014; Meta 60% RF / 30% A&#xE7;&#xF5;es / 10% Caixa</div><div id="alBR"></div></div>
+  <div class="card"><div class="ctitle">Peso por ativo EUA &#x2014; atual vs alvo</div><div id="alAt"></div></div>
+</div>
+
+
+<!-- DIVIDENDOS -->
+<div class="pg" id="pg-dv">
+  <div class="grid2" style="margin-bottom:16px">
+    <div class="card"><div class="lbl">Total Dividendos Recebidos</div><div class="val pos" id="dvTotalBRL">&#x2014;</div><div class="val2" id="dvTotalUSD">&#x2014;</div></div>
+    <div class="card"><div class="lbl">Impostos Pagos</div><div class="val neg" id="dvTotalImp">&#x2014;</div><div class="sub">sobre dividendos recebidos</div></div>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="ctitle">Registrar dividendo recebido</div>
+    <div class="fg" style="margin-bottom:10px">
+      <div class="fr"><label class="fl">Ativo</label><select id="dvAtivo" style="width:100%" onchange="dvAtivoChange()"></select></div>
+      <div class="fr"><label class="fl">Periodicidade</label><select id="dvPeriodo" style="width:100%"><option value="mensal">Mensal</option><option value="trimestral">Trimestral</option><option value="semestral">Semestral</option><option value="anual">Anual</option><option value="irregular">Irregular</option></select></div>
+    </div>
+    <div class="fg3">
+      <div class="fr"><label class="fl">Valor Recebido</label><div style="display:flex;align-items:center;gap:6px"><span id="dvMoedaTag" style="font-size:11px;font-weight:700;color:var(--accent)">R$</span><input type="number" id="dvValor" placeholder="0.00" step="0.01" min="0" style="width:100%" oninput="dvCalcPct()"></div></div>
+      <div class="fr"><label class="fl">Imposto Pago</label><div style="display:flex;align-items:center;gap:6px"><span id="dvMoedaTagImp" style="font-size:11px;font-weight:700;color:var(--red)">R$</span><input type="number" id="dvImposto" placeholder="0.00" step="0.01" min="0" style="width:100%" oninput="dvCalcPct()"></div><div style="font-size:10px;color:var(--text2);margin-top:3px">&#x2248; <span id="dvPctCalc">0.0</span>% sobre o bruto</div></div>
+      <div class="fr"><label class="fl">Data</label><input type="text" id="dvData" placeholder="dd/mm/aaaa" style="width:100%"></div>
+    </div>
+    <div class="fr"><label class="fl">Observa&#xE7;&#xE3;o</label><input type="text" id="dvObs" placeholder="Opcional" style="width:100%"></div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <button class="bp" onclick="regDiv()">Registrar dividendo</button>
+      <label style="font-size:12px;color:var(--text2)">Reinvestir em:</label>
+      <select id="dvReinvest" style="width:200px"><option value="">&#x2014; escolher ativo &#x2014;</option></select>
+      <button class="bp grn" onclick="reinvestDiv()">Reinvestir</button>
+    </div>
+  </div>
+  <div class="card"><div class="ctitle">Hist&#xF3;rico de dividendos</div><div id="dvHistorico"><p style="color:var(--text2);font-size:12px">Nenhum dividendo registrado.</p></div></div>
+</div>
+
+<!-- HISTORICO -->
+<div class="pg" id="pg-hs">
+  <div class="card" style="margin-bottom:16px">
+    <div class="ctitle">Filtros</div>
+    <div class="hfilt">
+      <select id="hsFiltAt" onchange="buildHistorico()"><option value="">Todos os ativos</option></select>
+      <select id="hsFiltTp" onchange="buildHistorico()"><option value="">Todos os tipos</option><option value="aporte">Aporte</option><option value="venda">Venda</option><option value="reinvestimento">Reinvestimento</option></select>
+      <input type="text" id="hsFiltBusca" placeholder="Buscar ticker..." style="width:160px;font-size:12px;padding:5px 8px" oninput="buildHistorico()">
+    </div>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Data</th><th>Ativo</th><th>Nome</th><th>Tipo</th><th>Qtd</th><th>Pre&#xE7;o</th><th>C&#xE2;mbio</th><th>Taxa</th><th>Valor orig.</th><th>Valor BRL</th><th>Lucro/Prej.</th><th>IR Est.</th><th>L&#xED;q. p&#xF3;s IR</th><th>PM</th><th>Obs.</th></tr></thead>
+    <tbody id="tbHist"></tbody>
+  </table></div>
+  <div id="hsResumo" style="margin-top:4px"></div>
+</div>
+
+
+</div><!-- /app -->
+
+<!-- MODAL NOVO ATIVO -->
+<div class="mb" id="mNovo">
+  <div class="md">
+    <div class="mt">&#x2795; Novo Ativo</div>
+    <div class="fr" style="display:flex;gap:8px;align-items:flex-end">
+      <div style="flex:1"><label class="fl">Ticker</label><input type="text" id="nTk" placeholder="Ex: AAPL, PETR4" style="width:100%" oninput="this.value=this.value.toUpperCase()"></div>
+      <div><label class="fl">Mercado</label><select id="nMk" style="width:110px"><option value="US">EUA (USD)</option><option value="BR">Brasil (BRL)</option></select></div>
+      <button class="bp" onclick="buscarTicker()" style="white-space:nowrap;padding:7px 14px">&#x1F50D; Buscar</button>
+    </div>
+    <div id="nFetchBox" style="display:none"></div>
+    <div id="nFormBox" style="display:none">
+      <div class="fg">
+        <div class="fr"><label class="fl">Nome</label><input type="text" id="nNm" style="width:100%"></div>
+        <div class="fr"><label class="fl">Setor</label><input type="text" id="nSt" style="width:100%"></div>
+      </div>
+      <div class="fg">
+        <div class="fr"><label class="fl">Tipo</label><select id="nTp" style="width:100%"><option value="acao">A&#xE7;&#xE3;o</option><option value="etf">ETF</option><option value="fii">FII</option><option value="renda">Renda Fixa</option><option value="caixa">Caixa</option></select></div>
+        <div class="fr"><label class="fl">Peso alvo (%)</label><input type="number" id="nPa" placeholder="0" step="0.1" min="0" style="width:100%"></div>
+      </div>
+      <div class="info-box">&#x1F4A1; Quantidade e PM ser&#xE3;o definidos no primeiro aporte. Dividendos s&#xE3;o lan&#xE7;ados na aba Dividendos.</div>
+      <div class="fa"><button class="bs" onclick="closeM()">Cancelar</button><button class="bp" onclick="saveNovo()">Cadastrar Ativo</button></div>
+    </div>
+    <div class="fa" id="nFaCancel"><button class="bs" onclick="closeM()">Cancelar</button></div>
+  </div>
+</div>
+
+<!-- MODAL APORTE -->
+<div class="mb" id="mAporte">
+  <div class="md">
+    <div class="mt">&#x1F4B0; Registrar Aporte</div>
+    <div class="fr"><label class="fl">Ativo</label><select id="aTk" style="width:100%" onchange="aporteTickerChange()"></select></div>
+    <div id="aInfoBox" class="info-box" style="display:none"></div>
+    <div class="fg3">
+      <div class="fr"><label class="fl">Valor Aportado</label><div style="display:flex;align-items:center;gap:5px"><span id="aMoeda" style="font-size:11px;font-weight:700;color:var(--accent)">US$</span><input type="number" id="aValor" placeholder="0.00" step="0.01" min="0" style="width:100%" oninput="aporteCalc()"></div></div>
+      <div class="fr"><label class="fl">Pre&#xE7;o M&#xE9;dio</label><div style="display:flex;align-items:center;gap:5px"><span id="aMoeda2" style="font-size:11px;font-weight:700;color:var(--accent)">US$</span><input type="number" id="aPreco" placeholder="0.00" step="0.0001" min="0" style="width:100%" oninput="aporteCalc()"></div></div>
+      <div class="fr" id="aCambioBox"><label class="fl">C&#xE2;mbio USD/BRL</label><input type="number" id="aCambio" placeholder="5.2056" step="0.0001" min="0" style="width:100%" oninput="aporteCalc()" value="5.2056"></div>
+    </div>
+    <div class="fg">
+      <div class="fr"><label class="fl">Taxa / Corretagem (BRL)</label><input type="number" id="aTaxa" placeholder="0.00" step="0.01" min="0" style="width:100%" oninput="aporteCalc()"></div>
+      <div class="fr"><label class="fl">Data do aporte</label><input type="text" id="aData" placeholder="dd/mm/aaaa" style="width:100%"></div>
+    </div>
+    <div class="info-box" id="aCalcBox" style="display:none">
+      <div class="calc-row">&#x1F4E6; Quantidade: <span class="calc-val" id="aQtdCalc">&#x2014;</span></div>
+      <div class="calc-row">&#x1F4B0; Valor BRL: <span class="calc-val" id="aValBRL">&#x2014;</span></div>
+      <div class="calc-row">&#x1F4CA; PM atual: <span class="calc-val" id="aPMatual">&#x2014;</span> &#x2192; Novo PM: <span class="calc-val" id="aPMnovo">&#x2014;</span></div>
+    </div>
+    <div class="fr"><label class="fl">Observa&#xE7;&#xE3;o</label><input type="text" id="aObs" placeholder="Opcional" style="width:100%"></div>
+    <div class="fa"><button class="bs" onclick="closeM()">Cancelar</button><button class="bp grn" onclick="saveAporte()">Confirmar Aporte</button></div>
+  </div>
+</div>
+
+<!-- MODAL VENDA -->
+<div class="mb" id="mVenda">
+  <div class="md">
+    <div class="mt">&#x1F4C9; Registrar Venda</div>
+    <div class="fr"><label class="fl">Ativo</label><select id="vTk" style="width:100%" onchange="vendaTickerChange()"></select></div>
+    <div id="vInfoBox" class="info-box" style="display:none"></div>
+    <div class="fg3">
+      <div class="fr"><label class="fl">Qtd Vendida</label><input type="number" id="vQtd" placeholder="0.00000000" step="0.00000001" min="0" style="width:100%" oninput="vendaCalc()"><div style="font-size:10px;color:var(--text2);margin-top:3px">Dispon&#xED;vel: <span id="vQtdDisp">&#x2014;</span></div></div>
+      <div class="fr"><label class="fl">Pre&#xE7;o de Venda</label><div style="display:flex;align-items:center;gap:5px"><span id="vMoeda" style="font-size:11px;font-weight:700;color:var(--green)">US$</span><input type="number" id="vPreco" placeholder="0.00" step="0.0001" min="0" style="width:100%" oninput="vendaCalc()"></div></div>
+      <div class="fr" id="vCambioBox"><label class="fl">C&#xE2;mbio Venda</label><input type="number" id="vCambio" placeholder="5.21" step="0.0001" min="0" style="width:100%" oninput="vendaCalc()"><div style="font-size:10px;color:var(--text2);margin-top:3px">Atual: <span id="vCambioAtual">&#x2014;</span></div></div>
+    </div>
+    <div class="fg">
+      <div class="fr"><label class="fl">Taxa / Corretagem (BRL)</label><input type="number" id="vTaxa" placeholder="0.00" step="0.01" min="0" style="width:100%" oninput="vendaCalc()"></div>
+      <div class="fr"><label class="fl">Data da venda</label><input type="text" id="vData" placeholder="dd/mm/aaaa" style="width:100%"></div>
+    </div>
+    <div id="vCalcBox" style="display:none">
+      <div class="info-box" style="border-color:var(--accent);margin-bottom:8px">
+        <div style="font-size:11px;font-weight:600;margin-bottom:8px;color:var(--accent)">&#x1F4CA; Resumo da opera&#xE7;&#xE3;o</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px">
+          <div>Valor bruto venda: <strong id="vResBruto">&#x2014;</strong></div>
+          <div>PM de compra: <strong id="vResPM">&#x2014;</strong></div>
+          <div>Custo das cotas: <strong id="vResCusto">&#x2014;</strong></div>
+          <div>Resultado bruto: <strong id="vResLucro">&#x2014;</strong></div>
+          <div>C&#xE2;mbio m&#xE9;dio compra: <strong id="vResCambioComp">&#x2014;</strong></div>
+          <div>Varia&#xE7;&#xE3;o cambial: <strong id="vResVarCambio">&#x2014;</strong></div>
+          <div>Taxa: <strong id="vResTaxa">&#x2014;</strong></div>
+          <div>Resultado l&#xED;quido: <strong id="vResLiq">&#x2014;</strong></div>
+        </div>
+      </div>
+      <div class="info-box" style="border-color:var(--yellow)">
+        <div style="font-size:11px;font-weight:600;margin-bottom:8px;color:var(--yellow)">&#x1F9FE; Imposto estimado (revise antes de confirmar)</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:8px" id="vImpRegra"></div>
+        <div class="fg">
+          <div class="fr"><label class="fl">Base de c&#xE1;lculo (BRL)</label><input type="number" id="vImpBase" step="0.01" style="width:100%" oninput="vendaCalcImp()"></div>
+          <div class="fr"><label class="fl">Al&#xED;quota (%)</label><input type="number" id="vImpAliq" step="0.01" min="0" max="100" style="width:100%" oninput="vendaCalcImp()"></div>
+        </div>
+        <div style="font-size:12px;margin-top:4px">Imposto estimado: <strong id="vImpValor" style="color:var(--red)">R$ 0,00</strong> | Resultado ap&#xF3;s IR: <strong id="vResAfterIR" class="pos">&#x2014;</strong></div>
+      </div>
+    </div>
+    <div class="fr"><label class="fl">Observa&#xE7;&#xE3;o</label><input type="text" id="vObs" placeholder="Opcional" style="width:100%"></div>
+    <div class="fa"><button class="bs" onclick="closeM()">Cancelar</button><button class="bp red" onclick="saveVenda()">Confirmar Venda</button></div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR -->
+<div class="mb" id="mEdit">
+  <div class="md">
+    <div class="mt">&#x270F;&#xFE0F; Editar Ativo</div>
+    <input type="hidden" id="eTkHidden">
+    <div class="fg">
+      <div class="fr"><label class="fl">Nome</label><input type="text" id="eNm" style="width:100%"></div>
+      <div class="fr"><label class="fl">Setor</label><input type="text" id="eSt" style="width:100%"></div>
+    </div>
+    <div class="fg">
+      <div class="fr"><label class="fl">Mercado</label><select id="eMk" style="width:100%"><option value="US">EUA (USD)</option><option value="BR">Brasil (BRL)</option></select></div>
+      <div class="fr"><label class="fl">Tipo</label><select id="eTp" style="width:100%"><option value="acao">A&#xE7;&#xE3;o</option><option value="etf">ETF</option><option value="fii">FII</option><option value="renda">Renda Fixa</option><option value="caixa">Caixa</option></select></div>
+    </div>
+    <div class="fr"><label class="fl">Peso alvo (%)</label><input type="number" id="ePa" step="0.1" min="0" style="width:200px"></div>
+    <div class="fa"><button class="bs" onclick="closeM()">Cancelar</button><button class="bp" onclick="saveEdit()">Salvar</button></div>
+  </div>
+</div>
+
+<!-- MODAL IMPORT -->
+<div class="mb" id="mImp">
+  <div class="md">
+    <div class="mt">Importar carteira</div>
+    <div class="ia" onclick="document.getElementById('fImp').click()">
+      <div style="font-size:26px;margin-bottom:6px">&#x1F4C2;</div>
+      Clique para selecionar o arquivo <strong>carteira.json</strong>
+      <input type="file" id="fImp" accept=".json" style="display:none" onchange="imp(event)">
+    </div>
+    <p style="font-size:11px;color:var(--text2);margin-top:10px">&#x26A0; Substituir&#xE1; todos os ativos atuais.</p>
+    <div class="fa"><button class="bs" onclick="closeM()">Cancelar</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 <script>
 'use strict';
 // ── SENHA ──────────────────────────────────────────────
@@ -584,15 +949,35 @@ async function fetchAll() {
     setSt('l', 'Buscando '+a.ticker+' ('+(i+1)+'/'+ativos.length+')...');
     try {
       var tkEnc = a.ticker.split('.').join('%2E');
-    var r = await fetch('https://brapi.dev/api/quote/'+tkEnc+'?token='+TOK);
+      var r = await fetch('https://brapi.dev/api/quote/'+tkEnc+'?token='+TOK);
       var d = await r.json();
-      if (d.results && d.results[0]) {
-        precos[a.ticker] = {preco:d.results[0].regularMarketPrice, var:d.results[0].regularMarketChangePercent||0, moeda:a.mercado==='US'?'USD':'BRL'};
+      if (d.results && d.results[0] && d.results[0].regularMarketPrice) {
+        var res = d.results[0];
+        var varPct = res.regularMarketChangePercent || 0;
+        var hoje = new Date(); var dSem = hoje.getDay();
+        var mercadoAberto = dSem >= 1 && dSem <= 5;
+        // Fallback: try ticker with dash if var is suspiciously 0 on weekday
+        if (varPct === 0 && a.mercado === 'US' && mercadoAberto && a.ticker.indexOf('.') >= 0) {
+          try {
+            var tkDash = a.ticker.replace('.', '-');
+            var r2 = await fetch('https://brapi.dev/api/quote/'+tkDash+'?token='+TOK);
+            var d2 = await r2.json();
+            if (d2.results && d2.results[0] && d2.results[0].regularMarketChangePercent) {
+              res = d2.results[0]; varPct = res.regularMarketChangePercent;
+            }
+          } catch(e2) {}
+        }
+        precos[a.ticker] = {
+          preco: res.regularMarketPrice,
+          var: varPct,
+          moeda: a.mercado === 'US' ? 'USD' : 'BRL',
+          semDados: varPct === 0 && a.mercado === 'US' && mercadoAberto
+        };
       } else if (!precos[a.ticker]) {
-        precos[a.ticker] = {preco:a.pmedio, var:0, moeda:a.mercado==='US'?'USD':'BRL'};
+        precos[a.ticker] = {preco:a.pmedio, var:0, moeda:a.mercado==='US'?'USD':'BRL', semDados:true};
       }
     } catch(e) {
-      if (!precos[a.ticker]) precos[a.ticker] = {preco:a.pmedio, var:0, moeda:a.mercado==='US'?'USD':'BRL'};
+      if (!precos[a.ticker]) precos[a.ticker] = {preco:a.pmedio, var:0, moeda:a.mercado==='US'?'USD':'BRL', semDados:true};
     }
     renderAll();
     await new Promise(function(res){setTimeout(res,250);});
@@ -719,7 +1104,8 @@ function buildAtivos(pat){
     h+='<td style="font-size:11px">'+pmOrig+'</td>';
     h+='<td style="font-size:11px;color:var(--text2)">'+pmBRLval+'</td>';
     h+='<td style="font-size:11px">'+cotLabel+'</td>';
-    h+='<td class="'+fC(p.var)+'" style="font-weight:600;font-size:11px">'+fP(p.var)+'</td>';
+    var varLabel = p.semDados ? '<span style="color:var(--yellow)" title="Dado indisponível na API">⚠️ —</span>' : fP(p.var);
+    h+='<td class="'+fC(p.var)+'" style="font-weight:600;font-size:11px">'+varLabel+'</td>';
     h+='<td style="font-weight:600">'+fR(v)+'</td>';
     h+='<td style="font-size:11px;color:var(--text2)">'+fU(v/usdBrl)+'</td>';
     h+='<td class="'+fC(res)+'">'+fR(res)+'<div style="font-size:10px">'+fP(rp)+'</div></td>';
