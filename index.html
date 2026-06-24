@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Minha Carteira</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:system-ui,sans-serif;min-height:100vh;transition:background .3s,color .3s}
@@ -146,7 +147,6 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
   <div class="tab on" onclick="showPg('vg',this)">Vis&#xE3;o Geral</div>
   <div class="tab" onclick="showPg('at',this)">Ativos</div>
   <div class="tab" onclick="showPg('al',this)">Aloca&#xE7;&#xE3;o &amp; Meta</div>
-
   <div class="tab" onclick="showPg('dv',this)">Dividendos</div>
   <div class="tab" onclick="showPg('hs',this)">Hist&#xF3;rico</div>
 </div>
@@ -192,7 +192,6 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
   <div class="card"><div class="ctitle">Peso por ativo EUA &#x2014; atual vs alvo</div><div id="alAt"></div></div>
 </div>
 
-
 <!-- DIVIDENDOS -->
 <div class="pg" id="pg-dv">
   <div class="grid2" style="margin-bottom:16px">
@@ -237,7 +236,6 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
   </table></div>
   <div id="hsResumo" style="margin-top:4px"></div>
 </div>
-
 
 </div><!-- /app -->
 
@@ -451,11 +449,90 @@ function save() {
 
 // ── EXPORT / IMPORT ────────────────────────────────────
 function exp() {
-  var b = new Blob([JSON.stringify({v:5,data:new Date().toISOString(),carteira:carteira,dividendos:dividendos,aportes:aportes},null,2)],{type:'application/json'});
-  var a = document.createElement('a'); a.href = URL.createObjectURL(b);
-  a.download = 'carteira_' + new Date().toISOString().slice(0,10) + '.json'; a.click();
-  toast('Exportado');
+  var pat = totais().pat;
+  var tl = {acao:'Acao', etf:'ETF', fii:'FII', renda:'Renda Fixa', caixa:'Caixa'};
+  var wb = XLSX.utils.book_new();
+
+  // Aba 1 - Carteira completa
+  var rows = [['Ticker','Nome','Tipo','Mercado','Setor','Quantidade','Preco Medio (orig.)','Preco Medio BRL','Cotacao Atual BRL','Valor BRL','Valor USD','Resultado BRL','Resultado %','Peso %','Alvo %']];
+  carteira.forEach(function(a) {
+    var p = getP(a);
+    var v = a.qtd * pBRL(a);
+    var c = a.qtd * pmBRL(a);
+    var res = v - c;
+    var rp = c ? res / c * 100 : 0;
+    var peso = pat ? v / pat * 100 : 0;
+    rows.push([
+      a.ticker, a.nome, tl[a.tipo] || a.tipo, a.mercado, a.setor || '',
+      a.qtd,
+      a.pmedio,
+      a.mercado === 'US' ? +(a.pmedio * usdBrl).toFixed(2) : a.pmedio,
+      a.mercado === 'US' ? +(p.preco * usdBrl).toFixed(2) : p.preco,
+      +v.toFixed(2), +(v / usdBrl).toFixed(2),
+      +res.toFixed(2), +rp.toFixed(2),
+      +peso.toFixed(2), a.pesoAlvo || 0
+    ]);
+  });
+  var ws1 = XLSX.utils.aoa_to_sheet(rows);
+  ws1['!cols'] = [{wch:12},{wch:28},{wch:12},{wch:10},{wch:22},{wch:12},{wch:18},{wch:16},{wch:16},{wch:14},{wch:12},{wch:14},{wch:12},{wch:9},{wch:9}];
+  XLSX.utils.book_append_sheet(wb, ws1, 'Carteira');
+
+  // Aba 2 - EUA Acoes
+  var acoes = carteira.filter(function(a){ return a.tipo === 'acao' && a.mercado === 'US'; });
+  XLSX.utils.book_append_sheet(wb, buildExpSheet(acoes, pat), 'EUA - Acoes');
+
+  // Aba 3 - EUA ETFs
+  var etfs = carteira.filter(function(a){ return a.tipo === 'etf' && a.mercado === 'US'; });
+  XLSX.utils.book_append_sheet(wb, buildExpSheet(etfs, pat), 'EUA - ETFs');
+
+  // Aba 4 - Brasil Renda Fixa
+  var renda = carteira.filter(function(a){ return a.mercado === 'BR'; });
+  XLSX.utils.book_append_sheet(wb, buildExpSheet(renda, pat), 'Brasil - Renda Fixa');
+
+  // Aba 5 - Dividendos
+  var dvRows = [['Ticker','Periodicidade','Data','Valor','Imposto','Obs.']];
+  (dividendos || []).forEach(function(d){
+    dvRows.push([d.ticker||'', d.periodo||'', d.data||'', d.valor||0, d.imposto||0, d.obs||'']);
+  });
+  if (dvRows.length === 1) dvRows.push(['(sem registros)','','','','','']);
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dvRows), 'Dividendos');
+
+  // Aba 6 - Aportes
+  var apRows = [['Data','Ticker','Nome','Qtd','Preco','Cambio','Taxa','Valor BRL','Obs.']];
+  (aportes || []).forEach(function(a){
+    apRows.push([a.data||'', a.ticker||'', a.nome||'', a.qtd||0, a.preco||0, a.cambio||0, a.taxa||0, a.valorBrl||0, a.obs||'']);
+  });
+  if (apRows.length === 1) apRows.push(['(sem registros)','','','','','','','','']);
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(apRows), 'Aportes');
+
+  var date = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, 'carteira_' + date + '.xlsx');
+  toast('Exportado como Excel!');
 }
+
+function buildExpSheet(ativos, pat) {
+  var rows = [['Ticker','Nome','Setor','Qtd','PM orig.','PM BRL','Cotacao BRL','Valor BRL','Valor USD','Result. BRL','Result. %','Peso %','Alvo %']];
+  ativos.forEach(function(a) {
+    var p = getP(a);
+    var v = a.qtd * pBRL(a);
+    var c = a.qtd * pmBRL(a);
+    rows.push([
+      a.ticker, a.nome, a.setor || '',
+      a.qtd, a.pmedio,
+      a.mercado === 'US' ? +(a.pmedio * usdBrl).toFixed(2) : a.pmedio,
+      a.mercado === 'US' ? +(p.preco * usdBrl).toFixed(2) : p.preco,
+      +v.toFixed(2), +(v / usdBrl).toFixed(2),
+      +(v - c).toFixed(2),
+      c ? +((v - c) / c * 100).toFixed(2) : 0,
+      pat ? +(v / pat * 100).toFixed(2) : 0,
+      a.pesoAlvo || 0
+    ]);
+  });
+  var ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:12},{wch:26},{wch:22},{wch:12},{wch:14},{wch:14},{wch:14},{wch:14},{wch:12},{wch:14},{wch:11},{wch:9},{wch:9}];
+  return ws;
+}
+
 function imp(e) {
   var f = e.target.files[0]; if (!f) return;
   var r = new FileReader();
@@ -478,7 +555,6 @@ function showPg(id, el) {
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
   document.getElementById('pg-'+id).classList.add('on'); el.classList.add('on');
   if (id === 'dv') buildDividendos();
-
   if (id === 'hs') buildHistorico();
 }
 function closeM() { document.querySelectorAll('.mb').forEach(function(m){m.classList.remove('on');}); }
@@ -591,7 +667,6 @@ async function fetchAll() {
         var varPct = res.regularMarketChangePercent || 0;
         var hoje = new Date(); var dSem = hoje.getDay();
         var mercadoAberto = dSem >= 1 && dSem <= 5;
-        // Fallback: try ticker with dash if var is suspiciously 0 on weekday
         if (varPct === 0 && a.mercado === 'US' && mercadoAberto && a.ticker.indexOf('.') >= 0) {
           try {
             var tkDash = a.ticker.replace('.', '-');
@@ -739,7 +814,7 @@ function buildAtivos(pat){
     h+='<td style="font-size:11px">'+pmOrig+'</td>';
     h+='<td style="font-size:11px;color:var(--text2)">'+pmBRLval+'</td>';
     h+='<td style="font-size:11px">'+cotLabel+'</td>';
-    var varLabel = p.semDados ? '<span style="color:var(--yellow)" title="Dado indisponível na API">⚠️ —</span>' : fP(p.var);
+    var varLabel = p.semDados ? '<span style="color:var(--yellow)" title="Dado indisponivel na API">! --</span>' : fP(p.var);
     h+='<td class="'+fC(p.var)+'" style="font-weight:600;font-size:11px">'+varLabel+'</td>';
     h+='<td style="font-weight:600">'+fR(v)+'</td>';
     h+='<td style="font-size:11px;color:var(--text2)">'+fU(v/usdBrl)+'</td>';
@@ -752,7 +827,6 @@ function buildAtivos(pat){
   });
   document.getElementById('tbAt').innerHTML=h;
 }
-
 
 // ── REFRESH ──────────────────────────────────────────
 async function refresh() {
