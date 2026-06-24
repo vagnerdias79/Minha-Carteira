@@ -272,29 +272,53 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
 <div class="pg" id="pg-cot">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn" id="btnP1d" onclick="setPeriodo('1d')" style="border-color:var(--accent);color:var(--accent)">Dia</button>
+      <button class="btn" id="btnP1d" onclick="setPeriodo('1d')">Dia</button>
       <button class="btn" id="btnP1w" onclick="setPeriodo('1w')">Semana</button>
       <button class="btn" id="btnP1m" onclick="setPeriodo('1m')">M&#xEA;s</button>
       <button class="btn" id="btnPytd" onclick="setPeriodo('ytd')">Ano atual</button>
       <button class="btn" id="btnP1y" onclick="setPeriodo('1y')">12 meses</button>
       <button class="btn" id="btnP5y" onclick="setPeriodo('5y')">5 anos</button>
     </div>
-    <div style="font-size:11px;color:var(--text2)" id="cotUpd">Clique em um per&#xED;odo para carregar</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="font-size:11px;color:var(--text2)" id="cotUpd">Selecione um per&#xED;odo</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn" id="btnViewChart" onclick="setCotView('chart')" style="border-color:var(--accent);color:var(--accent);font-size:11px;padding:4px 10px">&#x1F4C8; Gr&#xE1;fico</button>
+        <button class="btn" id="btnViewTable" onclick="setCotView('table')" style="font-size:11px;padding:4px 10px">&#x1F4CB; Tabela</button>
+      </div>
+    </div>
   </div>
-  <div class="tw">
-    <table>
-      <thead><tr>
-        <th>Ativo</th><th>Tipo</th><th>Cota&#xE7;&#xE3;o atual</th><th>Varia&#xE7;&#xE3;o hoje</th>
-        <th id="colPeriodo">Varia&#xE7;&#xE3;o per&#xED;odo</th>
-        <th>M&#xED;n. per&#xED;odo</th><th>M&#xE1;x. per&#xED;odo</th>
-        <th>Valor em carteira</th>
-      </tr></thead>
-      <tbody id="tbCot"></tbody>
-    </table>
+
+  <!-- CHART VIEW -->
+  <div id="cotChartView">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px" id="cotTickerBtns"></div>
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div id="cotChartTitle" style="font-size:13px;font-weight:700"></div>
+        <div id="cotChartStats" style="font-size:12px;color:var(--text2)"></div>
+      </div>
+      <div style="height:320px;position:relative"><canvas id="cotChart"></canvas></div>
+    </div>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Ativo</th><th>Tipo</th><th>Cotação atual</th><th>Hoje</th><th id="colPeriodo">Var. período</th><th>Mín.</th><th>Máx.</th><th>Valor carteira</th></tr></thead>
+        <tbody id="tbCotSummary"></tbody>
+      </table>
+    </div>
   </div>
+
+  <!-- TABLE VIEW -->
+  <div id="cotTableView" style="display:none">
+    <div class="tw">
+      <table>
+        <thead><tr><th>Ativo</th><th>Tipo</th><th>Cotação atual</th><th>Hoje</th><th id="colPeriodo2">Var. período</th><th>Mín.</th><th>Máx.</th><th>Valor carteira</th></tr></thead>
+        <tbody id="tbCot"></tbody>
+      </table>
+    </div>
+  </div>
+
   <div id="cotLoading" style="text-align:center;padding:24px;color:var(--text2);display:none">
     <div style="display:inline-block;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-right:8px;vertical-align:middle"></div>
-    Carregando cotações históricas...
+    Carregando cotações hist&#xF3;ricas...
   </div>
 </div>
 </div><!-- /app -->
@@ -641,7 +665,8 @@ async function fetchAll() {
     var a = ativos[i];
     setSt('l', 'Buscando '+a.ticker+' ('+(i+1)+'/'+ativos.length+')...');
     try {
-      var r = await fetch('https://brapi.dev/api/quote/'+a.ticker+'?token='+TOK);
+      var tkEnc = a.ticker.replace('.', '%2E');
+    var r = await fetch('https://brapi.dev/api/quote/'+tkEnc+'?token='+TOK);
       var d = await r.json();
       if (d.results && d.results[0]) {
         precos[a.ticker] = {preco:d.results[0].regularMarketPrice, var:d.results[0].regularMarketChangePercent||0, moeda:a.mercado==='US'?'USD':'BRL'};
@@ -868,21 +893,27 @@ function calcRb(){
     usAt.sort(function(a,b){return (b.pesoAlvo||0)-(a.pesoAlvo||0);}).forEach(function(a){
       var ie=a.tipo==='etf', tb=ie?tpetf:tpac, bv=ie?aetf:aac;
       var vAtual=a.qtd*pBRL(a), pAtual=us?vAtual/us*100:0;
-      var vAp=tb?bv*(a.pesoAlvo||0)/tb:0;
+      var meta=a.pesoAlvo||0;
+      var delta=pAtual-meta;
+      // Aporte proporcional ao peso alvo dentro do grupo (ETF ou Ação)
+      var vAp=tb?bv*meta/tb:0;
       var pr=precos[a.ticker]?precos[a.ticker].preco:a.pmedio;
-      var cotas=vAp/(pr*cambioManual);
-      var pAfter=us?(vAtual+vAp)/(us+aus)*100:0;
-      var delta=pAtual-(a.pesoAlvo||0);
+      var prBRL=a.mercado==='US'?pr*cambioManual:pr;
+      var cotas=prBRL>0?vAp/prBRL:0;
+      // % após aporte dentro do universo EUA
+      var pAfter=(us+aus)>0?(vAtual+vAp)/(us+aus)*100:0;
+      var deltaAfter=pAfter-meta;
+      var melhorou=Math.abs(deltaAfter)<Math.abs(delta);
       h+='<tr>';
       h+='<td><span class="tk">'+a.ticker+'</span><div style="font-size:10px;color:var(--text2)">'+a.nome+'</div></td>';
       h+='<td><span class="tag '+(ie?'te':'ta')+'">'+(ie?'ETF':'Ação')+'</span></td>';
-      h+='<td style="font-weight:600">'+pAtual.toFixed(1)+'%</td>';
-      h+='<td style="color:var(--text2)">'+( a.pesoAlvo||0)+'%</td>';
-      h+='<td class="'+(Math.abs(delta)<0.5?'':'delta<0?pos:neg')+'" style="font-size:11px">'+(delta>=0?'+':'')+delta.toFixed(1)+'%</td>';
+      h+='<td style="font-weight:600;color:'+(Math.abs(delta)<1?'var(--green)':Math.abs(delta)<3?'var(--yellow)':'var(--red)')+'">'+pAtual.toFixed(1)+'%</td>';
+      h+='<td style="color:var(--text2)">'+meta+'%</td>';
+      h+='<td class="'+(Math.abs(delta)<0.5?'':'neg')+'" style="font-size:11px;font-weight:600">'+(delta>=0?'+':'')+delta.toFixed(1)+'%</td>';
       h+='<td class="pos" style="font-weight:600">'+fR(vAp)+'</td>';
       h+='<td style="color:var(--text2)">'+fU(vAp/cambioManual)+'</td>';
       h+='<td style="color:var(--text2)">~'+cotas.toFixed(4)+'</td>';
-      h+='<td><strong class="pos">'+pAfter.toFixed(1)+'%</strong></td>';
+      h+='<td style="font-weight:700;color:'+(melhorou?'var(--green)':'var(--yellow)')+'">'+pAfter.toFixed(1)+'% <span style="font-size:10px;color:var(--text2)">'+(deltaAfter>=0?'+':'')+deltaAfter.toFixed(1)+'%</span></td>';
       h+='</tr>';
     });
     h+='</tbody></table></div>';
@@ -950,7 +981,8 @@ async function buscarTicker() {
   box.innerHTML = '<div class="fetch-box"><span class="fetch-spin"></span> Buscando '+tk+'...</div>';
   document.getElementById('nFormBox').style.display = 'none';
   try {
-    var r = await fetch('https://brapi.dev/api/quote/'+tk+'?token='+TOK);
+    var tkE = tk.replace('.','%2E');
+    var r = await fetch('https://brapi.dev/api/quote/'+tkE+'?token='+TOK);
     var d = await r.json();
     if (d.results && d.results[0]) {
       var res = d.results[0];
@@ -1330,98 +1362,202 @@ function buildHistorico() {
 
 // ── COTAÇÕES ─────────────────────────────────────────
 var cotPeriodo = '1d';
+var cotView = 'chart';
 var cotCache = {};
+var cotData = [];
+var cotChartInstance = null;
+var cotSelectedTicker = null;
 var PERIODO_LABELS = {'1d':'Hoje','1w':'Semana','1m':'Mês','ytd':'Ano atual','1y':'12 meses','5y':'5 anos'};
 var PERIODO_RANGE = {'1d':'1d','1w':'5d','1m':'1mo','ytd':'ytd','1y':'1y','5y':'5y'};
+var PERIODO_INTERVAL = {'1d':'5m','1w':'1d','1m':'1d','ytd':'1wk','1y':'1wk','5y':'1mo'};
+var CHART_COLORS = ['#4f8ef7','#36d399','#f59e0b','#f87171','#a78bfa','#34d399','#fb923c','#60a5fa','#e879f9','#2dd4bf','#fbbf24','#818cf8'];
 
 function setPeriodo(p){
   cotPeriodo = p;
   document.querySelectorAll('[id^="btnP"]').forEach(function(b){
-    b.style.borderColor='var(--border)'; b.style.color='var(--text2)';
+    b.style.borderColor=''; b.style.color='';
   });
   var btn=document.getElementById('btnP'+p);
   if(btn){btn.style.borderColor='var(--accent)';btn.style.color='var(--accent)';}
-  document.getElementById('colPeriodo').textContent='Var. '+PERIODO_LABELS[p];
+  var lbl=PERIODO_LABELS[p];
+  var el1=document.getElementById('colPeriodo'); if(el1) el1.textContent='Var. '+lbl;
+  var el2=document.getElementById('colPeriodo2'); if(el2) el2.textContent='Var. '+lbl;
   renderCotacoes();
 }
 
+function setCotView(v){
+  cotView=v;
+  document.getElementById('cotChartView').style.display=v==='chart'?'block':'none';
+  document.getElementById('cotTableView').style.display=v==='table'?'block':'none';
+  document.getElementById('btnViewChart').style.borderColor=v==='chart'?'var(--accent)':'';
+  document.getElementById('btnViewChart').style.color=v==='chart'?'var(--accent)':'';
+  document.getElementById('btnViewTable').style.borderColor=v==='table'?'var(--accent)':'';
+  document.getElementById('btnViewTable').style.color=v==='table'?'var(--accent)':'';
+}
+
 async function fetchCotacaoHistorica(ticker, range){
-  var key = ticker+'_'+range;
+  var key=ticker+'_'+range;
   if(cotCache[key]) return cotCache[key];
   try{
-    var r=await fetch('https://brapi.dev/api/quote/'+ticker+'?range='+range+'&interval='+(range==='5y'?'1wk':range==='1y'||range==='ytd'?'1wk':'1d')+'&token='+TOK);
+    var tickerEnc=ticker.replace('.','%2E');
+    var interval=PERIODO_INTERVAL[cotPeriodo]||'1d';
+    var r=await fetch('https://brapi.dev/api/quote/'+tickerEnc+'?range='+range+'&interval='+interval+'&token='+TOK);
     var d=await r.json();
-    if(d.results&&d.results[0]){
-      cotCache[key]=d.results[0];
-      return d.results[0];
-    }
+    if(d.results&&d.results[0]){ cotCache[key]=d.results[0]; return d.results[0]; }
   }catch(e){}
   return null;
 }
 
+function selectTicker(ticker){
+  cotSelectedTicker=ticker;
+  document.querySelectorAll('.cot-tk-btn').forEach(function(b){
+    b.style.background=b.dataset.tk===ticker?'var(--accent)':'var(--bg3)';
+    b.style.color=b.dataset.tk===ticker?'#fff':'var(--text2)';
+    b.style.borderColor=b.dataset.tk===ticker?'var(--accent)':'var(--border)';
+  });
+  drawChart(ticker);
+}
+
+function drawChart(ticker){
+  var row=cotData.find(function(r){return r.a.ticker===ticker;});
+  if(!row||!row.hist) return;
+  var hist=row.hist;
+  var prices=(hist.historicalDataPrice||[]).filter(function(x){return x.close;});
+  if(!prices.length) return;
+
+  var isDark=document.body.classList.contains('dark');
+  var txtColor=isDark?'#8b95b0':'#64748b';
+  var gridColor=isDark?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)';
+
+  var labels=prices.map(function(x){
+    var d=new Date(x.date*1000);
+    if(cotPeriodo==='1d') return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    if(cotPeriodo==='1w'||cotPeriodo==='1m') return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+    return d.toLocaleDateString('pt-BR',{month:'2-digit',year:'2-digit'});
+  });
+  var vals=prices.map(function(x){return x.close;});
+  var first=vals[0],last=vals[vals.length-1];
+  var varPct=(last-first)/first*100;
+  var lineColor=varPct>=0?'#36d399':'#f87171';
+  var fillColor=varPct>=0?'rgba(54,211,153,.1)':'rgba(248,113,113,.1)';
+
+  document.getElementById('cotChartTitle').textContent=ticker+' — '+row.a.nome+' | '+PERIODO_LABELS[cotPeriodo];
+  document.getElementById('cotChartStats').innerHTML=
+    '<span style="font-weight:700;color:'+(varPct>=0?'var(--green)':'var(--red)')+'">'+(varPct>=0?'+':'')+varPct.toFixed(2)+'%</span>'+
+    ' | Mín: '+(row.a.mercado==='US'?'$':'')+Math.min.apply(null,vals).toFixed(2)+
+    ' | Máx: '+(row.a.mercado==='US'?'$':'')+Math.max.apply(null,vals).toFixed(2);
+
+  if(cotChartInstance) cotChartInstance.destroy();
+  var ctx=document.getElementById('cotChart').getContext('2d');
+  cotChartInstance=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:labels,
+      datasets:[{
+        label:ticker,
+        data:vals,
+        borderColor:lineColor,
+        backgroundColor:fillColor,
+        borderWidth:2,
+        pointRadius:vals.length>60?0:2,
+        pointHoverRadius:4,
+        fill:true,
+        tension:0.3
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{intersect:false,mode:'index'},
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          label:function(c){
+            var v=c.parsed.y;
+            return (row.a.mercado==='US'?'US$ ':'R$ ')+v.toFixed(2);
+          }
+        }}
+      },
+      scales:{
+        x:{ticks:{color:txtColor,font:{size:10},maxTicksLimit:10},grid:{color:gridColor}},
+        y:{ticks:{color:txtColor,font:{size:10},callback:function(v){return (row.a.mercado==='US'?'$':'R$')+v.toFixed(2);}},grid:{color:gridColor}}
+      }
+    }
+  });
+}
+
 async function renderCotacoes(){
   var ativos=carteira.filter(function(a){return a.tipo==='acao'||a.tipo==='etf'||a.tipo==='fii';});
-  if(!ativos.length){document.getElementById('tbCot').innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text2);padding:20px">Nenhum ativo qualificado</td></tr>';return;}
-  
+  if(!ativos.length) return;
   document.getElementById('cotLoading').style.display='block';
-  document.getElementById('tbCot').innerHTML='';
   document.getElementById('cotUpd').textContent='Carregando...';
-
+  cotData=[];
   var range=PERIODO_RANGE[cotPeriodo];
-  var {pat}=totais();
-  var rows=[];
+  var pat=totais().pat;
 
   for(var i=0;i<ativos.length;i++){
     var a=ativos[i];
-    var isUS=a.mercado==='US';
-    var p=precos[a.ticker]||{preco:a.pmedio,var:0,moeda:isUS?'USD':'BRL'};
+    var p=precos[a.ticker]||{preco:a.pmedio,var:0,moeda:a.mercado==='US'?'USD':'BRL'};
     var hist=null;
     if(cotPeriodo!=='1d') hist=await fetchCotacaoHistorica(a.ticker,range);
-    
-    var varPeriodo=null,minPeriodo=null,maxPeriodo=null;
+    else {
+      // For 1d, build fake hist from current price
+      var fakePrices=[{date:Date.now()/1000,close:p.preco}];
+      hist={historicalDataPrice:fakePrices,regularMarketPrice:p.preco};
+    }
+    var varP=null,minP=null,maxP=null;
     if(hist&&hist.historicalDataPrice&&hist.historicalDataPrice.length>1){
       var prices=hist.historicalDataPrice.map(function(x){return x.close;}).filter(Boolean);
       if(prices.length>1){
         var first=prices[0],last=prices[prices.length-1];
-        varPeriodo=(last-first)/first*100;
-        minPeriodo=Math.min.apply(null,prices);
-        maxPeriodo=Math.max.apply(null,prices);
+        varP=(last-first)/first*100; minP=Math.min.apply(null,prices); maxP=Math.max.apply(null,prices);
       }
-    } else if(cotPeriodo==='1d'){
-      varPeriodo=p.var||0;
     }
-
-    var vCarteira=a.qtd*pBRL(a);
-    rows.push({a:a,p:p,isUS:isUS,varPeriodo:varPeriodo,minPeriodo:minPeriodo,maxPeriodo:maxPeriodo,vCarteira:vCarteira,pat:pat});
+    if(cotPeriodo==='1d') varP=p.var||0;
+    cotData.push({a:a,p:p,hist:hist,varP:varP,minP:minP,maxP:maxP,vCart:a.qtd*pBRL(a),pat:pat});
   }
 
+  // Build ticker buttons for chart
+  var btnHtml='';
+  cotData.forEach(function(row,i){
+    btnHtml+='<button class="btn cot-tk-btn" data-tk="'+row.a.ticker+'" data-action="selectTicker" style="font-size:11px;padding:4px 10px">'+row.a.ticker+'</button>';
+  });
+  document.getElementById('cotTickerBtns').innerHTML=btnHtml;
+
+  // Build summary table (shown under chart)
+  var sumH='', tblH='';
   var tl={acao:'Ação',etf:'ETF',fii:'FII'};
   var tc={acao:'ta',etf:'te',fii:'tf'};
-  var h='';
-  rows.forEach(function(row){
-    var a=row.a,p=row.p,isUS=row.isUS;
-    var cotBRL=isUS?p.preco*usdBrl:p.preco;
-    var cotOrig=isUS?fU(p.preco):fR(p.preco);
-    var peso=row.pat?row.vCarteira/row.pat*100:0;
-    h+='<tr>';
-    h+='<td><span class="tk">'+a.ticker+'</span><div style="font-size:10px;color:var(--text2);margin-top:1px">'+a.nome+'</div></td>';
-    h+='<td><span class="tag '+tc[a.tipo]+'">'+tl[a.tipo]+'</span></td>';
-    h+='<td style="font-weight:600">'+cotOrig+(isUS?'<div style="font-size:10px;color:var(--text2)">'+fR(cotBRL)+'</div>':'')+'</td>';
-    h+='<td class="'+(p.var>=0?'pos':'neg')+'" style="font-weight:600">'+(p.var>=0?'+':'')+p.var.toFixed(2)+'%</td>';
-    if(row.varPeriodo!==null&&row.varPeriodo!==undefined){
-      h+='<td class="'+(row.varPeriodo>=0?'pos':'neg')+'" style="font-weight:700;font-size:13px">'+(row.varPeriodo>=0?'+':'')+row.varPeriodo.toFixed(2)+'%</td>';
-    } else {
-      h+='<td style="color:var(--text2)">—</td>';
-    }
-    h+='<td style="font-size:11px;color:var(--text2)">'+(row.minPeriodo?( isUS?fU(row.minPeriodo):fR(row.minPeriodo)):'—')+'</td>';
-    h+='<td style="font-size:11px;color:var(--text2)">'+(row.maxPeriodo?(isUS?fU(row.maxPeriodo):fR(row.maxPeriodo)):'—')+'</td>';
-    h+='<td style="font-weight:600">'+fR(row.vCarteira)+'<div style="font-size:10px;color:var(--text2)">'+peso.toFixed(1)+'% da carteira</div></td>';
-    h+='</tr>';
-  });
 
-  document.getElementById('tbCot').innerHTML=h;
+  cotData.forEach(function(row){
+    var a=row.a,p=row.p,isUS=a.mercado==='US';
+    var cotOrig=isUS?fU(p.preco):fR(p.preco);
+    var cotBRL=isUS?fR(p.preco*usdBrl):'';
+    var peso=row.pat?row.vCart/row.pat*100:0;
+    var fmtVar=function(v){ return v!==null&&v!==undefined?'<span class="'+(v>=0?'pos':'neg')+'" style="font-weight:700">'+(v>=0?'+':'')+v.toFixed(2)+'%</span>':'<span style="color:var(--text2)">—</span>'; };
+    var fmtPx=function(v){ return v?(isUS?fU(v):fR(v)):'—'; };
+    var row1='<td><span class="tk">'+a.ticker+'</span><div style="font-size:10px;color:var(--text2)">'+a.nome+'</div></td>'+
+      '<td><span class="tag '+tc[a.tipo]+'">'+tl[a.tipo]+'</span></td>'+
+      '<td style="font-weight:600">'+cotOrig+(cotBRL?'<div style="font-size:10px;color:var(--text2)">'+cotBRL+'</div>':'')+'</td>'+
+      '<td>'+fmtVar(p.var)+'</td>'+
+      '<td>'+fmtVar(row.varP)+'</td>'+
+      '<td style="font-size:11px;color:var(--text2)">'+fmtPx(row.minP)+'</td>'+
+      '<td style="font-size:11px;color:var(--text2)">'+fmtPx(row.maxP)+'</td>'+
+      '<td style="font-weight:600">'+fR(row.vCart)+'<div style="font-size:10px;color:var(--text2)">'+peso.toFixed(1)+'% carteira</div></td>';
+    sumH+='<tr data-action="selectTicker" data-tk="'+a.ticker+'" style="cursor:pointer">'+row1+'</tr>';
+    tblH+='<tr>'+row1+'</tr>';
+  });
+  document.getElementById('tbCotSummary').innerHTML=sumH;
+  document.getElementById('tbCot').innerHTML=tblH;
+
   document.getElementById('cotLoading').style.display='none';
   document.getElementById('cotUpd').textContent='Atualizado: '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+
+  // Auto-select first ticker for chart
+  if(cotData.length){
+    var first=cotData[0].a.ticker;
+    cotSelectedTicker=first;
+    selectTicker(first);
+  }
 }
 
 // ── REFRESH ──────────────────────────────────────────
