@@ -560,7 +560,7 @@ function showPg(id, el) {
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
   document.getElementById('pg-'+id).classList.add('on'); el.classList.add('on');
   if (id === 'dv') buildDividendos();
-  if (id === 'cot') { setPeriodo('1d'); }
+  if (id === 'cot') { setPeriodo('1d'); buildCotacoes(); }
   if (id === 'hs') buildHistorico();
 }
 function closeM() { document.querySelectorAll('.mb').forEach(function(m){m.classList.remove('on');}); }
@@ -819,101 +819,138 @@ function calcRb(){
   var aporte=parseFloat(document.getElementById('simVal').value)||0;
   var dest=document.getElementById('simDest').value;
   var cambioManual=parseFloat(document.getElementById('simCambio').value)||usdBrl;
-  var t=totais();
-  var tot=t.pat+aporte;
 
-  // Update spread display
+  // Show spread info
   document.getElementById('simCambioMkt').textContent='R$ '+usdBrl.toFixed(4);
   if(document.getElementById('simCambio').value){
     var spread=((cambioManual-usdBrl)/usdBrl*100);
     document.getElementById('simSpread').textContent=(spread>=0?'+':'')+spread.toFixed(2)+'%';
+    document.getElementById('simSpread').style.color=spread>0?'var(--yellow)':'var(--green)';
   } else {
     document.getElementById('simCambio').placeholder='R$ '+usdBrl.toFixed(4);
-    document.getElementById('simSpread').textContent='use cotação mercado';
+    document.getElementById('simSpread').textContent='usar cotação mercado';
+    document.getElementById('simSpread').style.color='var(--text2)';
   }
 
-  // Calc current allocations
-  var us=0,br=0;
-  carteira.forEach(function(a){var v=a.qtd*pBRL(a); if(a.mercado==='US')us+=v; else br+=v;});
-  var pusAtual=t.pat?(us/t.pat*100):0;
-  var pbrAtual=t.pat?(br/t.pat*100):0;
+  var t=totais();
+  var pat=t.pat;
+  var tot=pat+aporte;
 
-  // Calc where to put aporte to rebalance
+  // Current allocation
+  var us=0,br=0;
+  carteira.forEach(function(a){
+    var v=a.qtd*pBRL(a);
+    if(a.mercado==='US') us+=v; else br+=v;
+  });
+  var pusAtual=pat?us/pat*100:0;
+  var pbrAtual=pat?br/pat*100:0;
+
+  // How much to each region
   var aus=0,abr=0;
-  if(dest==='US'){aus=aporte;}
-  else if(dest==='BR'){abr=aporte;}
-  else{
-    var metaUS=tot*MUS/100, metaBR=tot*MBR/100;
+  if(dest==='US'){ aus=aporte; }
+  else if(dest==='BR'){ abr=aporte; }
+  else {
+    var metaUS=tot*(MUS/100), metaBR=tot*(MBR/100);
     var defUS=Math.max(0,metaUS-us), defBR=Math.max(0,metaBR-br);
     var totalDef=defUS+defBR;
-    if(totalDef===0){aus=aporte*MUS/100;abr=aporte*MBR/100;}
-    else{aus=aporte*(defUS/totalDef);abr=aporte*(defBR/totalDef);}
+    if(totalDef===0){ aus=aporte*(MUS/100); abr=aporte*(MBR/100); }
+    else { aus=aporte*(defUS/totalDef); abr=aporte*(defBR/totalDef); }
   }
 
   // After aporte
-  var usAfter=us+aus, brAfter=br+abr, totAfter=t.pat+aporte;
-  var pusAfter=totAfter?usAfter/totAfter*100:0;
-  var pbrAfter=totAfter?brAfter/totAfter*100:0;
+  var usAfter=us+aus, brAfter=br+abr;
+  var pusAfter=tot?usAfter/tot*100:0;
+  var pbrAfter=tot?brAfter/tot*100:0;
+
+  var fmtCor=function(actual,meta){
+    var d=Math.abs(actual-meta);
+    return d<1?'var(--green)':d<4?'var(--yellow)':'var(--red)';
+  };
 
   var h='';
 
-  // ── Balance overview ──
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">';
-  // EUA card
+  // ── Region cards ──
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">';
+
+  // EUA
   var dUS=pusAtual-MUS, dUSAfter=pusAfter-MUS;
-  h+='<div class="rc"><div>';
-  h+='<div class="rd">🇺🇸 EUA — Atual vs Meta</div>';
-  h+='<div style="display:flex;align-items:center;gap:10px;margin:6px 0">';
-  h+='<div style="font-size:18px;font-weight:800;color:'+(Math.abs(dUS)<2?'var(--green)':Math.abs(dUS)<5?'var(--yellow)':'var(--red)')+'">'+pusAtual.toFixed(1)+'%</div>';
-  h+='<div style="font-size:12px;color:var(--text2)">meta '+MUS+'% | <span class="'+(dUS>=0?'pos':'neg')+'">'+(dUS>=0?'+':'')+dUS.toFixed(1)+'%</span></div></div>';
-  h+='<div style="font-size:11px;color:var(--text2)">Após aporte: <strong class="'+(Math.abs(dUSAfter)<Math.abs(dUS)?'pos':'neg')+'">'+pusAfter.toFixed(1)+'%</strong> ('+(dUSAfter>=0?'+':'')+dUSAfter.toFixed(1)+'%)</div>';
-  h+='<div class="rd" style="margin-top:6px">Aportar: <strong class="pos">'+fR(aus)+'</strong> | '+fU(aus/cambioManual)+'</div>';
-  h+='</div></div>';
-  // BR card
-  var dBR=pbrAtual-MBR, dBRAfter=pbrAfter-MBR;
-  h+='<div class="rc"><div>';
-  h+='<div class="rd">🇧🇷 Brasil — Atual vs Meta</div>';
-  h+='<div style="display:flex;align-items:center;gap:10px;margin:6px 0">';
-  h+='<div style="font-size:18px;font-weight:800;color:'+(Math.abs(dBR)<2?'var(--green)':Math.abs(dBR)<5?'var(--yellow)':'var(--red)')+'">'+pbrAtual.toFixed(1)+'%</div>';
-  h+='<div style="font-size:12px;color:var(--text2)">meta '+MBR+'% | <span class="'+(dBR>=0?'pos':'neg')+'">'+(dBR>=0?'+':'')+dBR.toFixed(1)+'%</span></div></div>';
-  h+='<div style="font-size:11px;color:var(--text2)">Após aporte: <strong class="'+(Math.abs(dBRAfter)<Math.abs(dBR)?'pos':'neg')+'">'+pbrAfter.toFixed(1)+'%</strong> ('+(dBRAfter>=0?'+':'')+dBRAfter.toFixed(1)+'%)</div>';
-  h+='<div class="rd" style="margin-top:6px">Aportar: <strong class="pos">'+fR(abr)+'</strong></div>';
+  h+='<div class="rc" style="padding:16px"><div>';
+  h+='<div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:700">🇺🇸 EUA — Meta '+MUS+'%</div>';
+  h+='<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px">';
+  h+='<span style="font-size:22px;font-weight:800;color:'+fmtCor(pusAtual,MUS)+'">'+pusAtual.toFixed(1)+'%</span>';
+  h+='<span class="'+(dUS>=0?'neg':'pos')+'" style="font-size:12px">'+(dUS>=0?'+':'')+dUS.toFixed(1)+'%</span>';
+  h+='</div>';
+  h+='<div style="font-size:11px;color:var(--text2)">Após aporte: <strong style="color:'+fmtCor(pusAfter,MUS)+'">'+pusAfter.toFixed(1)+'%</strong> <span class="'+(Math.abs(dUSAfter)<Math.abs(dUS)?'pos':'neg')+'">'+(dUSAfter>=0?'+':'')+dUSAfter.toFixed(1)+'%</span></div>';
+  h+='<div style="margin-top:8px;font-size:13px;color:var(--text2)">Aportar: <strong class="pos">'+fR(aus)+'</strong>';
+  if(aus>0) h+=' | <strong>'+fU(aus/cambioManual)+'</strong>';
   h+='</div></div></div>';
+
+  // Brasil
+  var dBR=pbrAtual-MBR, dBRAfter=pbrAfter-MBR;
+  h+='<div class="rc" style="padding:16px"><div>';
+  h+='<div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:700">🇧🇷 Brasil — Meta '+MBR+'%</div>';
+  h+='<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px">';
+  h+='<span style="font-size:22px;font-weight:800;color:'+fmtCor(pbrAtual,MBR)+'">'+pbrAtual.toFixed(1)+'%</span>';
+  h+='<span class="'+(dBR>=0?'neg':'pos')+'" style="font-size:12px">'+(dBR>=0?'+':'')+dBR.toFixed(1)+'%</span>';
+  h+='</div>';
+  h+='<div style="font-size:11px;color:var(--text2)">Após aporte: <strong style="color:'+fmtCor(pbrAfter,MBR)+'">'+pbrAfter.toFixed(1)+'%</strong> <span class="'+(Math.abs(dBRAfter)<Math.abs(dBR)?'pos':'neg')+'">'+(dBRAfter>=0?'+':'')+dBRAfter.toFixed(1)+'%</span></div>';
+  h+='<div style="margin-top:8px;font-size:13px;color:var(--text2)">Aportar: <strong class="pos">'+fR(abr)+'</strong></div>';
+  h+='</div></div>';
+  h+='</div>';
 
   // ── EUA breakdown ──
   if(aus>0){
     var usAt=carteira.filter(function(a){return a.mercado==='US'&&(a.pesoAlvo||0)>0;});
-    var aetf=aus*METF/100, aac=aus*MACAO/100;
+    var aetf=aus*(METF/100), aac=aus*(MACAO/100);
     var tpetf=usAt.filter(function(a){return a.tipo==='etf';}).reduce(function(s,a){return s+(a.pesoAlvo||0);},0);
     var tpac=usAt.filter(function(a){return a.tipo!=='etf';}).reduce(function(s,a){return s+(a.pesoAlvo||0);},0);
-    
-    h+='<div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-weight:700">Distribuição EUA — câmbio R$ '+cambioManual.toFixed(4)+'</div>';
-    h+='<div class="tw" style="margin-bottom:14px"><table><thead><tr><th>Ativo</th><th>Tipo</th><th>% Atual EUA</th><th>% Alvo EUA</th><th>Δ</th><th>Aportar R$</th><th>Aportar US$</th><th>Cotas aprox.</th><th>% após aporte</th></tr></thead><tbody>';
-    
+
+    // ETF/Ação split
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">';
+    var etfAtual=0,acAtual=0;
+    usAt.forEach(function(a){var v=a.qtd*pBRL(a);if(a.tipo==='etf')etfAtual+=v;else acAtual+=v;});
+    var petfAtual=us?etfAtual/us*100:0, pacAtual=us?acAtual/us*100:0;
+    var petfAfter=(us+aus)?(etfAtual+aetf)/(us+aus)*100:0, pacAfter=(us+aus)?(acAtual+aac)/(us+aus)*100:0;
+    h+='<div class="rc"><div class="rd">📊 ETFs (meta '+METF+'% do EUA)</div>';
+    h+='<div class="ra" style="font-size:14px">'+fR(aetf)+'</div>';
+    h+='<div class="rd">Atual: '+petfAtual.toFixed(1)+'% → Após: <strong>'+petfAfter.toFixed(1)+'%</strong></div></div>';
+    h+='<div class="rc"><div class="rd">📈 Ações (meta '+MACAO+'% do EUA)</div>';
+    h+='<div class="ra" style="font-size:14px">'+fR(aac)+'</div>';
+    h+='<div class="rd">Atual: '+pacAtual.toFixed(1)+'% → Após: <strong>'+pacAfter.toFixed(1)+'%</strong></div></div></div>';
+
+    h+='<div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-weight:700">Distribuição por ativo EUA — câmbio R$ '+cambioManual.toFixed(4)+'</div>';
+    h+='<div class="tw" style="margin-bottom:16px"><table><thead><tr>';
+    h+='<th>Ativo</th><th>Tipo</th><th>% Atual (EUA)</th><th>% Alvo</th><th>Δ Atual</th><th>Aportar R$</th><th>Aportar US$</th><th>Cotas aprox.</th><th>% Após aporte</th><th>Δ Após</th>';
+    h+='</tr></thead><tbody>';
+
     usAt.sort(function(a,b){return (b.pesoAlvo||0)-(a.pesoAlvo||0);}).forEach(function(a){
-      var ie=a.tipo==='etf', tb=ie?tpetf:tpac, bv=ie?aetf:aac;
-      var vAtual=a.qtd*pBRL(a), pAtual=us?vAtual/us*100:0;
+      var ie=a.tipo==='etf';
+      var tb=ie?tpetf:tpac;
+      var bv=ie?aetf:aac;
       var meta=a.pesoAlvo||0;
-      var delta=pAtual-meta;
-      // Aporte proporcional ao peso alvo dentro do grupo (ETF ou Ação)
-      var vAp=tb?bv*meta/tb:0;
+      var vAtual=a.qtd*pBRL(a);
+      var pAtual=us?vAtual/us*100:0;
+      var deltaAtual=pAtual-meta;
+      // Aportar proporcional ao peso alvo dentro do grupo
+      var vAp=tb?bv*(meta/tb):0;
       var pr=precos[a.ticker]?precos[a.ticker].preco:a.pmedio;
-      var prBRL=a.mercado==='US'?pr*cambioManual:pr;
-      var cotas=prBRL>0?vAp/prBRL:0;
+      var cotas=pr>0&&cambioManual>0?vAp/(pr*cambioManual):0;
       // % após aporte dentro do universo EUA
       var pAfter=(us+aus)>0?(vAtual+vAp)/(us+aus)*100:0;
       var deltaAfter=pAfter-meta;
-      var melhorou=Math.abs(deltaAfter)<Math.abs(delta);
+      var melhorou=Math.abs(deltaAfter)<Math.abs(deltaAtual);
+
       h+='<tr>';
       h+='<td><span class="tk">'+a.ticker+'</span><div style="font-size:10px;color:var(--text2)">'+a.nome+'</div></td>';
       h+='<td><span class="tag '+(ie?'te':'ta')+'">'+(ie?'ETF':'Ação')+'</span></td>';
-      h+='<td style="font-weight:600;color:'+(Math.abs(delta)<1?'var(--green)':Math.abs(delta)<3?'var(--yellow)':'var(--red)')+'">'+pAtual.toFixed(1)+'%</td>';
+      h+='<td style="font-weight:700;color:'+fmtCor(pAtual,meta)+'">'+pAtual.toFixed(1)+'%</td>';
       h+='<td style="color:var(--text2)">'+meta+'%</td>';
-      h+='<td class="'+(Math.abs(delta)<0.5?'':'neg')+'" style="font-size:11px;font-weight:600">'+(delta>=0?'+':'')+delta.toFixed(1)+'%</td>';
+      h+='<td class="'+(Math.abs(deltaAtual)<0.5?'':'neg')+'" style="font-size:11px">'+(deltaAtual>=0?'+':'')+deltaAtual.toFixed(1)+'%</td>';
       h+='<td class="pos" style="font-weight:600">'+fR(vAp)+'</td>';
       h+='<td style="color:var(--text2)">'+fU(vAp/cambioManual)+'</td>';
-      h+='<td style="color:var(--text2)">~'+cotas.toFixed(4)+'</td>';
-      h+='<td style="font-weight:700;color:'+(melhorou?'var(--green)':'var(--yellow)')+'">'+pAfter.toFixed(1)+'% <span style="font-size:10px;color:var(--text2)">'+(deltaAfter>=0?'+':'')+deltaAfter.toFixed(1)+'%</span></td>';
+      h+='<td style="color:var(--text2);font-size:11px">~'+cotas.toFixed(4)+'</td>';
+      h+='<td style="font-weight:700;color:'+fmtCor(pAfter,meta)+'">'+pAfter.toFixed(1)+'%</td>';
+      h+='<td class="'+(melhorou?'pos':'neg')+'" style="font-size:11px">'+(deltaAfter>=0?'+':'')+deltaAfter.toFixed(1)+'%</td>';
       h+='</tr>';
     });
     h+='</tbody></table></div>';
@@ -921,46 +958,53 @@ function calcRb(){
 
   // ── Brasil breakdown ──
   if(abr>0){
-    var brAt=carteira.filter(function(a){return a.mercado==='BR';});
-    var arf=abr*MRF/100, aabr=abr*MABR/100, acx=abr*MCAIXA/100;
+    var arf=abr*(MRF/100), aabr=abr*(MABR/100), acx=abr*(MCAIXA/100);
     var rf=0,acbr=0,cx=0;
-    brAt.forEach(function(a){var v=a.qtd*pBRL(a);if(a.tipo==='caixa')cx+=v;else if(a.tipo==='renda')rf+=v;else acbr+=v;});
-    var prfA=br?rf/br*100:0, pabrA=br?acbr/br*100:0, pcxA=br?cx/br*100:0;
-    var prfAfter=(br+abr)?(rf+arf)/(br+abr)*100:0;
-    var pabrAfter=(br+abr)?(acbr+aabr)/(br+abr)*100:0;
+    carteira.filter(function(a){return a.mercado==='BR';}).forEach(function(a){
+      var v=a.qtd*pBRL(a);
+      if(a.tipo==='caixa') cx+=v;
+      else if(a.tipo==='renda') rf+=v;
+      else acbr+=v;
+    });
 
-    h+='<div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-weight:700">Distribuição Brasil</div>';
+    h+='<div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;font-weight:700">Distribuição Brasil</div>';
     h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">';
-    
+
     var brItens=[
-      {label:'Renda Fixa',meta:MRF,atual:prfA,after:prfAfter,valor:arf,cor:'#c084fc'},
-      {label:'Ações/FIIs BR',meta:MABR,atual:pabrA,after:pabrAfter,valor:aabr,cor:'#36d399'},
-      {label:'Caixa',meta:MCAIXA,atual:pcxA,after:(br+abr)?(cx+acx)/(br+abr)*100:0,valor:acx,cor:'#f59e0b'}
+      {label:'Renda Fixa',cor:'#c084fc',meta:MRF,atual:br?rf/br*100:0,after:(br+abr)?(rf+arf)/(br+abr)*100:0,valor:arf},
+      {label:'Ações / FIIs BR',cor:'#36d399',meta:MABR,atual:br?acbr/br*100:0,after:(br+abr)?(acbr+aabr)/(br+abr)*100:0,valor:aabr},
+      {label:'Caixa',cor:'#f59e0b',meta:MCAIXA,atual:br?cx/br*100:0,after:(br+abr)?(cx+acx)/(br+abr)*100:0,valor:acx}
     ];
+
     brItens.forEach(function(it){
-      var d=it.atual-it.meta;
+      var d=it.atual-it.meta, dAfter=it.after-it.meta;
       h+='<div class="rc"><div>';
       h+='<div class="rd">'+it.label+' (meta '+it.meta+'%)</div>';
-      h+='<div style="font-size:16px;font-weight:800;color:'+(Math.abs(d)<2?'var(--green)':Math.abs(d)<5?'var(--yellow)':'var(--red)')+'">'+it.atual.toFixed(1)+'%</div>';
-      h+='<div style="font-size:11px;color:var(--text2)">Após: <strong>'+it.after.toFixed(1)+'%</strong></div>';
-      h+='<div class="ra" style="margin-top:6px;font-size:13px">'+fR(it.valor)+'</div>';
+      h+='<div style="font-size:18px;font-weight:800;color:'+fmtCor(it.atual,it.meta)+';margin:4px 0">'+it.atual.toFixed(1)+'% <span style="font-size:11px;font-weight:400" class="'+(d>=0?'neg':'pos')+'">'+(d>=0?'+':'')+d.toFixed(1)+'%</span></div>';
+      h+='<div style="font-size:11px;color:var(--text2)">Após: <strong style="color:'+fmtCor(it.after,it.meta)+'">'+it.after.toFixed(1)+'%</strong> <span class="'+(Math.abs(dAfter)<Math.abs(d)?'pos':'neg')+'">'+(dAfter>=0?'+':'')+dAfter.toFixed(1)+'%</span></div>';
+      h+='<div class="ra" style="margin-top:6px;font-size:14px">'+fR(it.valor)+'</div>';
       h+='</div></div>';
     });
     h+='</div>';
 
-    // BR ativos individuais com pesoAlvo
+    // BR ativos individuais
     var brComAlvo=carteira.filter(function(a){return a.mercado==='BR'&&(a.pesoAlvo||0)>0;});
     if(brComAlvo.length){
       h+='<div class="tw"><table><thead><tr><th>Ativo</th><th>Tipo</th><th>% Atual BR</th><th>% Alvo</th><th>Δ</th><th>Sugestão R$</th></tr></thead><tbody>';
       brComAlvo.sort(function(a,b){return (b.pesoAlvo||0)-(a.pesoAlvo||0);}).forEach(function(a){
-        var vAtual=a.qtd*pBRL(a), pAtual=br?vAtual/br*100:0, delta=pAtual-(a.pesoAlvo||0);
-        var sugestao=abr*(a.pesoAlvo||0)/100;
-        h+='<tr><td><span class="tk">'+a.ticker+'</span><div style="font-size:10px;color:var(--text2)">'+a.nome+'</div></td>';
-        h+='<td><span class="tag '+(a.tipo==='etf'?'te':a.tipo==='fii'?'tf':a.tipo==='renda'?'tr':'ta')+'">'+a.tipo+'</span></td>';
-        h+='<td style="font-weight:600">'+pAtual.toFixed(1)+'%</td>';
-        h+='<td style="color:var(--text2)">'+(a.pesoAlvo||0)+'%</td>';
-        h+='<td class="'+(delta>=0?'neg':'pos')+'" style="font-size:11px">'+(delta>=0?'+':'')+delta.toFixed(1)+'%</td>';
-        h+='<td class="pos" style="font-weight:600">'+fR(sugestao)+'</td>';
+        var vAtual=a.qtd*pBRL(a);
+        var pAtual=br?vAtual/br*100:0;
+        var meta=a.pesoAlvo||0;
+        var delta=pAtual-meta;
+        var sug=abr*(meta/100);
+        var tipoTag=a.tipo==='etf'?'te':a.tipo==='fii'?'tf':a.tipo==='renda'?'tr':'ta';
+        h+='<tr>';
+        h+='<td><span class="tk">'+a.ticker+'</span><div style="font-size:10px;color:var(--text2)">'+a.nome+'</div></td>';
+        h+='<td><span class="tag '+tipoTag+'">'+a.tipo+'</span></td>';
+        h+='<td style="font-weight:700;color:'+fmtCor(pAtual,meta)+'">'+pAtual.toFixed(1)+'%</td>';
+        h+='<td style="color:var(--text2)">'+meta+'%</td>';
+        h+='<td class="'+(Math.abs(delta)<0.5?'':'neg')+'" style="font-size:11px">'+(delta>=0?'+':'')+delta.toFixed(1)+'%</td>';
+        h+='<td class="pos" style="font-weight:600">'+fR(sug)+'</td>';
         h+='</tr>';
       });
       h+='</tbody></table></div>';
@@ -1365,24 +1409,21 @@ var cotPeriodo = '1d';
 var cotView = 'chart';
 var cotCache = {};
 var cotData = [];
-var cotChartInstance = null;
-var cotSelectedTicker = null;
-var PERIODO_LABELS = {'1d':'Hoje','1w':'Semana','1m':'Mês','ytd':'Ano atual','1y':'12 meses','5y':'5 anos'};
-var PERIODO_RANGE = {'1d':'1d','1w':'5d','1m':'1mo','ytd':'ytd','1y':'1y','5y':'5y'};
-var PERIODO_INTERVAL = {'1d':'5m','1w':'1d','1m':'1d','ytd':'1wk','1y':'1wk','5y':'1mo'};
-var CHART_COLORS = ['#4f8ef7','#36d399','#f59e0b','#f87171','#a78bfa','#34d399','#fb923c','#60a5fa','#e879f9','#2dd4bf','#fbbf24','#818cf8'];
+var cotChartInst = null;
+var PLABELS = {'1d':'Hoje','1w':'Semana','1m':'Mês','ytd':'Ano atual','1y':'12 meses','5y':'5 anos'};
+var PRANGES = {'1d':'1d','1w':'5d','1m':'1mo','ytd':'ytd','1y':'1y','5y':'5y'};
+var PINTERVALS = {'1d':'5m','1w':'1d','1m':'1d','ytd':'1wk','1y':'1wk','5y':'1mo'};
+var COT_COLORS = ['#4f8ef7','#36d399','#f59e0b','#f87171','#a78bfa','#fb923c','#60a5fa','#e879f9','#2dd4bf','#fbbf24','#818cf8','#34d399'];
 
 function setPeriodo(p){
-  cotPeriodo = p;
-  document.querySelectorAll('[id^="btnP"]').forEach(function(b){
-    b.style.borderColor=''; b.style.color='';
-  });
+  cotPeriodo=p;
+  document.querySelectorAll('[id^="btnP"]').forEach(function(b){b.style.borderColor='';b.style.color='';});
   var btn=document.getElementById('btnP'+p);
   if(btn){btn.style.borderColor='var(--accent)';btn.style.color='var(--accent)';}
-  var lbl=PERIODO_LABELS[p];
-  var el1=document.getElementById('colPeriodo'); if(el1) el1.textContent='Var. '+lbl;
-  var el2=document.getElementById('colPeriodo2'); if(el2) el2.textContent='Var. '+lbl;
-  renderCotacoes();
+  var lbl='Var. '+PLABELS[p];
+  ['colPeriodo','colPeriodo2'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=lbl;});
+  cotCache={};
+  buildCotacoes();
 }
 
 function setCotView(v){
@@ -1395,147 +1436,173 @@ function setCotView(v){
   document.getElementById('btnViewTable').style.color=v==='table'?'var(--accent)':'';
 }
 
-async function fetchCotacaoHistorica(ticker, range){
+async function fetchHistorico(ticker, range){
   var key=ticker+'_'+range;
   if(cotCache[key]) return cotCache[key];
   try{
-    var tickerEnc=ticker.replace('.','%2E');
-    var interval=PERIODO_INTERVAL[cotPeriodo]||'1d';
-    var r=await fetch('https://brapi.dev/api/quote/'+tickerEnc+'?range='+range+'&interval='+interval+'&token='+TOK);
+    var tkEnc=ticker.replace('.','%2E');
+    var interval=PINTERVALS[cotPeriodo]||'1d';
+    var url='https://brapi.dev/api/quote/'+tkEnc+'?range='+range+'&interval='+interval+'&token='+TOK;
+    var r=await fetch(url);
     var d=await r.json();
-    if(d.results&&d.results[0]){ cotCache[key]=d.results[0]; return d.results[0]; }
+    if(d.results&&d.results[0]){
+      cotCache[key]=d.results[0];
+      return d.results[0];
+    }
   }catch(e){}
   return null;
 }
 
 function selectTicker(ticker){
-  cotSelectedTicker=ticker;
   document.querySelectorAll('.cot-tk-btn').forEach(function(b){
-    b.style.background=b.dataset.tk===ticker?'var(--accent)':'var(--bg3)';
-    b.style.color=b.dataset.tk===ticker?'#fff':'var(--text2)';
-    b.style.borderColor=b.dataset.tk===ticker?'var(--accent)':'var(--border)';
+    var sel=b.getAttribute('data-tk')===ticker;
+    b.style.background=sel?'var(--accent)':'var(--bg3)';
+    b.style.color=sel?'#fff':'var(--text2)';
+    b.style.borderColor=sel?'var(--accent)':'var(--border)';
   });
-  drawChart(ticker);
+  drawCotChart(ticker);
 }
 
-function drawChart(ticker){
+function drawCotChart(ticker){
   var row=cotData.find(function(r){return r.a.ticker===ticker;});
-  if(!row||!row.hist) return;
+  if(!row) return;
   var hist=row.hist;
-  var prices=(hist.historicalDataPrice||[]).filter(function(x){return x.close;});
-  if(!prices.length) return;
+  var prices=[];
+  if(hist&&hist.historicalDataPrice){
+    prices=hist.historicalDataPrice.filter(function(x){return x&&x.close;});
+  }
+  // Fallback: use current price as single point
+  if(prices.length<2){
+    var p=row.p;
+    document.getElementById('cotChartTitle').textContent=ticker+' — '+row.a.nome+' | '+PLABELS[cotPeriodo];
+    document.getElementById('cotChartStats').innerHTML='<span style="color:var(--text2)">Dados históricos insuficientes para este período</span>';
+    if(cotChartInst){cotChartInst.destroy();cotChartInst=null;}
+    return;
+  }
 
   var isDark=document.body.classList.contains('dark');
   var txtColor=isDark?'#8b95b0':'#64748b';
   var gridColor=isDark?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)';
-
+  var vals=prices.map(function(x){return x.close;});
+  var first=vals[0],last=vals[vals.length-1];
+  var varPct=(last-first)/first*100;
+  var lineColor=varPct>=0?'#36d399':'#f87171';
+  var fillColor=varPct>=0?'rgba(54,211,153,.1)':'rgba(248,113,113,.1)';
+  var minVal=Math.min.apply(null,vals);
+  var maxVal=Math.max.apply(null,vals);
+  var isUS=row.a.mercado==='US';
   var labels=prices.map(function(x){
     var d=new Date(x.date*1000);
     if(cotPeriodo==='1d') return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
     if(cotPeriodo==='1w'||cotPeriodo==='1m') return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
     return d.toLocaleDateString('pt-BR',{month:'2-digit',year:'2-digit'});
   });
-  var vals=prices.map(function(x){return x.close;});
-  var first=vals[0],last=vals[vals.length-1];
-  var varPct=(last-first)/first*100;
-  var lineColor=varPct>=0?'#36d399':'#f87171';
-  var fillColor=varPct>=0?'rgba(54,211,153,.1)':'rgba(248,113,113,.1)';
 
-  document.getElementById('cotChartTitle').textContent=ticker+' — '+row.a.nome+' | '+PERIODO_LABELS[cotPeriodo];
+  document.getElementById('cotChartTitle').textContent=ticker+' — '+row.a.nome+' | '+PLABELS[cotPeriodo];
   document.getElementById('cotChartStats').innerHTML=
     '<span style="font-weight:700;color:'+(varPct>=0?'var(--green)':'var(--red)')+'">'+(varPct>=0?'+':'')+varPct.toFixed(2)+'%</span>'+
-    ' | Mín: '+(row.a.mercado==='US'?'$':'')+Math.min.apply(null,vals).toFixed(2)+
-    ' | Máx: '+(row.a.mercado==='US'?'$':'')+Math.max.apply(null,vals).toFixed(2);
+    ' | Mín: '+(isUS?'US$ ':'R$ ')+minVal.toFixed(2)+
+    ' | Máx: '+(isUS?'US$ ':'R$ ')+maxVal.toFixed(2);
 
-  if(cotChartInstance) cotChartInstance.destroy();
+  if(cotChartInst){cotChartInst.destroy();cotChartInst=null;}
   var ctx=document.getElementById('cotChart').getContext('2d');
-  cotChartInstance=new Chart(ctx,{
+  cotChartInst=new Chart(ctx,{
     type:'line',
-    data:{
-      labels:labels,
-      datasets:[{
-        label:ticker,
-        data:vals,
-        borderColor:lineColor,
-        backgroundColor:fillColor,
-        borderWidth:2,
-        pointRadius:vals.length>60?0:2,
-        pointHoverRadius:4,
-        fill:true,
-        tension:0.3
-      }]
-    },
+    data:{labels:labels,datasets:[{
+      label:ticker,data:vals,borderColor:lineColor,backgroundColor:fillColor,
+      borderWidth:2,pointRadius:vals.length>100?0:2,pointHoverRadius:4,fill:true,tension:0.3
+    }]},
     options:{
       responsive:true,maintainAspectRatio:false,
       interaction:{intersect:false,mode:'index'},
       plugins:{
         legend:{display:false},
-        tooltip:{callbacks:{
-          label:function(c){
-            var v=c.parsed.y;
-            return (row.a.mercado==='US'?'US$ ':'R$ ')+v.toFixed(2);
-          }
-        }}
+        tooltip:{callbacks:{label:function(c){return (isUS?'US$ ':'R$ ')+c.parsed.y.toFixed(2);}}}
       },
       scales:{
-        x:{ticks:{color:txtColor,font:{size:10},maxTicksLimit:10},grid:{color:gridColor}},
-        y:{ticks:{color:txtColor,font:{size:10},callback:function(v){return (row.a.mercado==='US'?'$':'R$')+v.toFixed(2);}},grid:{color:gridColor}}
+        x:{ticks:{color:txtColor,font:{size:10},maxTicksLimit:12},grid:{color:gridColor}},
+        y:{ticks:{color:txtColor,font:{size:10},callback:function(v){return (isUS?'$':'R$')+v.toFixed(2);}},grid:{color:gridColor},grace:'5%'}
       }
     }
   });
 }
 
-async function renderCotacoes(){
-  var ativos=carteira.filter(function(a){return a.tipo==='acao'||a.tipo==='etf'||a.tipo==='fii';});
-  if(!ativos.length) return;
+async function buildCotacoes(){
+  // Only ações, ETFs, FIIs — no duplicates
+  var tickers=[];
+  var ativos=carteira.filter(function(a){
+    if(a.tipo!=='acao'&&a.tipo!=='etf'&&a.tipo!=='fii') return false;
+    if(tickers.indexOf(a.ticker)>=0) return false;
+    tickers.push(a.ticker);
+    return true;
+  });
+
+  if(!ativos.length){
+    document.getElementById('tbCotSummary').innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text2);padding:20px">Nenhum ativo</td></tr>';
+    return;
+  }
+
   document.getElementById('cotLoading').style.display='block';
-  document.getElementById('cotUpd').textContent='Carregando...';
+  document.getElementById('cotUpd').textContent='Carregando '+ativos.length+' ativos...';
   cotData=[];
-  var range=PERIODO_RANGE[cotPeriodo];
+
   var pat=totais().pat;
+  var range=PRANGES[cotPeriodo];
 
   for(var i=0;i<ativos.length;i++){
     var a=ativos[i];
     var p=precos[a.ticker]||{preco:a.pmedio,var:0,moeda:a.mercado==='US'?'USD':'BRL'};
     var hist=null;
-    if(cotPeriodo!=='1d') hist=await fetchCotacaoHistorica(a.ticker,range);
-    else {
-      // For 1d, build fake hist from current price
-      var fakePrices=[{date:Date.now()/1000,close:p.preco}];
-      hist={historicalDataPrice:fakePrices,regularMarketPrice:p.preco};
+    if(cotPeriodo==='1d'){
+      // For day view, use current price data only
+      hist={historicalDataPrice:[{date:Math.floor(Date.now()/1000),close:p.preco}]};
+    } else {
+      hist=await fetchHistorico(a.ticker,range);
     }
-    var varP=null,minP=null,maxP=null;
+    var varP=cotPeriodo==='1d'?(p.var||0):null;
+    var minP=null,maxP=null;
     if(hist&&hist.historicalDataPrice&&hist.historicalDataPrice.length>1){
       var prices=hist.historicalDataPrice.map(function(x){return x.close;}).filter(Boolean);
       if(prices.length>1){
         var first=prices[0],last=prices[prices.length-1];
-        varP=(last-first)/first*100; minP=Math.min.apply(null,prices); maxP=Math.max.apply(null,prices);
+        if(cotPeriodo!=='1d') varP=(last-first)/first*100;
+        minP=Math.min.apply(null,prices);
+        maxP=Math.max.apply(null,prices);
       }
     }
-    if(cotPeriodo==='1d') varP=p.var||0;
-    cotData.push({a:a,p:p,hist:hist,varP:varP,minP:minP,maxP:maxP,vCart:a.qtd*pBRL(a),pat:pat});
+    cotData.push({a:a,p:p,hist:hist,varP:varP,minP:minP,maxP:maxP,vCart:a.qtd*pBRL(a),i:i});
+    document.getElementById('cotUpd').textContent='Carregando... '+(i+1)+'/'+ativos.length;
   }
 
-  // Build ticker buttons for chart
-  var btnHtml='';
-  cotData.forEach(function(row,i){
-    btnHtml+='<button class="btn cot-tk-btn" data-tk="'+row.a.ticker+'" data-action="selectTicker" style="font-size:11px;padding:4px 10px">'+row.a.ticker+'</button>';
+  // Build ticker buttons
+  var btnH='';
+  cotData.forEach(function(row){
+    btnH+='<button class="btn cot-tk-btn" data-tk="'+row.a.ticker+'" style="font-size:11px;padding:4px 10px">'+row.a.ticker+'</button>';
   });
-  document.getElementById('cotTickerBtns').innerHTML=btnHtml;
+  document.getElementById('cotTickerBtns').innerHTML=btnH;
 
-  // Build summary table (shown under chart)
-  var sumH='', tblH='';
+  // Attach click events directly
+  document.querySelectorAll('.cot-tk-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){selectTicker(this.getAttribute('data-tk'));});
+  });
+
+  // Build summary and table
   var tl={acao:'Ação',etf:'ETF',fii:'FII'};
   var tc={acao:'ta',etf:'te',fii:'tf'};
+  var sumH='',tblH='';
 
   cotData.forEach(function(row){
     var a=row.a,p=row.p,isUS=a.mercado==='US';
     var cotOrig=isUS?fU(p.preco):fR(p.preco);
     var cotBRL=isUS?fR(p.preco*usdBrl):'';
-    var peso=row.pat?row.vCart/row.pat*100:0;
-    var fmtVar=function(v){ return v!==null&&v!==undefined?'<span class="'+(v>=0?'pos':'neg')+'" style="font-weight:700">'+(v>=0?'+':'')+v.toFixed(2)+'%</span>':'<span style="color:var(--text2)">—</span>'; };
-    var fmtPx=function(v){ return v?(isUS?fU(v):fR(v)):'—'; };
-    var row1='<td><span class="tk">'+a.ticker+'</span><div style="font-size:10px;color:var(--text2)">'+a.nome+'</div></td>'+
+    var peso=pat?row.vCart/pat*100:0;
+    var fmtVar=function(v){
+      if(v===null||v===undefined) return '<span style="color:var(--text2)">—</span>';
+      return '<span class="'+(v>=0?'pos':'neg')+'" style="font-weight:700">'+(v>=0?'+':'')+v.toFixed(2)+'%</span>';
+    };
+    var fmtPx=function(v){return v?(isUS?fU(v):fR(v)):'—';};
+    var rowHtml=
+      '<td><span class="tk">'+a.ticker+'</span><div style="font-size:10px;color:var(--text2)">'+a.nome+'</div></td>'+
       '<td><span class="tag '+tc[a.tipo]+'">'+tl[a.tipo]+'</span></td>'+
       '<td style="font-weight:600">'+cotOrig+(cotBRL?'<div style="font-size:10px;color:var(--text2)">'+cotBRL+'</div>':'')+'</td>'+
       '<td>'+fmtVar(p.var)+'</td>'+
@@ -1543,21 +1610,23 @@ async function renderCotacoes(){
       '<td style="font-size:11px;color:var(--text2)">'+fmtPx(row.minP)+'</td>'+
       '<td style="font-size:11px;color:var(--text2)">'+fmtPx(row.maxP)+'</td>'+
       '<td style="font-weight:600">'+fR(row.vCart)+'<div style="font-size:10px;color:var(--text2)">'+peso.toFixed(1)+'% carteira</div></td>';
-    sumH+='<tr data-action="selectTicker" data-tk="'+a.ticker+'" style="cursor:pointer">'+row1+'</tr>';
-    tblH+='<tr>'+row1+'</tr>';
+    sumH+='<tr class="cot-row" data-tk="'+a.ticker+'" style="cursor:pointer">'+rowHtml+'</tr>';
+    tblH+='<tr>'+rowHtml+'</tr>';
   });
+
   document.getElementById('tbCotSummary').innerHTML=sumH;
   document.getElementById('tbCot').innerHTML=tblH;
+
+  // Attach click to rows
+  document.querySelectorAll('.cot-row').forEach(function(row){
+    row.addEventListener('click',function(){selectTicker(this.getAttribute('data-tk'));});
+  });
 
   document.getElementById('cotLoading').style.display='none';
   document.getElementById('cotUpd').textContent='Atualizado: '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 
-  // Auto-select first ticker for chart
-  if(cotData.length){
-    var first=cotData[0].a.ticker;
-    cotSelectedTicker=first;
-    selectTicker(first);
-  }
+  // Auto-select first
+  if(cotData.length) selectTicker(cotData[0].a.ticker);
 }
 
 // ── REFRESH ──────────────────────────────────────────
