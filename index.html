@@ -270,55 +270,85 @@ body.light .badge-div{background:#dbeafe;color:#1d4ed8}
 
 <!-- COTAÇÕES -->
 <div class="pg" id="pg-cot">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn" id="btnP1d" onclick="setPeriodo('1d')">Dia</button>
-      <button class="btn" id="btnP1w" onclick="setPeriodo('1w')">Semana</button>
-      <button class="btn" id="btnP1m" onclick="setPeriodo('1m')">M&#xEA;s</button>
-      <button class="btn" id="btnPytd" onclick="setPeriodo('ytd')">Ano atual</button>
-      <button class="btn" id="btnP1y" onclick="setPeriodo('1y')">12 meses</button>
-      <button class="btn" id="btnP5y" onclick="setPeriodo('5y')">5 anos</button>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <div style="font-size:11px;color:var(--text2)" id="cotUpd">Selecione um per&#xED;odo</div>
-      <div style="display:flex;gap:6px">
-        <button class="btn" id="btnViewChart" onclick="setCotView('chart')" style="border-color:var(--accent);color:var(--accent);font-size:11px;padding:4px 10px">&#x1F4C8; Gr&#xE1;fico</button>
-        <button class="btn" id="btnViewTable" onclick="setCotView('table')" style="font-size:11px;padding:4px 10px">&#x1F4CB; Tabela</button>
+  <!-- Barra de busca estilo Google Finance -->
+  <div class="card" style="margin-bottom:16px">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <div style="position:relative;flex:1;min-width:200px">
+        <input type="text" id="cotSearch" placeholder="Buscar ticker... Ex: AAPL, NVDA, VOO" 
+          style="width:100%;padding:11px 14px 11px 40px;font-size:14px;background:var(--bg2);border:2px solid var(--accent);border-radius:10px;color:var(--text);font-family:inherit;outline:none"
+          oninput="cotSearchInput(this.value)" onkeydown="if(event.key==='Enter')buscarCotacao()">
+        <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.6">🔍</span>
       </div>
+      <button class="btn" style="border-color:var(--accent);color:var(--accent);padding:11px 20px;font-size:13px" onclick="buscarCotacao()">Buscar</button>
+    </div>
+    <!-- Sugestões da carteira -->
+    <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px">
+      <span style="font-size:11px;color:var(--text2);margin-right:4px;align-self:center">Minha carteira:</span>
+      <div id="cotCarteiraChips"></div>
     </div>
   </div>
 
-  <!-- CHART VIEW -->
-  <div id="cotChartView">
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px" id="cotTickerBtns"></div>
+  <!-- Resultado -->
+  <div id="cotResultado" style="display:none">
+    <!-- Header do ativo -->
     <div class="card" style="margin-bottom:14px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <div id="cotChartTitle" style="font-size:13px;font-weight:700"></div>
-        <div id="cotChartStats" style="font-size:12px;color:var(--text2)"></div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+            <span id="cotNome" style="font-size:20px;font-weight:800"></span>
+            <span id="cotTicker" class="tk" style="font-size:13px"></span>
+            <span id="cotTipoTag"></span>
+          </div>
+          <div id="cotMercado" style="font-size:11px;color:var(--text2)"></div>
+        </div>
+        <div style="text-align:right">
+          <div id="cotPreco" style="font-size:32px;font-weight:900;letter-spacing:-.5px"></div>
+          <div id="cotVar" style="font-size:15px;font-weight:700;margin-top:2px"></div>
+          <div id="cotHora" style="font-size:10px;color:var(--text2);margin-top:2px"></div>
+        </div>
       </div>
-      <div style="height:320px;position:relative"><canvas id="cotChart"></canvas></div>
+      <!-- Stats rápidos -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)" id="cotStats"></div>
     </div>
-    <div class="tw">
-      <table>
-        <thead><tr><th>Ativo</th><th>Tipo</th><th>Cotação atual</th><th>Hoje</th><th id="colPeriodo">Var. período</th><th>Mín.</th><th>Máx.</th><th>Valor carteira</th></tr></thead>
-        <tbody id="tbCotSummary"></tbody>
-      </table>
+
+    <!-- Período e gráfico -->
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <button class="btn cot-per" data-p="1d" onclick="cotSetPer('1d')">1D</button>
+        <button class="btn cot-per" data-p="5d" onclick="cotSetPer('5d')">5D</button>
+        <button class="btn cot-per" data-p="1mo" onclick="cotSetPer('1mo')">1M</button>
+        <button class="btn cot-per" data-p="3mo" onclick="cotSetPer('3mo')">3M</button>
+        <button class="btn cot-per" data-p="6mo" onclick="cotSetPer('6mo')">6M</button>
+        <button class="btn cot-per" data-p="ytd" onclick="cotSetPer('ytd')">YTD</button>
+        <button class="btn cot-per" data-p="1y" onclick="cotSetPer('1y')">1A</button>
+        <button class="btn cot-per" data-p="5y" onclick="cotSetPer('5y')">5A</button>
+        <div style="margin-left:auto;font-size:11px;color:var(--text2);align-self:center" id="cotGrafUpd"></div>
+      </div>
+      <div style="position:relative;height:300px">
+        <canvas id="cotGrafCanvas"></canvas>
+        <div id="cotGrafLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);border-radius:8px;display:none">
+          <div style="display:inline-block;width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info na carteira -->
+    <div class="card" id="cotNaCarteira" style="display:none">
+      <div class="ctitle">📊 Este ativo na sua carteira</div>
+      <div id="cotCarteiraInfo"></div>
     </div>
   </div>
 
-  <!-- TABLE VIEW -->
-  <div id="cotTableView" style="display:none">
-    <div class="tw">
-      <table>
-        <thead><tr><th>Ativo</th><th>Tipo</th><th>Cotação atual</th><th>Hoje</th><th id="colPeriodo2">Var. período</th><th>Mín.</th><th>Máx.</th><th>Valor carteira</th></tr></thead>
-        <tbody id="tbCot"></tbody>
-      </table>
-    </div>
+  <!-- Estado vazio -->
+  <div id="cotVazio" style="text-align:center;padding:60px 20px;color:var(--text2)">
+    <div style="font-size:48px;margin-bottom:16px">📈</div>
+    <div style="font-size:16px;font-weight:600;margin-bottom:8px">Busque qualquer ativo</div>
+    <div style="font-size:13px">Digite um ticker acima ou clique em um ativo da sua carteira</div>
   </div>
 
-  <div id="cotLoading" style="text-align:center;padding:24px;color:var(--text2);display:none">
-    <div style="display:inline-block;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-right:8px;vertical-align:middle"></div>
-    Carregando cotações hist&#xF3;ricas...
+  <div id="cotLoading" style="text-align:center;padding:40px;color:var(--text2);display:none">
+    <div style="display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-right:8px;vertical-align:middle"></div>
+    Buscando cotação...
   </div>
 </div>
 </div><!-- /app -->
@@ -560,7 +590,7 @@ function showPg(id, el) {
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
   document.getElementById('pg-'+id).classList.add('on'); el.classList.add('on');
   if (id === 'dv') buildDividendos();
-  if (id === 'cot') { setPeriodo('1d'); buildCotacoes(); }
+  if (id === 'cot') { initCotacoes(); }
   if (id === 'hs') buildHistorico();
 }
 function closeM() { document.querySelectorAll('.mb').forEach(function(m){m.classList.remove('on');}); }
@@ -820,7 +850,7 @@ function calcRb(){
   var dest=document.getElementById('simDest').value;
   var cambioManual=parseFloat(document.getElementById('simCambio').value)||usdBrl;
 
-  // Show spread info
+  // Spread display
   document.getElementById('simCambioMkt').textContent='R$ '+usdBrl.toFixed(4);
   if(document.getElementById('simCambio').value){
     var spread=((cambioManual-usdBrl)/usdBrl*100);
@@ -832,20 +862,12 @@ function calcRb(){
     document.getElementById('simSpread').style.color='var(--text2)';
   }
 
-  var t=totais();
-  var pat=t.pat;
-  var tot=pat+aporte;
-
-  // Current allocation
+  var t=totais(); var pat=t.pat; var tot=pat+aporte;
   var us=0,br=0;
-  carteira.forEach(function(a){
-    var v=a.qtd*pBRL(a);
-    if(a.mercado==='US') us+=v; else br+=v;
-  });
-  var pusAtual=pat?us/pat*100:0;
-  var pbrAtual=pat?br/pat*100:0;
+  carteira.forEach(function(a){var v=a.qtd*pBRL(a);if(a.mercado==='US')us+=v;else br+=v;});
+  var pusAtual=pat?us/pat*100:0, pbrAtual=pat?br/pat*100:0;
 
-  // How much to each region
+  // Deficit-based allocation: only allocate where below target
   var aus=0,abr=0;
   if(dest==='US'){ aus=aporte; }
   else if(dest==='BR'){ abr=aporte; }
@@ -857,10 +879,8 @@ function calcRb(){
     else { aus=aporte*(defUS/totalDef); abr=aporte*(defBR/totalDef); }
   }
 
-  // After aporte
   var usAfter=us+aus, brAfter=br+abr;
-  var pusAfter=tot?usAfter/tot*100:0;
-  var pbrAfter=tot?brAfter/tot*100:0;
+  var pusAfter=tot?usAfter/tot*100:0, pbrAfter=tot?brAfter/tot*100:0;
 
   var fmtCor=function(actual,meta){
     var d=Math.abs(actual-meta);
@@ -869,146 +889,162 @@ function calcRb(){
 
   var h='';
 
-  // ── Region cards ──
+  // Region cards
   h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">';
-
-  // EUA
-  var dUS=pusAtual-MUS, dUSAfter=pusAfter-MUS;
-  h+='<div class="rc" style="padding:16px"><div>';
-  h+='<div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:700">🇺🇸 EUA — Meta '+MUS+'%</div>';
-  h+='<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px">';
-  h+='<span style="font-size:22px;font-weight:800;color:'+fmtCor(pusAtual,MUS)+'">'+pusAtual.toFixed(1)+'%</span>';
-  h+='<span class="'+(dUS>=0?'neg':'pos')+'" style="font-size:12px">'+(dUS>=0?'+':'')+dUS.toFixed(1)+'%</span>';
-  h+='</div>';
-  h+='<div style="font-size:11px;color:var(--text2)">Após aporte: <strong style="color:'+fmtCor(pusAfter,MUS)+'">'+pusAfter.toFixed(1)+'%</strong> <span class="'+(Math.abs(dUSAfter)<Math.abs(dUS)?'pos':'neg')+'">'+(dUSAfter>=0?'+':'')+dUSAfter.toFixed(1)+'%</span></div>';
-  h+='<div style="margin-top:8px;font-size:13px;color:var(--text2)">Aportar: <strong class="pos">'+fR(aus)+'</strong>';
-  if(aus>0) h+=' | <strong>'+fU(aus/cambioManual)+'</strong>';
-  h+='</div></div></div>';
-
-  // Brasil
-  var dBR=pbrAtual-MBR, dBRAfter=pbrAfter-MBR;
-  h+='<div class="rc" style="padding:16px"><div>';
-  h+='<div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:700">🇧🇷 Brasil — Meta '+MBR+'%</div>';
-  h+='<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px">';
-  h+='<span style="font-size:22px;font-weight:800;color:'+fmtCor(pbrAtual,MBR)+'">'+pbrAtual.toFixed(1)+'%</span>';
-  h+='<span class="'+(dBR>=0?'neg':'pos')+'" style="font-size:12px">'+(dBR>=0?'+':'')+dBR.toFixed(1)+'%</span>';
-  h+='</div>';
-  h+='<div style="font-size:11px;color:var(--text2)">Após aporte: <strong style="color:'+fmtCor(pbrAfter,MBR)+'">'+pbrAfter.toFixed(1)+'%</strong> <span class="'+(Math.abs(dBRAfter)<Math.abs(dBR)?'pos':'neg')+'">'+(dBRAfter>=0?'+':'')+dBRAfter.toFixed(1)+'%</span></div>';
-  h+='<div style="margin-top:8px;font-size:13px;color:var(--text2)">Aportar: <strong class="pos">'+fR(abr)+'</strong></div>';
-  h+='</div></div>';
+  function regionCard(flag,label,meta,atual,after,valor,valorUS){
+    var d=atual-meta, dAfter=after-meta;
+    var melhorou=Math.abs(dAfter)<Math.abs(d);
+    var c='<div class="rc" style="padding:16px"><div>';
+    c+='<div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:700">'+flag+' '+label+' — Meta '+meta+'%</div>';
+    c+='<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px">';
+    c+='<span style="font-size:24px;font-weight:900;color:'+fmtCor(atual,meta)+'">'+atual.toFixed(1)+'%</span>';
+    c+='<span class="'+(d>=0?'neg':'pos')+'" style="font-size:12px;font-weight:600">'+(d>=0?'+':'')+d.toFixed(1)+'%</span>';
+    c+='</div>';
+    if(valor>0){
+      c+='<div style="font-size:11px;color:var(--text2)">Após: <strong style="color:'+fmtCor(after,meta)+'">'+after.toFixed(1)+'%</strong> <span class="'+(melhorou?'pos':'neg')+'">'+(dAfter>=0?'+':'')+dAfter.toFixed(1)+'%</span></div>';
+      c+='<div style="margin-top:8px"><span style="font-size:13px;color:var(--text2)">Aportar: </span><strong class="pos" style="font-size:14px">'+fR(valor)+'</strong>';
+      if(valorUS) c+=' <span style="color:var(--text2);font-size:12px">'+fU(valorUS)+'</span>';
+      c+='</div>';
+    } else {
+      c+='<div style="font-size:11px;color:var(--text2);margin-top:6px">Após: <strong style="color:'+fmtCor(after,meta)+'">'+after.toFixed(1)+'%</strong></div>';
+      c+='<div style="margin-top:8px;font-size:12px;color:var(--text2)">Nenhum aporte nesta região</div>';
+    }
+    c+='</div></div>';
+    return c;
+  }
+  h+=regionCard('🇺🇸','EUA',MUS,pusAtual,pusAfter,aus,aus>0?aus/cambioManual:0);
+  h+=regionCard('🇧🇷','Brasil',MBR,pbrAtual,pbrAfter,abr,0);
   h+='</div>';
 
-  // ── EUA breakdown ──
+  // EUA breakdown
   if(aus>0){
     var usAt=carteira.filter(function(a){return a.mercado==='US'&&(a.pesoAlvo||0)>0;});
+    // Separate ETF and Ação
+    var etfAt=usAt.filter(function(a){return a.tipo==='etf';});
+    var acAt=usAt.filter(function(a){return a.tipo!=='etf';});
+
+    // Current ETF/Acao totals within US
+    var etfTot=0,acTot=0;
+    etfAt.forEach(function(a){etfTot+=a.qtd*pBRL(a);});
+    acAt.forEach(function(a){acTot+=a.qtd*pBRL(a);});
+    var petfAtual=us?etfTot/us*100:0, pacAtual=us?acTot/us*100:0;
+
+    // How much to ETF vs Acao based on METF/MACAO targets
     var aetf=aus*(METF/100), aac=aus*(MACAO/100);
-    var tpetf=usAt.filter(function(a){return a.tipo==='etf';}).reduce(function(s,a){return s+(a.pesoAlvo||0);},0);
-    var tpac=usAt.filter(function(a){return a.tipo!=='etf';}).reduce(function(s,a){return s+(a.pesoAlvo||0);},0);
+    var petfAfter=(us+aus)?(etfTot+aetf)/(us+aus)*100:0;
+    var pacAfter=(us+aus)?(acTot+aac)/(us+aus)*100:0;
 
-    // ETF/Ação split
-    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">';
-    var etfAtual=0,acAtual=0;
-    usAt.forEach(function(a){var v=a.qtd*pBRL(a);if(a.tipo==='etf')etfAtual+=v;else acAtual+=v;});
-    var petfAtual=us?etfAtual/us*100:0, pacAtual=us?acAtual/us*100:0;
-    var petfAfter=(us+aus)?(etfAtual+aetf)/(us+aus)*100:0, pacAfter=(us+aus)?(acAtual+aac)/(us+aus)*100:0;
-    h+='<div class="rc"><div class="rd">📊 ETFs (meta '+METF+'% do EUA)</div>';
-    h+='<div class="ra" style="font-size:14px">'+fR(aetf)+'</div>';
-    h+='<div class="rd">Atual: '+petfAtual.toFixed(1)+'% → Após: <strong>'+petfAfter.toFixed(1)+'%</strong></div></div>';
-    h+='<div class="rc"><div class="rd">📈 Ações (meta '+MACAO+'% do EUA)</div>';
-    h+='<div class="ra" style="font-size:14px">'+fR(aac)+'</div>';
-    h+='<div class="rd">Atual: '+pacAtual.toFixed(1)+'% → Após: <strong>'+pacAfter.toFixed(1)+'%</strong></div></div></div>';
+    // ETF/Acao split cards
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">';
+    h+='<div class="rc"><div class="rd">📊 ETFs (meta '+METF+'% do EUA)</div><div class="ra">'+fR(aetf)+'</div><div class="rd">Atual: '+petfAtual.toFixed(1)+'% → Após: '+petfAfter.toFixed(1)+'%</div></div>';
+    h+='<div class="rc"><div class="rd">📈 Ações (meta '+MACAO+'% do EUA)</div><div class="ra">'+fR(aac)+'</div><div class="rd">Atual: '+pacAtual.toFixed(1)+'% → Após: '+pacAfter.toFixed(1)+'%</div></div>';
+    h+='</div>';
 
-    h+='<div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-weight:700">Distribuição por ativo EUA — câmbio R$ '+cambioManual.toFixed(4)+'</div>';
+    h+='<div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-weight:700">Distribuição por ativo — câmbio R$ '+cambioManual.toFixed(4)+'</div>';
     h+='<div class="tw" style="margin-bottom:16px"><table><thead><tr>';
-    h+='<th>Ativo</th><th>Tipo</th><th>% Atual (EUA)</th><th>% Alvo</th><th>Δ Atual</th><th>Aportar R$</th><th>Aportar US$</th><th>Cotas aprox.</th><th>% Após aporte</th><th>Δ Após</th>';
+    h+='<th>Ativo</th><th>Tipo</th><th>% Atual (EUA)</th><th>Meta</th><th>Déficit</th><th>Aportar R$</th><th>Aportar US$</th><th>Cotas aprox.</th><th>% Após</th><th>Δ Após</th>';
     h+='</tr></thead><tbody>';
 
-    usAt.sort(function(a,b){return (b.pesoAlvo||0)-(a.pesoAlvo||0);}).forEach(function(a){
-      var ie=a.tipo==='etf';
-      var tb=ie?tpetf:tpac;
-      var bv=ie?aetf:aac;
-      var meta=a.pesoAlvo||0;
-      var vAtual=a.qtd*pBRL(a);
-      var pAtual=us?vAtual/us*100:0;
-      var deltaAtual=pAtual-meta;
-      // Aportar proporcional ao peso alvo dentro do grupo
-      var vAp=tb?bv*(meta/tb):0;
-      var pr=precos[a.ticker]?precos[a.ticker].preco:a.pmedio;
-      var cotas=pr>0&&cambioManual>0?vAp/(pr*cambioManual):0;
-      // % após aporte dentro do universo EUA
-      var pAfter=(us+aus)>0?(vAtual+vAp)/(us+aus)*100:0;
-      var deltaAfter=pAfter-meta;
-      var melhorou=Math.abs(deltaAfter)<Math.abs(deltaAtual);
+    // ── KEY FIX: Only allocate to ativos BELOW target ──
+    function distribuirGrupo(ativos, orcamento, totalUS, aporteUS){
+      // Build deficit map
+      var items=[];
+      ativos.forEach(function(a){
+        var meta=a.pesoAlvo||0;
+        var vAtual=a.qtd*pBRL(a);
+        var pAtual=totalUS?vAtual/totalUS*100:0;
+        var deficit=meta-pAtual; // positive = below target, negative = above
+        // How much money needed to bring this ativo to its target (within this universe)
+        // metaValue = meta/100 * (totalUS + aporteUS) - vAtual
+        var metaValue=Math.max(0,(meta/100)*(totalUS+aporteUS)-vAtual);
+        items.push({a:a,meta:meta,vAtual:vAtual,pAtual:pAtual,deficit:deficit,metaValue:metaValue});
+      });
 
-      h+='<tr>';
-      h+='<td><span class="tk">'+a.ticker+'</span><div style="font-size:10px;color:var(--text2)">'+a.nome+'</div></td>';
-      h+='<td><span class="tag '+(ie?'te':'ta')+'">'+(ie?'ETF':'Ação')+'</span></td>';
-      h+='<td style="font-weight:700;color:'+fmtCor(pAtual,meta)+'">'+pAtual.toFixed(1)+'%</td>';
-      h+='<td style="color:var(--text2)">'+meta+'%</td>';
-      h+='<td class="'+(Math.abs(deltaAtual)<0.5?'':'neg')+'" style="font-size:11px">'+(deltaAtual>=0?'+':'')+deltaAtual.toFixed(1)+'%</td>';
-      h+='<td class="pos" style="font-weight:600">'+fR(vAp)+'</td>';
-      h+='<td style="color:var(--text2)">'+fU(vAp/cambioManual)+'</td>';
-      h+='<td style="color:var(--text2);font-size:11px">~'+cotas.toFixed(4)+'</td>';
-      h+='<td style="font-weight:700;color:'+fmtCor(pAfter,meta)+'">'+pAfter.toFixed(1)+'%</td>';
-      h+='<td class="'+(melhorou?'pos':'neg')+'" style="font-size:11px">'+(deltaAfter>=0?'+':'')+deltaAfter.toFixed(1)+'%</td>';
-      h+='</tr>';
-    });
+      // Total money needed to fully equalize all below-target ativos
+      var totalNeeded=items.reduce(function(s,x){return s+x.metaValue;},0);
+
+      var alocs=[];
+      if(orcamento<=totalNeeded){
+        // Aporte menor que o necessário: distribui proporcionalmente ao déficit (só abaixo)
+        var totalDef=items.reduce(function(s,x){return s+Math.max(0,x.deficit);},0);
+        items.forEach(function(x){
+          var aloc=totalDef>0&&x.deficit>0?orcamento*(x.deficit/totalDef):0;
+          alocs.push(aloc);
+        });
+      } else {
+        // Aporte maior: primeiro equaliza todos abaixo, depois distribui excedente pelo peso alvo
+        var excedente=orcamento-totalNeeded;
+        var totalMeta=items.reduce(function(s,x){return s+x.meta;},0);
+        items.forEach(function(x,i){
+          // Parte 1: equalização (só ativos abaixo)
+          var eq=x.metaValue;
+          // Parte 2: excedente proporcional ao peso alvo de TODOS os ativos
+          var ex=totalMeta>0?excedente*(x.meta/totalMeta):0;
+          alocs.push(eq+ex);
+        });
+      }
+
+      // Render table rows
+      items.forEach(function(x,i){
+        var aloc=alocs[i]||0;
+        var pr=precos[x.a.ticker]?precos[x.a.ticker].preco:x.a.pmedio;
+        var cotas=pr>0&&cambioManual>0?aloc/(pr*cambioManual):0;
+        var pAfter=(totalUS+aporteUS)?(x.vAtual+aloc)/(totalUS+aporteUS)*100:0;
+        var deltaAtual=x.pAtual-x.meta;
+        var deltaAfter=pAfter-x.meta;
+        var melhorou=Math.abs(deltaAfter)<Math.abs(deltaAtual);
+        var ie=x.a.tipo==='etf';
+        var isAbove=x.deficit<=-0.2;
+
+        h+='<tr>';
+        h+='<td><span class="tk">'+x.a.ticker+'</span><div style="font-size:10px;color:var(--text2)">'+x.a.nome+'</div></td>';
+        h+='<td><span class="tag '+(ie?'te':'ta')+'">'+(ie?'ETF':'Ação')+'</span></td>';
+        h+='<td style="font-weight:700;color:'+fmtCor(x.pAtual,x.meta)+'">'+x.pAtual.toFixed(1)+'%</td>';
+        h+='<td style="color:var(--text2)">'+x.meta+'%</td>';
+        h+='<td style="font-weight:700;color:'+(x.deficit>0.2?'var(--green)':isAbove?'var(--red)':'var(--text2)')+'">'+(x.deficit>0.2?'▼ '+(x.deficit).toFixed(1)+'%':isAbove?'▲ '+Math.abs(x.deficit).toFixed(1)+'%':'≈ meta')+'</td>';
+        h+='<td class="pos" style="font-weight:600">'+fR(aloc)+'</td>';
+        h+='<td style="color:var(--text2)">'+fU(aloc/cambioManual)+'</td>';
+        h+='<td style="color:var(--text2);font-size:11px">~'+cotas.toFixed(4)+'</td>';
+        h+='<td style="font-weight:700;color:'+fmtCor(pAfter,x.meta)+'">'+pAfter.toFixed(1)+'%</td>';
+        h+='<td class="'+(melhorou?'pos':'neg')+'" style="font-size:11px">'+(deltaAfter>=0?'+':'')+deltaAfter.toFixed(1)+'%</td>';
+        h+='</tr>';
+      });
+    }
+
+    
+    var tpetf=etfAt.reduce(function(s,a){return s+(a.pesoAlvo||0);},0);
+    var tpac=acAt.reduce(function(s,a){return s+(a.pesoAlvo||0);},0);
+    distribuirGrupo(etfAt.sort(function(a,b){return (b.pesoAlvo||0)-(a.pesoAlvo||0);}), aetf, us, aus);
+    distribuirGrupo(acAt.sort(function(a,b){return (b.pesoAlvo||0)-(a.pesoAlvo||0);}), aac, us, aus);
+
     h+='</tbody></table></div>';
   }
 
-  // ── Brasil breakdown ──
+  // Brasil breakdown
   if(abr>0){
     var arf=abr*(MRF/100), aabr=abr*(MABR/100), acx=abr*(MCAIXA/100);
     var rf=0,acbr=0,cx=0;
     carteira.filter(function(a){return a.mercado==='BR';}).forEach(function(a){
       var v=a.qtd*pBRL(a);
-      if(a.tipo==='caixa') cx+=v;
-      else if(a.tipo==='renda') rf+=v;
-      else acbr+=v;
+      if(a.tipo==='caixa')cx+=v; else if(a.tipo==='renda')rf+=v; else acbr+=v;
     });
-
+    var brItens=[
+      {l:'Renda Fixa',m:MRF,at:br?rf/br*100:0,af:(br+abr)?(rf+arf)/(br+abr)*100:0,v:arf},
+      {l:'Ações/FIIs BR',m:MABR,at:br?acbr/br*100:0,af:(br+abr)?(acbr+aabr)/(br+abr)*100:0,v:aabr},
+      {l:'Caixa',m:MCAIXA,at:br?cx/br*100:0,af:(br+abr)?(cx+acx)/(br+abr)*100:0,v:acx}
+    ];
     h+='<div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;font-weight:700">Distribuição Brasil</div>';
     h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">';
-
-    var brItens=[
-      {label:'Renda Fixa',cor:'#c084fc',meta:MRF,atual:br?rf/br*100:0,after:(br+abr)?(rf+arf)/(br+abr)*100:0,valor:arf},
-      {label:'Ações / FIIs BR',cor:'#36d399',meta:MABR,atual:br?acbr/br*100:0,after:(br+abr)?(acbr+aabr)/(br+abr)*100:0,valor:aabr},
-      {label:'Caixa',cor:'#f59e0b',meta:MCAIXA,atual:br?cx/br*100:0,after:(br+abr)?(cx+acx)/(br+abr)*100:0,valor:acx}
-    ];
-
     brItens.forEach(function(it){
-      var d=it.atual-it.meta, dAfter=it.after-it.meta;
+      var d=it.at-it.m, dAf=it.af-it.m;
       h+='<div class="rc"><div>';
-      h+='<div class="rd">'+it.label+' (meta '+it.meta+'%)</div>';
-      h+='<div style="font-size:18px;font-weight:800;color:'+fmtCor(it.atual,it.meta)+';margin:4px 0">'+it.atual.toFixed(1)+'% <span style="font-size:11px;font-weight:400" class="'+(d>=0?'neg':'pos')+'">'+(d>=0?'+':'')+d.toFixed(1)+'%</span></div>';
-      h+='<div style="font-size:11px;color:var(--text2)">Após: <strong style="color:'+fmtCor(it.after,it.meta)+'">'+it.after.toFixed(1)+'%</strong> <span class="'+(Math.abs(dAfter)<Math.abs(d)?'pos':'neg')+'">'+(dAfter>=0?'+':'')+dAfter.toFixed(1)+'%</span></div>';
-      h+='<div class="ra" style="margin-top:6px;font-size:14px">'+fR(it.valor)+'</div>';
+      h+='<div class="rd">'+it.l+' (meta '+it.m+'%)</div>';
+      h+='<div style="font-size:18px;font-weight:800;color:'+fmtCor(it.at,it.m)+';margin:4px 0">'+it.at.toFixed(1)+'% <span style="font-size:11px" class="'+(d>=0?'neg':'pos')+'">'+(d>=0?'+':'')+d.toFixed(1)+'%</span></div>';
+      h+='<div style="font-size:11px;color:var(--text2)">Após: <strong>'+it.af.toFixed(1)+'%</strong> <span class="'+(Math.abs(dAf)<Math.abs(d)?'pos':'neg')+'">'+(dAf>=0?'+':'')+dAf.toFixed(1)+'%</span></div>';
+      h+='<div class="ra" style="margin-top:6px">'+fR(it.v)+'</div>';
       h+='</div></div>';
     });
     h+='</div>';
-
-    // BR ativos individuais
-    var brComAlvo=carteira.filter(function(a){return a.mercado==='BR'&&(a.pesoAlvo||0)>0;});
-    if(brComAlvo.length){
-      h+='<div class="tw"><table><thead><tr><th>Ativo</th><th>Tipo</th><th>% Atual BR</th><th>% Alvo</th><th>Δ</th><th>Sugestão R$</th></tr></thead><tbody>';
-      brComAlvo.sort(function(a,b){return (b.pesoAlvo||0)-(a.pesoAlvo||0);}).forEach(function(a){
-        var vAtual=a.qtd*pBRL(a);
-        var pAtual=br?vAtual/br*100:0;
-        var meta=a.pesoAlvo||0;
-        var delta=pAtual-meta;
-        var sug=abr*(meta/100);
-        var tipoTag=a.tipo==='etf'?'te':a.tipo==='fii'?'tf':a.tipo==='renda'?'tr':'ta';
-        h+='<tr>';
-        h+='<td><span class="tk">'+a.ticker+'</span><div style="font-size:10px;color:var(--text2)">'+a.nome+'</div></td>';
-        h+='<td><span class="tag '+tipoTag+'">'+a.tipo+'</span></td>';
-        h+='<td style="font-weight:700;color:'+fmtCor(pAtual,meta)+'">'+pAtual.toFixed(1)+'%</td>';
-        h+='<td style="color:var(--text2)">'+meta+'%</td>';
-        h+='<td class="'+(Math.abs(delta)<0.5?'':'neg')+'" style="font-size:11px">'+(delta>=0?'+':'')+delta.toFixed(1)+'%</td>';
-        h+='<td class="pos" style="font-weight:600">'+fR(sug)+'</td>';
-        h+='</tr>';
-      });
-      h+='</tbody></table></div>';
-    }
   }
 
   document.getElementById('rbRes').innerHTML=h;
@@ -1405,228 +1441,226 @@ function buildHistorico() {
 
 
 // ── COTAÇÕES ─────────────────────────────────────────
-var cotPeriodo = '1d';
-var cotView = 'chart';
-var cotCache = {};
-var cotData = [];
-var cotChartInst = null;
-var PLABELS = {'1d':'Hoje','1w':'Semana','1m':'Mês','ytd':'Ano atual','1y':'12 meses','5y':'5 anos'};
-var PRANGES = {'1d':'1d','1w':'5d','1m':'1mo','ytd':'ytd','1y':'1y','5y':'5y'};
-var PINTERVALS = {'1d':'5m','1w':'1d','1m':'1d','ytd':'1wk','1y':'1wk','5y':'1mo'};
-var COT_COLORS = ['#4f8ef7','#36d399','#f59e0b','#f87171','#a78bfa','#fb923c','#60a5fa','#e879f9','#2dd4bf','#fbbf24','#818cf8','#34d399'];
+var cotGrafChart = null;
+var cotAtualTicker = null;
+var cotAtualPer = '1d';
+var cotGrafCache = {};
+var COT_INTERVALS = {'1d':'5m','5d':'1d','1mo':'1d','3mo':'1d','6mo':'1wk','ytd':'1wk','1y':'1wk','5y':'1mo'};
 
-function setPeriodo(p){
-  cotPeriodo=p;
-  document.querySelectorAll('[id^="btnP"]').forEach(function(b){b.style.borderColor='';b.style.color='';});
-  var btn=document.getElementById('btnP'+p);
-  if(btn){btn.style.borderColor='var(--accent)';btn.style.color='var(--accent)';}
-  var lbl='Var. '+PLABELS[p];
-  ['colPeriodo','colPeriodo2'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=lbl;});
-  cotCache={};
-  buildCotacoes();
-}
-
-function setCotView(v){
-  cotView=v;
-  document.getElementById('cotChartView').style.display=v==='chart'?'block':'none';
-  document.getElementById('cotTableView').style.display=v==='table'?'block':'none';
-  document.getElementById('btnViewChart').style.borderColor=v==='chart'?'var(--accent)':'';
-  document.getElementById('btnViewChart').style.color=v==='chart'?'var(--accent)':'';
-  document.getElementById('btnViewTable').style.borderColor=v==='table'?'var(--accent)':'';
-  document.getElementById('btnViewTable').style.color=v==='table'?'var(--accent)':'';
-}
-
-async function fetchHistorico(ticker, range){
-  var key=ticker+'_'+range;
-  if(cotCache[key]) return cotCache[key];
-  try{
-    var tkEnc=ticker.replace('.','%2E');
-    var interval=PINTERVALS[cotPeriodo]||'1d';
-    var url='https://brapi.dev/api/quote/'+tkEnc+'?range='+range+'&interval='+interval+'&token='+TOK;
-    var r=await fetch(url);
-    var d=await r.json();
-    if(d.results&&d.results[0]){
-      cotCache[key]=d.results[0];
-      return d.results[0];
-    }
-  }catch(e){}
-  return null;
-}
-
-function selectTicker(ticker){
-  document.querySelectorAll('.cot-tk-btn').forEach(function(b){
-    var sel=b.getAttribute('data-tk')===ticker;
-    b.style.background=sel?'var(--accent)':'var(--bg3)';
-    b.style.color=sel?'#fff':'var(--text2)';
-    b.style.borderColor=sel?'var(--accent)':'var(--border)';
+function initCotacoes(){
+  // Monta chips da carteira
+  var tickers = [];
+  carteira.forEach(function(a){
+    if((a.tipo==='acao'||a.tipo==='etf'||a.tipo==='fii') && tickers.indexOf(a.ticker)<0) tickers.push(a.ticker);
   });
-  drawCotChart(ticker);
+  var h='';
+  tickers.forEach(function(tk){
+    h+='<button class="btn cot-chip" data-tk="'+tk+'" style="font-size:11px;padding:3px 10px">'+tk+'</button>';
+  });
+  document.getElementById('cotCarteiraChips').innerHTML=h;
+  document.querySelectorAll('.cot-chip').forEach(function(btn){
+    btn.addEventListener('click',function(){cotChipClick(this.getAttribute('data-tk'));});
+  });
 }
 
-function drawCotChart(ticker){
-  var row=cotData.find(function(r){return r.a.ticker===ticker;});
-  if(!row) return;
-  var hist=row.hist;
-  var prices=[];
-  if(hist&&hist.historicalDataPrice){
-    prices=hist.historicalDataPrice.filter(function(x){return x&&x.close;});
+function cotChipClick(tk){
+  document.getElementById('cotSearch').value=tk;
+  buscarCotacao(tk);
+}
+
+function cotSearchInput(v){
+  // Could add autocomplete here
+}
+
+async function buscarCotacao(ticker){
+  var tk=(ticker||document.getElementById('cotSearch').value).trim().toUpperCase();
+  if(!tk) return;
+  cotAtualTicker=tk;
+  document.getElementById('cotVazio').style.display='none';
+  document.getElementById('cotResultado').style.display='none';
+  document.getElementById('cotLoading').style.display='block';
+
+  try{
+    var tkEnc=tk.replace('.','%2E');
+    var r=await fetch('https://brapi.dev/api/quote/'+tkEnc+'?token='+TOK);
+    var d=await r.json();
+    if(!d.results||!d.results[0]) throw new Error('Não encontrado');
+    var res=d.results[0];
+
+    // Header
+    document.getElementById('cotNome').textContent=res.longName||res.shortName||tk;
+    document.getElementById('cotTicker').textContent=tk;
+    var isUS=!tk.endsWith('.SA');
+    var preco=res.regularMarketPrice||0;
+    var varAbs=res.regularMarketChange||0;
+    var varPct=res.regularMarketChangePercent||0;
+    var corVar=varPct>=0?'var(--green)':'var(--red)';
+    var sigVar=varPct>=0?'+':'';
+    document.getElementById('cotPreco').textContent=(isUS?'US$ ':'R$ ')+preco.toFixed(2);
+    document.getElementById('cotPreco').style.color=corVar;
+    document.getElementById('cotVar').innerHTML='<span style="color:'+corVar+'">'+(varAbs>=0?'+':'')+varAbs.toFixed(2)+' ('+sigVar+varPct.toFixed(2)+'%)</span>';
+    document.getElementById('cotMercado').textContent=(isUS?'Mercado EUA (USD)':'Mercado Brasil (BRL)')+' • Atualizado: '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+
+    // Stats
+    var stats=[
+      {l:'Abertura',v:res.regularMarketOpen?(isUS?'US$ ':'R$ ')+res.regularMarketOpen.toFixed(2):'—'},
+      {l:'Mín. dia',v:res.regularMarketDayLow?(isUS?'US$ ':'R$ ')+res.regularMarketDayLow.toFixed(2):'—'},
+      {l:'Máx. dia',v:res.regularMarketDayHigh?(isUS?'US$ ':'R$ ')+res.regularMarketDayHigh.toFixed(2):'—'},
+      {l:'Volume',v:res.regularMarketVolume?res.regularMarketVolume.toLocaleString('pt-BR'):'—'},
+      {l:'Mín. 52sem',v:res.fiftyTwoWeekLow?(isUS?'US$ ':'R$ ')+res.fiftyTwoWeekLow.toFixed(2):'—'},
+      {l:'Máx. 52sem',v:res.fiftyTwoWeekHigh?(isUS?'US$ ':'R$ ')+res.fiftyTwoWeekHigh.toFixed(2):'—'},
+      {l:'P/L',v:res.priceEarnings?res.priceEarnings.toFixed(2):'—'},
+      {l:'Setor',v:res.sector||'—'}
+    ];
+    var sh='';
+    stats.forEach(function(s){
+      sh+='<div><div style="font-size:10px;color:var(--text2);margin-bottom:3px">'+s.l+'</div><div style="font-size:13px;font-weight:600">'+s.v+'</div></div>';
+    });
+    document.getElementById('cotStats').innerHTML=sh;
+
+    // Info na carteira
+    var naCart=carteira.find(function(a){return a.ticker===tk;});
+    var cartEl=document.getElementById('cotNaCarteira');
+    if(naCart){
+      cartEl.style.display='block';
+      var vCart=naCart.qtd*pBRL(naCart);
+      var pat=totais().pat;
+      var resultado=naCart.qtd*(pBRL(naCart)-pmBRL(naCart));
+      var rp=naCart.qtd*pmBRL(naCart)?resultado/(naCart.qtd*pmBRL(naCart))*100:0;
+      document.getElementById('cotCarteiraInfo').innerHTML=
+        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">'+
+        '<div><div class="lbl">Quantidade</div><div style="font-size:16px;font-weight:700">'+Number(naCart.qtd).toFixed(6)+'</div></div>'+
+        '<div><div class="lbl">Preço médio</div><div style="font-size:16px;font-weight:700">'+(isUS?fU(naCart.pmedio):fR(naCart.pmedio))+'</div></div>'+
+        '<div><div class="lbl">Valor na carteira</div><div style="font-size:16px;font-weight:700">'+fR(vCart)+'</div><div style="font-size:11px;color:var(--text2)">'+( pat?( vCart/pat*100).toFixed(1):'0')+'% do total</div></div>'+
+        '<div><div class="lbl">Resultado</div><div style="font-size:16px;font-weight:700" class="'+(resultado>=0?'pos':'neg')+'">'+fR(resultado)+'<div style="font-size:11px">'+(rp>=0?'+':'')+rp.toFixed(2)+'%</div></div></div>'+
+        '</div>';
+    } else {
+      cartEl.style.display='none';
+    }
+
+    document.getElementById('cotLoading').style.display='none';
+    document.getElementById('cotResultado').style.display='block';
+
+    // Load chart
+    cotAtualPer='1d';
+    cotSetPer('1d');
+
+  } catch(e){
+    document.getElementById('cotLoading').style.display='none';
+    document.getElementById('cotVazio').style.display='block';
+    document.getElementById('cotVazio').innerHTML='<div style="font-size:48px;margin-bottom:16px">❌</div><div style="font-size:15px;font-weight:600;margin-bottom:8px">Ticker não encontrado</div><div style="font-size:13px">Verifique o código e tente novamente</div>';
   }
-  // Fallback: use current price as single point
-  if(prices.length<2){
-    var p=row.p;
-    document.getElementById('cotChartTitle').textContent=ticker+' — '+row.a.nome+' | '+PLABELS[cotPeriodo];
-    document.getElementById('cotChartStats').innerHTML='<span style="color:var(--text2)">Dados históricos insuficientes para este período</span>';
-    if(cotChartInst){cotChartInst.destroy();cotChartInst=null;}
+}
+
+function cotSetPer(p){
+  cotAtualPer=p;
+  document.querySelectorAll('.cot-per').forEach(function(b){
+    b.style.borderColor=b.dataset.p===p?'var(--accent)':'';
+    b.style.color=b.dataset.p===p?'var(--accent)':'';
+    b.style.background=b.dataset.p===p?'var(--blue3,#e8f0ff)':'';
+  });
+  carregarGrafico(cotAtualTicker, p);
+}
+
+async function carregarGrafico(ticker, period){
+  if(!ticker) return;
+  var key=ticker+'_'+period;
+  var loading=document.getElementById('cotGrafLoading');
+  loading.style.display='flex';
+  document.getElementById('cotGrafUpd').textContent='Carregando...';
+
+  var hist=cotGrafCache[key];
+  if(!hist){
+    try{
+      var tkEnc=ticker.replace('.','%2E');
+      var interval=COT_INTERVALS[period]||'1d';
+      var r=await fetch('https://brapi.dev/api/quote/'+tkEnc+'?range='+period+'&interval='+interval+'&token='+TOK);
+      var d=await r.json();
+      if(d.results&&d.results[0]){
+        hist=d.results[0];
+        cotGrafCache[key]=hist;
+      }
+    }catch(e){}
+  }
+  loading.style.display='none';
+
+  if(!hist||!hist.historicalDataPrice||hist.historicalDataPrice.length<2){
+    document.getElementById('cotGrafUpd').textContent='Dados indisponíveis para este período';
+    if(cotGrafChart){cotGrafChart.destroy();cotGrafChart=null;}
     return;
   }
 
-  var isDark=document.body.classList.contains('dark');
-  var txtColor=isDark?'#8b95b0':'#64748b';
-  var gridColor=isDark?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)';
+  var prices=hist.historicalDataPrice.filter(function(x){return x&&x.close;});
+  if(prices.length<2){
+    document.getElementById('cotGrafUpd').textContent='Dados insuficientes';
+    return;
+  }
+
   var vals=prices.map(function(x){return x.close;});
-  var first=vals[0],last=vals[vals.length-1];
+  var first=vals[0], last=vals[vals.length-1];
   var varPct=(last-first)/first*100;
   var lineColor=varPct>=0?'#36d399':'#f87171';
-  var fillColor=varPct>=0?'rgba(54,211,153,.1)':'rgba(248,113,113,.1)';
-  var minVal=Math.min.apply(null,vals);
-  var maxVal=Math.max.apply(null,vals);
-  var isUS=row.a.mercado==='US';
+  var fillColor=varPct>=0?'rgba(54,211,153,.12)':'rgba(248,113,113,.12)';
+  var isUS=!ticker.endsWith('.SA');
+
   var labels=prices.map(function(x){
-    var d=new Date(x.date*1000);
-    if(cotPeriodo==='1d') return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-    if(cotPeriodo==='1w'||cotPeriodo==='1m') return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
-    return d.toLocaleDateString('pt-BR',{month:'2-digit',year:'2-digit'});
+    var dt=new Date(x.date*1000);
+    if(period==='1d') return dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    if(period==='5d'||period==='1mo'||period==='3mo') return dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+    return dt.toLocaleDateString('pt-BR',{month:'2-digit',year:'2-digit'});
   });
 
-  document.getElementById('cotChartTitle').textContent=ticker+' — '+row.a.nome+' | '+PLABELS[cotPeriodo];
-  document.getElementById('cotChartStats').innerHTML=
-    '<span style="font-weight:700;color:'+(varPct>=0?'var(--green)':'var(--red)')+'">'+(varPct>=0?'+':'')+varPct.toFixed(2)+'%</span>'+
-    ' | Mín: '+(isUS?'US$ ':'R$ ')+minVal.toFixed(2)+
-    ' | Máx: '+(isUS?'US$ ':'R$ ')+maxVal.toFixed(2);
+  var isDark=document.body.classList.contains('dark');
+  var txtColor=isDark?'#8b95b0':'#64748b';
+  var gridColor=isDark?'rgba(255,255,255,.05)':'rgba(0,0,0,.05)';
 
-  if(cotChartInst){cotChartInst.destroy();cotChartInst=null;}
-  var ctx=document.getElementById('cotChart').getContext('2d');
-  cotChartInst=new Chart(ctx,{
+  if(cotGrafChart){cotGrafChart.destroy();cotGrafChart=null;}
+  var ctx=document.getElementById('cotGrafCanvas').getContext('2d');
+  cotGrafChart=new Chart(ctx,{
     type:'line',
     data:{labels:labels,datasets:[{
-      label:ticker,data:vals,borderColor:lineColor,backgroundColor:fillColor,
-      borderWidth:2,pointRadius:vals.length>100?0:2,pointHoverRadius:4,fill:true,tension:0.3
+      data:vals,borderColor:lineColor,backgroundColor:fillColor,
+      borderWidth:2.5,pointRadius:0,pointHoverRadius:5,
+      pointHoverBackgroundColor:lineColor,fill:true,tension:0.2
     }]},
     options:{
       responsive:true,maintainAspectRatio:false,
       interaction:{intersect:false,mode:'index'},
       plugins:{
         legend:{display:false},
-        tooltip:{callbacks:{label:function(c){return (isUS?'US$ ':'R$ ')+c.parsed.y.toFixed(2);}}}
+        tooltip:{
+          backgroundColor:isDark?'#1e2535':'#fff',
+          titleColor:isDark?'#e8eaf0':'#1a2035',
+          bodyColor:isDark?'#8b95b0':'#64748b',
+          borderColor:isDark?'#2a3350':'#dde4f5',
+          borderWidth:1,
+          callbacks:{
+            title:function(c){return c[0].label;},
+            label:function(c){
+              var v=c.parsed.y;
+              var varR=(v-first)/first*100;
+              return (isUS?'US$ ':'R$ ')+v.toFixed(2)+'   '+(varR>=0?'+':'')+varR.toFixed(2)+'%';
+            }
+          }
+        }
       },
       scales:{
-        x:{ticks:{color:txtColor,font:{size:10},maxTicksLimit:12},grid:{color:gridColor}},
-        y:{ticks:{color:txtColor,font:{size:10},callback:function(v){return (isUS?'$':'R$')+v.toFixed(2);}},grid:{color:gridColor},grace:'5%'}
+        x:{ticks:{color:txtColor,font:{size:10},maxTicksLimit:10},grid:{display:false}},
+        y:{
+          position:'right',
+          ticks:{color:txtColor,font:{size:10},callback:function(v){return (isUS?'$':'R$')+v.toFixed(2);}},
+          grid:{color:gridColor}
+        }
       }
     }
   });
-}
 
-async function buildCotacoes(){
-  // Only ações, ETFs, FIIs — no duplicates
-  var tickers=[];
-  var ativos=carteira.filter(function(a){
-    if(a.tipo!=='acao'&&a.tipo!=='etf'&&a.tipo!=='fii') return false;
-    if(tickers.indexOf(a.ticker)>=0) return false;
-    tickers.push(a.ticker);
-    return true;
-  });
-
-  if(!ativos.length){
-    document.getElementById('tbCotSummary').innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text2);padding:20px">Nenhum ativo</td></tr>';
-    return;
-  }
-
-  document.getElementById('cotLoading').style.display='block';
-  document.getElementById('cotUpd').textContent='Carregando '+ativos.length+' ativos...';
-  cotData=[];
-
-  var pat=totais().pat;
-  var range=PRANGES[cotPeriodo];
-
-  for(var i=0;i<ativos.length;i++){
-    var a=ativos[i];
-    var p=precos[a.ticker]||{preco:a.pmedio,var:0,moeda:a.mercado==='US'?'USD':'BRL'};
-    var hist=null;
-    if(cotPeriodo==='1d'){
-      // For day view, use current price data only
-      hist={historicalDataPrice:[{date:Math.floor(Date.now()/1000),close:p.preco}]};
-    } else {
-      hist=await fetchHistorico(a.ticker,range);
-    }
-    var varP=cotPeriodo==='1d'?(p.var||0):null;
-    var minP=null,maxP=null;
-    if(hist&&hist.historicalDataPrice&&hist.historicalDataPrice.length>1){
-      var prices=hist.historicalDataPrice.map(function(x){return x.close;}).filter(Boolean);
-      if(prices.length>1){
-        var first=prices[0],last=prices[prices.length-1];
-        if(cotPeriodo!=='1d') varP=(last-first)/first*100;
-        minP=Math.min.apply(null,prices);
-        maxP=Math.max.apply(null,prices);
-      }
-    }
-    cotData.push({a:a,p:p,hist:hist,varP:varP,minP:minP,maxP:maxP,vCart:a.qtd*pBRL(a),i:i});
-    document.getElementById('cotUpd').textContent='Carregando... '+(i+1)+'/'+ativos.length;
-  }
-
-  // Build ticker buttons
-  var btnH='';
-  cotData.forEach(function(row){
-    btnH+='<button class="btn cot-tk-btn" data-tk="'+row.a.ticker+'" style="font-size:11px;padding:4px 10px">'+row.a.ticker+'</button>';
-  });
-  document.getElementById('cotTickerBtns').innerHTML=btnH;
-
-  // Attach click events directly
-  document.querySelectorAll('.cot-tk-btn').forEach(function(btn){
-    btn.addEventListener('click',function(){selectTicker(this.getAttribute('data-tk'));});
-  });
-
-  // Build summary and table
-  var tl={acao:'Ação',etf:'ETF',fii:'FII'};
-  var tc={acao:'ta',etf:'te',fii:'tf'};
-  var sumH='',tblH='';
-
-  cotData.forEach(function(row){
-    var a=row.a,p=row.p,isUS=a.mercado==='US';
-    var cotOrig=isUS?fU(p.preco):fR(p.preco);
-    var cotBRL=isUS?fR(p.preco*usdBrl):'';
-    var peso=pat?row.vCart/pat*100:0;
-    var fmtVar=function(v){
-      if(v===null||v===undefined) return '<span style="color:var(--text2)">—</span>';
-      return '<span class="'+(v>=0?'pos':'neg')+'" style="font-weight:700">'+(v>=0?'+':'')+v.toFixed(2)+'%</span>';
-    };
-    var fmtPx=function(v){return v?(isUS?fU(v):fR(v)):'—';};
-    var rowHtml=
-      '<td><span class="tk">'+a.ticker+'</span><div style="font-size:10px;color:var(--text2)">'+a.nome+'</div></td>'+
-      '<td><span class="tag '+tc[a.tipo]+'">'+tl[a.tipo]+'</span></td>'+
-      '<td style="font-weight:600">'+cotOrig+(cotBRL?'<div style="font-size:10px;color:var(--text2)">'+cotBRL+'</div>':'')+'</td>'+
-      '<td>'+fmtVar(p.var)+'</td>'+
-      '<td>'+fmtVar(row.varP)+'</td>'+
-      '<td style="font-size:11px;color:var(--text2)">'+fmtPx(row.minP)+'</td>'+
-      '<td style="font-size:11px;color:var(--text2)">'+fmtPx(row.maxP)+'</td>'+
-      '<td style="font-weight:600">'+fR(row.vCart)+'<div style="font-size:10px;color:var(--text2)">'+peso.toFixed(1)+'% carteira</div></td>';
-    sumH+='<tr class="cot-row" data-tk="'+a.ticker+'" style="cursor:pointer">'+rowHtml+'</tr>';
-    tblH+='<tr>'+rowHtml+'</tr>';
-  });
-
-  document.getElementById('tbCotSummary').innerHTML=sumH;
-  document.getElementById('tbCot').innerHTML=tblH;
-
-  // Attach click to rows
-  document.querySelectorAll('.cot-row').forEach(function(row){
-    row.addEventListener('click',function(){selectTicker(this.getAttribute('data-tk'));});
-  });
-
-  document.getElementById('cotLoading').style.display='none';
-  document.getElementById('cotUpd').textContent='Atualizado: '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-
-  // Auto-select first
-  if(cotData.length) selectTicker(cotData[0].a.ticker);
+  var minV=Math.min.apply(null,vals), maxV=Math.max.apply(null,vals);
+  document.getElementById('cotGrafUpd').innerHTML=
+    '<span class="'+(varPct>=0?'pos':'neg')+'" style="font-weight:700">'+(varPct>=0?'+':'')+varPct.toFixed(2)+'%</span>'+
+    ' &nbsp;|&nbsp; Mín: '+(isUS?'$':'R$')+minV.toFixed(2)+
+    ' &nbsp;|&nbsp; Máx: '+(isUS?'$':'R$')+maxV.toFixed(2)+
+    ' &nbsp;|&nbsp; '+prices.length+' pontos';
 }
 
 // ── REFRESH ──────────────────────────────────────────
